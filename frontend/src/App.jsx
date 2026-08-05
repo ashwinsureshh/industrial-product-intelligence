@@ -7,6 +7,7 @@ import DocumentInput, { IngestReport } from './components/DocumentPanel.jsx'
 import InputPanel, { emptyProduct, fromProduct, toProduct } from './components/InputPanel.jsx'
 import IssueList from './components/IssueList.jsx'
 import ScoreCard from './components/ScoreCard.jsx'
+import TaxonomyInput, { ProposalList, TaxonomyEmpty } from './components/TaxonomyPanel.jsx'
 import TraceTimeline from './components/TraceTimeline.jsx'
 import { Empty } from './components/shared.jsx'
 
@@ -29,6 +30,9 @@ export default function App() {
   const [batch, setBatch] = useState(null)
   const [selectedRow, setSelectedRow] = useState(0)
   const [ingest, setIngest] = useState(null)
+  const [proposals, setProposals] = useState(null)
+  const [proposalSummary, setProposalSummary] = useState(null)
+  const [proposalCounts, setProposalCounts] = useState(null)
 
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
@@ -105,6 +109,46 @@ export default function App() {
   const runPdf = (file) => runDocument(() => api.ingestPdf(file, mode, apiKey))
   const runUrl = (url) => runDocument(() => api.ingestUrl(url, mode, apiKey))
 
+  const refreshProposals = async () => {
+    try {
+      const response = await api.listProposals()
+      setProposals(response.proposals)
+      setProposalCounts(response.counts)
+    } catch (err) {
+      setError(err.message)
+    }
+  }
+
+  const runPropose = async () => {
+    if (!samples?.learning_demo) return
+    setLoading(true)
+    setError(null)
+    try {
+      const response = await api.proposeCategories(samples.learning_demo, mode, apiKey)
+      setProposalSummary(response)
+      await refreshProposals()
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const reviewProposal = async (id, decision) => {
+    setLoading(true)
+    setError(null)
+    try {
+      await api.reviewProposal(id, decision)
+      await refreshProposals()
+      // An approval changes the live taxonomy, so the header count is stale.
+      api.getHealth().then(setHealth).catch(() => {})
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const runUpload = async (file) => {
     setLoading(true)
     setError(null)
@@ -144,7 +188,7 @@ export default function App() {
 
         <div className="topbar-spacer" />
 
-        <div className="tabs" style={{ width: 290 }}>
+        <div className="tabs" style={{ width: 380 }}>
           <button
             className={`tab ${tab === 'single' ? 'active' : ''}`}
             onClick={() => setTab('single')}
@@ -163,6 +207,16 @@ export default function App() {
             onClick={() => setTab('batch')}
           >
             Catalog
+          </button>
+          <button
+            className={`tab ${tab === 'taxonomy' ? 'active' : ''}`}
+            onClick={() => {
+              setTab('taxonomy')
+              if (proposals === null) refreshProposals()
+            }}
+            title="Propose and approve categories the engine has never seen"
+          >
+            Learning
           </button>
         </div>
 
@@ -262,6 +316,15 @@ export default function App() {
                 </div>
               )}
             </>
+          ) : tab === 'taxonomy' ? (
+            <TaxonomyInput
+              onPropose={runPropose}
+              onRefresh={refreshProposals}
+              loading={loading}
+              summary={proposalSummary}
+              counts={proposalCounts}
+              demoSize={samples?.learning_demo?.length}
+            />
           ) : tab === 'document' ? (
             <>
               <DocumentInput onPdf={runPdf} onUrl={runUrl} loading={loading} />
@@ -307,6 +370,18 @@ export default function App() {
         </div>
 
         <div className="col">
+          {tab === 'taxonomy' && (
+            proposals?.length ? (
+              <ProposalList
+                proposals={proposals}
+                onReview={reviewProposal}
+                busy={loading}
+              />
+            ) : (
+              <TaxonomyEmpty />
+            )
+          )}
+
           {tab === 'batch' && batch && (
             <>
               <BatchSummary summary={batch.summary} />
@@ -320,7 +395,7 @@ export default function App() {
 
           {tab === 'batch' && !batch && <BatchEmpty />}
 
-          {detail ? (
+          {tab !== 'taxonomy' && detail ? (
             <>
               <ScoreCard
                 readiness={detail.readiness}

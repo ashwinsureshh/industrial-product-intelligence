@@ -48,6 +48,10 @@ app.add_middleware(
 MAX_BATCH = 250
 BATCH_WORKERS = 8
 
+# Classification confidence below which a product is treated as uncategorised
+# for learning purposes, and a new category is proposed instead.
+PROPOSE_BELOW_CONFIDENCE = 0.65
+
 
 # --------------------------------------------------------------------- provider
 
@@ -437,8 +441,11 @@ def propose_categories(request: BatchEnrichRequest = Body(...)) -> dict[str, Any
             raw_specs=product.raw_specs,
         )
         # A weak match is as much a gap as no match: forcing a product into a
-        # category it barely fits produces confident-looking nonsense.
-        if category is None or confidence < 0.55:
+        # category it barely fits produces confident-looking nonsense. Linear
+        # guides scored 55% against bearings purely because their material is
+        # called "Bearing Steel" — a coincidence, not a classification. Below
+        # this bar the honest move is to propose a category, not to guess.
+        if category is None or confidence < PROPOSE_BELOW_CONFIDENCE:
             unclassified.append(product)
         else:
             classified += 1

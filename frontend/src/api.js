@@ -53,6 +53,25 @@ export const ingestUrl = (url, mode, apiKey) =>
     body: JSON.stringify({ url, mode, api_key: apiKey || null }),
   }).then(json)
 
+export const proposeCategories = (products, mode, apiKey) =>
+  fetch('/api/taxonomy/propose', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ products, mode, api_key: apiKey || null }),
+  }).then(json)
+
+export const listProposals = () => fetch('/api/taxonomy/proposals').then(json)
+
+export const reviewProposal = (id, decision, note) =>
+  fetch(`/api/taxonomy/proposals/${id}/${decision}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ note: note || null }),
+  }).then(json)
+
+export const revokeLearned = (code) =>
+  fetch(`/api/taxonomy/learned/${code}`, { method: 'DELETE' }).then(json)
+
 export const exportCsv = async (results) => {
   const response = await fetch('/api/export/csv', {
     method: 'POST',

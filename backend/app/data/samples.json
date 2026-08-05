@@ -159,6 +159,18 @@
       }
     }
   ],
+  "learning_demo_note": "Two categories absent from the shipped taxonomy. The engine should cluster them apart and propose a separate schema for each.",
+  "learning_demo": [
+    {"sku": "PC-001", "mpn": "DSNU-25-100-PPV-A", "brand": "Festo", "name": "Round pneumatic cylinder double acting", "raw_specs": {"Bore Size": "25 mm", "Stroke Length": "100 mm", "Operating Pressure": "10 bar", "Cushioning": "Adjustable", "Piston Rod Thread": "M10x1.25", "Mounting": "Basic"}},
+    {"sku": "PC-002", "mpn": "DSNU-32-80-PPV-A", "brand": "Festo", "name": "Round pneumatic cylinder double acting", "raw_specs": {"Bore Size": "32 mm", "Stroke Length": "80 mm", "Operating Pressure": "10 bar", "Cushioning": "Adjustable", "Piston Rod Thread": "M10x1.25", "Mounting": "Basic"}},
+    {"sku": "PC-003", "mpn": "CP96SB50-200", "brand": "SMC", "name": "ISO pneumatic cylinder double acting", "raw_specs": {"Bore Size": "50 mm", "Stroke Length": "200 mm", "Operating Pressure": "9 bar", "Cushioning": "Air cushion", "Piston Rod Thread": "M16x1.5", "Mounting": "Flange"}},
+    {"sku": "PC-004", "mpn": "CP96SB63-160", "brand": "SMC", "name": "ISO pneumatic cylinder double acting", "raw_specs": {"Bore Size": "63 mm", "Stroke Length": "160 mm", "Operating Pressure": "9 bar", "Cushioning": "Air cushion", "Piston Rod Thread": "M16x1.5", "Mounting": "Flange"}},
+    {"sku": "PC-005", "mpn": "C85N25-125", "brand": "SMC", "name": "Mini pneumatic cylinder", "raw_specs": {"Bore Size": "25 mm", "Stroke Length": "125 mm", "Operating Pressure": "10 bar", "Cushioning": "Rubber bumper", "Piston Rod Thread": "M10x1.25", "Mounting": "Basic"}},
+    {"sku": "LG-001", "mpn": "HGR20R1000", "brand": "Hiwin", "name": "Linear guide rail profile", "raw_specs": {"Rail Width": "20 mm", "Rail Length": "1000 mm", "Accuracy Grade": "H", "Preload Class": "Z0", "Dynamic Load Capacity": "17.75 kN", "Rail Material": "Bearing Steel"}},
+    {"sku": "LG-002", "mpn": "HGR25R1500", "brand": "Hiwin", "name": "Linear guide rail profile", "raw_specs": {"Rail Width": "25 mm", "Rail Length": "1500 mm", "Accuracy Grade": "H", "Preload Class": "Z0", "Dynamic Load Capacity": "27.10 kN", "Rail Material": "Bearing Steel"}},
+    {"sku": "LG-003", "mpn": "SHS30LC", "brand": "THK", "name": "Linear guide rail block", "raw_specs": {"Rail Width": "30 mm", "Rail Length": "2000 mm", "Accuracy Grade": "P", "Preload Class": "Z1", "Dynamic Load Capacity": "43.60 kN", "Rail Material": "Bearing Steel"}},
+    {"sku": "LG-004", "mpn": "SHS35LC", "brand": "THK", "name": "Linear guide rail block", "raw_specs": {"Rail Width": "35 mm", "Rail Length": "2500 mm", "Accuracy Grade": "P", "Preload Class": "Z1", "Dynamic Load Capacity": "59.20 kN", "Rail Material": "Bearing Steel"}}
+  ],
   "batch_demo": [
     {"sku": "BRG-6203-ZZ", "mpn": "6203-ZZ", "brand": "NSK", "name": "Deep groove ball bearing"},
     {"sku": "BRG-6206", "mpn": "6206", "brand": "Timken", "name": "Ball bearing 6206 open"},
