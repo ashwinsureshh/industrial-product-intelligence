@@ -9,7 +9,54 @@ The Docker SDK is a paid tier; only Static Spaces are free, and a static host
 cannot run the Python backend. The `deploy/huggingface/` assets are kept in
 case that changes or a paid Space becomes available.
 
-## Render (recommended, free, no card)
+## Google Cloud Run (in use)
+
+Scales to zero, wakes in 1–3 seconds, and demo traffic sits well inside the
+free allowance. The same root `Dockerfile` is the deployment unit — Cloud Build
+builds it, so nothing needs installing except the CLI.
+
+**One-time setup**
+
+Install the gcloud CLI (https://cloud.google.com/sdk/docs/install), then:
+
+```bash
+gcloud auth login
+gcloud config set project YOUR_PROJECT_ID
+gcloud services enable run.googleapis.com cloudbuild.googleapis.com artifactregistry.googleapis.com
+```
+
+**Deploy** — run from the repository root:
+
+```bash
+gcloud run deploy product-intelligence --source . --region asia-south1 --allow-unauthenticated --memory 1Gi --cpu 1 --min-instances 0 --set-env-vars PI_ALLOW_SERVER_KEY=0,PI_ALLOW_LIVE=1,PI_CACHE_DIR=/home/app/.cache/pi
+```
+
+The command prints the public HTTPS URL. Re-running it redeploys.
+
+Why those flags:
+
+- `--allow-unauthenticated` — reviewers must reach it without a Google account.
+- `--memory 1Gi` — the 512Mi default is tight once pdfplumber, lxml and
+  pydantic are loaded; an OOM shows up as a confusing 503.
+- `--min-instances 0` — scales to zero so idle time is free. Cloud Run's cold
+  start is a second or two, unlike Render's ~50, so no keep-alive is needed.
+  Set `--min-instances 1` in the final days before judging if you want the
+  first request to be instant; it costs a little but removes the variable.
+- `--region asia-south1` — Mumbai, closest to India. Any region works.
+- `PI_ALLOW_SERVER_KEY=0` — the deployment cannot spend anyone's credits.
+
+`.gcloudignore` keeps `node_modules`, caches and any `.env` out of the upload.
+
+**Check it after deploying**
+
+```bash
+curl -s https://<your-url>/api/health
+```
+
+Expect `"status":"ok"` and a category count. Then open the URL and click
+through all four tabs.
+
+## Render (free fallback, no card)
 
 1. Push this repo to GitHub.
 2. **render.com** → *New* → *Web Service* → connect the repository.

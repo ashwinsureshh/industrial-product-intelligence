@@ -1,0 +1,23 @@
+# Cloud Build uploads this directory before building, so anything excluded here
+# never leaves the machine. Mirrors .dockerignore, plus git metadata.
+.git
+.github
+.claude
+.gitignore
+
+**/node_modules
+**/__pycache__
+**/*.py[cod]
+**/dist
+
+# never upload a key
+**/.env
+**/.env.local
+
+# runtime state
+backend/.cache
+backend/.benchmark.lock
+backend/app/data/learned_categories.json
+backend/app/data/proposals.json
+
+samples

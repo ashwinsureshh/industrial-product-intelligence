@@ -54,15 +54,15 @@ Consequences that shaped the design:
 - **No organizer API credits are provided.** Budget is the user's own, and it
   is nearly exhausted. See §3.
 
-Hosting: **Render free tier**, built from the root `Dockerfile` via
-`render.yaml`. Hugging Face Spaces was the first choice but its Docker SDK is
-a paid tier — only Static Spaces are free, and a static host cannot run the
-backend. The `deploy/huggingface/` assets are retained in case that changes.
+Hosting: **Google Cloud Run** (free trial), built from the root `Dockerfile`
+by Cloud Build. Deploy from the repo root with the `gcloud run deploy --source .`
+command in `deploy/README.md`.
 
-A free Render service sleeps after ~15 minutes and takes ~50 s to wake, which
-reads as a broken link to a reviewer arriving unannounced. Keep it warm with a
-free external pinger hitting `/api/health` every 10 minutes. See
-`deploy/README.md`.
+Hugging Face Spaces was the first choice, but its Docker SDK is a paid tier —
+only Static Spaces are free and a static host cannot run the backend. Render
+(`render.yaml`) is retained as a no-card fallback; its free instance sleeps
+after ~15 min and needs an external pinger on `/api/health`, which Cloud Run
+does not.
 
 ## 3. Deadlines and status
 
