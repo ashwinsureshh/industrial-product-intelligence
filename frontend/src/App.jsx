@@ -3,6 +3,7 @@ import * as api from './api.js'
 import AttributeTable from './components/AttributeTable.jsx'
 import BatchInput, { BatchEmpty, BatchSummary, BatchTable } from './components/BatchView.jsx'
 import ContentPanel from './components/ContentPanel.jsx'
+import DocumentInput, { IngestReport } from './components/DocumentPanel.jsx'
 import InputPanel, { emptyProduct, fromProduct, toProduct } from './components/InputPanel.jsx'
 import IssueList from './components/IssueList.jsx'
 import ScoreCard from './components/ScoreCard.jsx'
@@ -27,6 +28,7 @@ export default function App() {
   const [result, setResult] = useState(null)
   const [batch, setBatch] = useState(null)
   const [selectedRow, setSelectedRow] = useState(0)
+  const [ingest, setIngest] = useState(null)
 
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
@@ -80,6 +82,29 @@ export default function App() {
     }
   }
 
+  // Document ingestion hands off to the same enrichment pipeline, so the
+  // result renders through the identical detail panes as any other input.
+  const runDocument = async (call) => {
+    setLoading(true)
+    setError(null)
+    setIngest(null)
+    try {
+      const response = await call()
+      setIngest({ report: response.ingest, extracted: response.extracted_input })
+      setResult(response.result)
+      if (!response.result) {
+        setError('Nothing readable was found in that document.')
+      }
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const runPdf = (file) => runDocument(() => api.ingestPdf(file, mode, apiKey))
+  const runUrl = (url) => runDocument(() => api.ingestUrl(url, mode, apiKey))
+
   const runUpload = async (file) => {
     setLoading(true)
     setError(null)
@@ -97,8 +122,8 @@ export default function App() {
   // In batch mode the detail panes render whichever row is selected, so one set
   // of components serves both tabs.
   const detail = useMemo(() => {
-    if (tab === 'single') return result
-    return batch?.results?.[selectedRow] ?? null
+    if (tab === 'batch') return batch?.results?.[selectedRow] ?? null
+    return result
   }, [tab, result, batch, selectedRow])
 
   const liveWarning =
@@ -119,12 +144,19 @@ export default function App() {
 
         <div className="topbar-spacer" />
 
-        <div className="tabs" style={{ width: 210 }}>
+        <div className="tabs" style={{ width: 290 }}>
           <button
             className={`tab ${tab === 'single' ? 'active' : ''}`}
             onClick={() => setTab('single')}
           >
             Single Product
+          </button>
+          <button
+            className={`tab ${tab === 'document' ? 'active' : ''}`}
+            onClick={() => setTab('document')}
+            title="Read a datasheet PDF or a supplier product page"
+          >
+            Document
           </button>
           <button
             className={`tab ${tab === 'batch' ? 'active' : ''}`}
@@ -230,6 +262,13 @@ export default function App() {
                 </div>
               )}
             </>
+          ) : tab === 'document' ? (
+            <>
+              <DocumentInput onPdf={runPdf} onUrl={runUrl} loading={loading} />
+              {ingest && (
+                <IngestReport report={ingest.report} extracted={ingest.extracted} />
+              )}
+            </>
           ) : (
             <>
               <BatchInput
@@ -294,7 +333,7 @@ export default function App() {
               <ContentPanel content={detail.content} />
               <TraceTimeline trace={detail.trace} />
 
-              {tab === 'single' && (
+              {tab !== 'batch' && (
                 <div className="card">
                   <div className="card-head">
                     <h3>Export</h3>
@@ -318,17 +357,23 @@ export default function App() {
                 </div>
               )}
             </>
-          ) : (
-            tab === 'single' && (
-              <div className="card">
-                <Empty icon="◇" title="Nothing enriched yet">
-                  Pick a demo case on the left, or type in whatever sparse product data you
-                  have. Every value the engine produces comes back with its evidence,
-                  provenance and confidence attached.
-                </Empty>
-              </div>
-            )
-          )}
+          ) : tab === 'single' ? (
+            <div className="card">
+              <Empty icon="◇" title="Nothing enriched yet">
+                Pick a demo case on the left, or type in whatever sparse product data you
+                have. Every value the engine produces comes back with its evidence,
+                provenance and confidence attached.
+              </Empty>
+            </div>
+          ) : tab === 'document' ? (
+            <div className="card">
+              <Empty icon="◫" title="No document read yet">
+                Drop a supplier datasheet or paste a product page URL. The parser
+                recovers the spec table, then the same pipeline classifies, validates
+                and scores it — with every value traceable back to the source document.
+              </Empty>
+            </div>
+          ) : null}
         </div>
       </div>
     </div>

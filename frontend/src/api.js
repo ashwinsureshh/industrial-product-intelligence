@@ -38,6 +38,21 @@ export const enrichCsv = (file, mode, apiKey) => {
   return fetch('/api/enrich/csv', { method: 'POST', body: form }).then(json)
 }
 
+export const ingestPdf = (file, mode, apiKey) => {
+  const form = new FormData()
+  form.append('file', file)
+  form.append('mode', mode)
+  if (apiKey) form.append('api_key', apiKey)
+  return fetch('/api/ingest/pdf', { method: 'POST', body: form }).then(json)
+}
+
+export const ingestUrl = (url, mode, apiKey) =>
+  fetch('/api/ingest/url', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ url, mode, api_key: apiKey || null }),
+  }).then(json)
+
 export const exportCsv = async (results) => {
   const response = await fetch('/api/export/csv', {
     method: 'POST',

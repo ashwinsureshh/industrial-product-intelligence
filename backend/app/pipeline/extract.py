@@ -95,6 +95,12 @@ def _coerce(value: Any, spec: dict[str, Any]) -> tuple[Any, str | None, str]:
         for option in allowed:
             if text.lower() == option.lower():
                 return option, None, ""
+            # Vocabulary values gloss their code in parentheses — "2RS (Rubber
+            # Sealed)". Supplier tables carry the bare code, so match on it too
+            # rather than reporting a vocabulary violation for a correct value.
+            short = option.split("(")[0].strip()
+            if short and text.lower() == short.lower():
+                return option, None, f"expanded '{text}' to the full '{option}' value"
         # partial match: supplier writes "SS316", spec says "316 Stainless Steel"
         probe = _tokens(text)
         best, best_score = None, 0.0
@@ -153,7 +159,10 @@ def from_raw_specs(
         if isinstance(value, (int, float)) and not isinstance(value, bool) and unit:
             norm_value, norm_unit = U.normalize(float(value), unit)
 
-        evidence = f"Supplier field '{supplier_key}' = '{supplier_value}'"
+        # Naming the originating document is what lets a buyer audit a value
+        # back to the page it was read from, rather than trusting the record.
+        origin = f" of {raw.source_document}" if raw.source_document else ""
+        evidence = f"Supplier field '{supplier_key}'{origin} = '{supplier_value}'"
         if note:
             evidence += f"; {note}"
 

@@ -47,6 +47,14 @@ class RawProduct(BaseModel):
         default=None,
         description="Unstructured dump: catalog blurb, PDF paragraph, scraped table.",
     )
+    source_document: str | None = Field(
+        default=None,
+        description=(
+            "Origin of the record when it came from a document rather than a feed, "
+            "e.g. 'datasheet.pdf p.2'. Carried into attribute evidence so a buyer "
+            "can trace any value back to the page it was read from."
+        ),
+    )
 
     def is_empty(self) -> bool:
         return not any(

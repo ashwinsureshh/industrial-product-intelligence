@@ -337,6 +337,73 @@ def export_csv(results: list[EnrichedProduct] = Body(...)) -> StreamingResponse:
     )
 
 
+@app.post("/api/ingest/pdf")
+async def ingest_pdf(
+    file: UploadFile = File(...),
+    mode: str = Form("demo"),
+    api_key: str | None = Form(None),
+) -> dict[str, Any]:
+    """Read a supplier datasheet and enrich it through the normal pipeline."""
+    if not file.filename or not file.filename.lower().endswith(".pdf"):
+        raise HTTPException(status_code=400, detail="Please upload a .pdf file.")
+
+    data = await file.read()
+    if not data:
+        raise HTTPException(status_code=400, detail="The uploaded file was empty.")
+    if len(data) > 25_000_000:
+        raise HTTPException(status_code=413, detail="PDF exceeds the 25 MB limit.")
+
+    from .ingest.pdf import from_pdf
+
+    product, report = from_pdf(data, filename=file.filename)
+    if product.is_empty():
+        return {
+            "result": None,
+            "ingest": report.as_dict(),
+            "extracted_input": product.model_dump(exclude_none=True),
+        }
+
+    result = _enrich_one(product, mode, api_key)
+    return {
+        "result": result,
+        "ingest": report.as_dict(),
+        "extracted_input": product.model_dump(exclude_none=True),
+    }
+
+
+@app.post("/api/ingest/url")
+def ingest_url(payload: dict = Body(...)) -> dict[str, Any]:
+    """Read a supplier product page and enrich it through the normal pipeline."""
+    url = (payload.get("url") or "").strip()
+    if not url:
+        raise HTTPException(status_code=400, detail="No URL supplied.")
+
+    from .ingest.web import UnsafeURL, from_url
+
+    try:
+        product, report = from_url(url)
+    except UnsafeURL as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except Exception as exc:  # noqa: BLE001 - report fetch failures to the caller
+        raise HTTPException(
+            status_code=502, detail=f"Could not fetch that page: {exc}"
+        ) from exc
+
+    if product.is_empty():
+        return {
+            "result": None,
+            "ingest": report.as_dict(),
+            "extracted_input": product.model_dump(exclude_none=True),
+        }
+
+    result = _enrich_one(product, payload.get("mode", "demo"), payload.get("api_key"))
+    return {
+        "result": result,
+        "ingest": report.as_dict(),
+        "extracted_input": product.model_dump(exclude_none=True),
+    }
+
+
 @app.get("/api/cache")
 def cache_stats() -> dict[str, Any]:
     return cache.stats()

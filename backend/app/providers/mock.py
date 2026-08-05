@@ -275,6 +275,14 @@ class MockProvider(Provider):
         def phrase(a: Attribute) -> str:
             return f"{a.label} {U.format_value(a.value, a.unit)}"
 
+        def phrase_inline(a: Attribute) -> str:
+            """Lower-cases the label for mid-sentence use, never the value.
+
+            Values carry meaning in their casing — '2RS (Rubber Sealed)',
+            'IE3 (Premium)', 'TEFC' — so lowering the whole phrase corrupts them.
+            """
+            return f"{a.label.lower()} {U.format_value(a.value, a.unit)}"
+
         # --- title: brand + MPN + the two most identifying specs
         headline_keys = self._headline_keys(category)
         headline = [a for a in trusted if a.key in headline_keys][:2]
@@ -287,10 +295,10 @@ class MockProvider(Provider):
         title = title[:150]
 
         # --- descriptions
-        spec_clause = "; ".join(phrase(a) for a in trusted[:5])
+        spec_clause = "; ".join(phrase_inline(a) for a in trusted[:5])
         short = (
             f"{brand + ' ' if brand else ''}{mpn + ' ' if mpn else ''}{noun_singular.lower()}"
-            f"{' with ' + spec_clause.lower() if spec_clause else ''}."
+            f"{' with ' + spec_clause if spec_clause else ''}."
         ).strip()
         short = short[0].upper() + short[1:] if short else ""
         short = short[:300]
@@ -305,7 +313,7 @@ class MockProvider(Provider):
             f"documented performance matters."
         ]
         for group, items in list(groups.items())[:4]:
-            listing = ", ".join(phrase(a).lower() for a in items[:5])
+            listing = ", ".join(phrase_inline(a) for a in items[:5])
             paragraphs.append(f"{group}: {listing}.")
         if raw.description:
             paragraphs.append(raw.description.strip())

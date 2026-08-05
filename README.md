@@ -188,6 +188,46 @@ Business model on a 100,000-SKU catalog, at 10 min/SKU manual enrichment and
 Full reports, including every contradiction the engine produced, are written to
 [`backend/benchmark/results/`](backend/benchmark/results/).
 
+## Technical documents
+
+The brief names *websites, catalogs and technical documents* as the sources this
+data actually lives in. The **Document** tab reads two of them directly.
+
+**Datasheet PDFs.** Supplier datasheets come in three shapes and all three are
+handled, tried strongest-evidence first:
+
+| Layout | How it's read |
+| --- | --- |
+| Ruled table (real borders) | pdfplumber `lines` strategy |
+| Ruleless table (whitespace columns) | pdfplumber `text` strategy |
+| Dot-leader list (`Bore Diameter ..... 25 mm`) | line-level parsing — not a table at all |
+
+Order matters more than coverage here. The whitespace strategy will happily
+slice a page that contains *no table*, inventing pairs like `Single Row D` →
+`eep Groove Ball` out of a heading. So a page only reaches it after the
+unambiguous readers decline, and every candidate pair is filtered for
+split-word and dot-leader artefacts.
+
+**Product pages.** JSON-LD `schema.org/Product` markup first — when a merchant
+publishes it, they are *telling* you the SKU, brand and MPN rather than you
+inferring them — then spec tables, definition lists, and labelled bullets.
+Fetching a caller-supplied URL is an SSRF surface, so non-HTTP schemes and
+hosts resolving to private, loopback or link-local addresses are refused.
+
+Crucially, ingestion produces a `RawProduct` and hands off to the **same
+pipeline** a CSV row uses. A value read off page 2 of a datasheet earns the
+same provenance, confidence, cross-field validation and readiness scoring as
+any other input — and its evidence names the document:
+
+> Supplier field 'Bore Diameter' **of skf_6205.pdf** = '25 mm'
+
+```bash
+cd backend && python test_ingest.py
+```
+
+Generates all three PDF layouts plus a product page, asserts each parses and
+enriches correctly, and checks the SSRF guard. No API calls, $0.00.
+
 ## Catalog scale
 
 The **Catalog** tab ingests a supplier CSV or runs a 10-product demo catalog.
