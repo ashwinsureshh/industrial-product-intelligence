@@ -80,12 +80,12 @@ def main() -> int:
     print("  TAXONOMY LEARNING - no API calls, $0.00")
     print("=" * 66)
 
-    # Start from a clean slate so the test is repeatable.
-    for existing in store.list_proposals():
-        store.reject(existing.id, note="cleared by test")
-    proposal_preview = proposer.propose(CYLINDERS)
-    if proposal_preview:
-        store.revoke(proposal_preview[0].code)
+    # Start from a genuinely empty store. Rejecting leftovers is not enough:
+    # a rejected proposal is settled, so re-proposing the same schema would be
+    # correctly suppressed and the test would fail on its own residue.
+    store.PROPOSALS_PATH.unlink(missing_ok=True)
+    store.LEARNED_PATH.unlink(missing_ok=True)
+    tax.invalidate()
 
     print("\n[1] Before learning, these products have no category that fits")
     before = [classify(p) for p in CYLINDERS]

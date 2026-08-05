@@ -154,7 +154,12 @@ def _infer_type(values: list[str]) -> tuple[str, str | None, list[float] | None,
         return "number", unit, [round(lower, 4), round(upper, 4)], None
 
     distinct = sorted({v for v in cleaned})
-    if (len(distinct) <= MAX_ENUM_MEMBERS
+    # Two distinct values minimum. A field where every sample said the same
+    # thing looks like a vocabulary but is really just a small sample: locking
+    # it to that one value would reject every legitimate variant that follows
+    # — a guide rail in stainless failing because the four samples were all
+    # bearing steel. Left as text, which constrains nothing.
+    if (2 <= len(distinct) <= MAX_ENUM_MEMBERS
             and len(distinct) <= max(1, int(len(cleaned) * ENUM_REPEAT_RATIO))
             and all(len(v) <= 40 for v in distinct)):
         return "enum", None, None, distinct

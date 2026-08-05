@@ -72,18 +72,30 @@ def get_proposal(proposal_id: str) -> CategoryProposal | None:
 
 
 def save_proposals(new: list[CategoryProposal]) -> list[CategoryProposal]:
-    """Add proposals, skipping any whose id is already known.
+    """Add proposals, and refresh any that are still awaiting review.
 
-    Re-proposing an identical schema after a human rejected it would be noise,
-    so an existing id — in any status — wins.
+    A reviewed proposal is settled: re-raising one a human already rejected
+    would be noise, and overwriting one already approved would silently change
+    a live category. A *pending* proposal is not settled, so it is replaced by
+    the newer inference — otherwise an improvement to the inference engine can
+    never reach a queue item that was generated before it.
     """
     with _lock:
         existing = list_proposals()
-        known = {p.id for p in existing}
-        added = [p for p in new if p.id not in known]
-        if added:
-            _write(PROPOSALS_PATH,
-                   [p.model_dump(mode="json") for p in existing + added])
+        settled = {p.id: p for p in existing if p.status != "pending"}
+        pending = {p.id: p for p in existing if p.status == "pending"}
+
+        added: list[CategoryProposal] = []
+        for proposal in new:
+            if proposal.id in settled:
+                continue
+            if proposal.id not in pending:
+                added.append(proposal)
+            pending[proposal.id] = proposal  # refresh in place
+
+        _write(PROPOSALS_PATH,
+               [p.model_dump(mode="json")
+                for p in list(settled.values()) + list(pending.values())])
         return added
 
 

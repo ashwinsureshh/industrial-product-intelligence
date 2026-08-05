@@ -108,7 +108,9 @@ function ProposalCard({ proposal, onReview, busy }) {
         <span className="count">{proposal.attributes.length} attributes</span>
       </div>
 
-      <div className="table-scroll" style={{ maxHeight: 320 }}>
+      {/* No max height: a proposal has a dozen attributes at most, and a
+          clipped final row reads as broken rather than scrollable. */}
+      <div>
         <table className="grid">
           <thead>
             <tr>
