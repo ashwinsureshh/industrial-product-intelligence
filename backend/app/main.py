@@ -117,7 +117,9 @@ def _enrich_one(product: RawProduct, mode: str, api_key: str | None) -> Enriched
 # ---------------------------------------------------------------------- routes
 
 
-@app.get("/api/health")
+# HEAD as well as GET: uptime monitors keeping a free instance awake default to
+# HEAD, and a 405 makes them report the service as down even though it answered.
+@app.api_route("/api/health", methods=["GET", "HEAD"])
 def health() -> dict[str, Any]:
     return {
         "status": "ok",
@@ -525,7 +527,7 @@ def _mount_frontend() -> None:
 
     app.mount("/assets", StaticFiles(directory=dist / "assets"), name="assets")
 
-    @app.get("/{path:path}", include_in_schema=False)
+    @app.api_route("/{path:path}", methods=["GET", "HEAD"], include_in_schema=False)
     def spa(path: str) -> FileResponse:
         # Anything that is not an API route resolves to the SPA entry point, so
         # a deep link or a refresh does not 404.
