@@ -148,6 +148,86 @@ class EnrichedProduct(BaseModel):
         return next((a for a in self.attributes if a.key == key), None)
 
 
+class ProposedAttribute(BaseModel):
+    """One attribute in a proposed category schema, with its justification."""
+
+    key: str
+    label: str
+    type: Literal["number", "text", "enum", "boolean"]
+    unit: str | None = None
+    group: str = "General"
+    values: list[str] | None = None
+    range: list[float] | None = None
+    aliases: list[str] = Field(default_factory=list)
+    required: bool = False
+    observed_in: int = Field(
+        default=0, description="How many sample products carried this field."
+    )
+    sample_values: list[str] = Field(default_factory=list)
+    rationale: str = ""
+
+
+class CategoryProposal(BaseModel):
+    """A new category the engine believes it should learn.
+
+    Proposals are never applied automatically. An unreviewed schema would let a
+    misread spec table silently become a validation rule for every future
+    product, so a human approves before anything enters the taxonomy.
+    """
+
+    id: str
+    status: Literal["pending", "approved", "rejected"] = "pending"
+    code: str
+    path: list[str]
+    noun: str
+    keywords: list[str] = Field(default_factory=list)
+    attributes: list[ProposedAttribute] = Field(default_factory=list)
+    required: list[str] = Field(default_factory=list)
+    sample_count: int = 0
+    sample_skus: list[str] = Field(default_factory=list)
+    confidence: float = Field(default=0.0, ge=0.0, le=1.0)
+    method: str = ""
+    rationale: str = ""
+    created_at: float = 0.0
+    reviewed_at: float | None = None
+    reviewer_note: str | None = None
+
+    def to_category(self) -> dict[str, Any]:
+        """Render into the exact shape taxonomy.json uses."""
+        attributes: dict[str, Any] = {}
+        for attribute in self.attributes:
+            spec: dict[str, Any] = {
+                "label": attribute.label,
+                "type": attribute.type,
+                "group": attribute.group,
+            }
+            if attribute.unit:
+                spec["unit"] = attribute.unit
+            if attribute.values:
+                spec["values"] = attribute.values
+            if attribute.range:
+                spec["range"] = attribute.range
+            if attribute.aliases:
+                spec["aliases"] = attribute.aliases
+            attributes[attribute.key] = spec
+
+        return {
+            "code": self.code,
+            "path": self.path,
+            "noun": self.noun,
+            "keywords": self.keywords,
+            "required": self.required,
+            "attributes": attributes,
+            "cross_checks": [],
+            "learned": True,
+            "learned_from": {
+                "proposal_id": self.id,
+                "sample_count": self.sample_count,
+                "method": self.method,
+            },
+        }
+
+
 class EnrichRequest(BaseModel):
     product: RawProduct
     mode: Literal["demo", "live"] = "demo"

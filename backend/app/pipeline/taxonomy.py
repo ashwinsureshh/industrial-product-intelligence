@@ -24,7 +24,22 @@ def load_taxonomy() -> dict[str, Any]:
 
 @lru_cache(maxsize=1)
 def categories() -> list[dict[str, Any]]:
-    return load_taxonomy()["categories"]
+    """Curated categories plus any the engine has learned and a human approved.
+
+    Learned categories are appended, never merged over a curated one, so an
+    approved proposal can extend the taxonomy but can never silently redefine
+    a hand-verified category.
+    """
+    base = list(load_taxonomy()["categories"])
+    known = {c["code"] for c in base}
+
+    # Imported lazily: the learning store imports this module for invalidation.
+    from ..taxonomy_learning import store
+
+    for learned in store.learned_categories():
+        if learned.get("code") not in known:
+            base.append(learned)
+    return base
 
 
 @lru_cache(maxsize=1)
@@ -32,6 +47,13 @@ def brand_index() -> dict[str, dict[str, Any]]:
     return load_taxonomy()["brands"]
 
 
+def invalidate() -> None:
+    """Drop cached taxonomy state after a category is approved or revoked."""
+    categories.cache_clear()
+    get_category.cache_clear()
+
+
+@lru_cache(maxsize=64)
 def get_category(code: str) -> dict[str, Any] | None:
     return next((c for c in categories() if c["code"] == code), None)
 

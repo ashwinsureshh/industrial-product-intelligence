@@ -29,3 +29,7 @@ Thumbs.db
 
 # benchmark run lock (runtime only)
 backend/.benchmark.lock
+
+# learned taxonomy state (runtime; the repo ships the curated base only)
+backend/app/data/learned_categories.json
+backend/app/data/proposals.json

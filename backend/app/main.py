@@ -404,6 +404,102 @@ def ingest_url(payload: dict = Body(...)) -> dict[str, Any]:
     }
 
 
+@app.post("/api/taxonomy/propose")
+def propose_categories(request: BatchEnrichRequest = Body(...)) -> dict[str, Any]:
+    """Find products the taxonomy cannot classify and propose categories for them.
+
+    This is the answer to "your knowledge base is hardcoded": products that fit
+    no existing category are clustered, and each cluster yields a full schema
+    proposal — attributes, types, units, vocabularies, ranges — for review.
+    """
+    from .pipeline import taxonomy as tax
+    from .taxonomy_learning import propose as proposer
+    from .taxonomy_learning import store
+
+    if not request.products:
+        raise HTTPException(status_code=400, detail="No products supplied.")
+    if len(request.products) > MAX_BATCH:
+        raise HTTPException(
+            status_code=413,
+            detail=f"Batch of {len(request.products)} exceeds the {MAX_BATCH} limit.",
+        )
+
+    unclassified: list[RawProduct] = []
+    classified = 0
+    for product in request.products:
+        category, confidence, _, _ = tax.classify(
+            name=product.name,
+            description=product.description,
+            free_text=product.free_text,
+            category_hint=product.category_hint,
+            mpn=product.mpn,
+            brand=product.brand,
+            raw_specs=product.raw_specs,
+        )
+        # A weak match is as much a gap as no match: forcing a product into a
+        # category it barely fits produces confident-looking nonsense.
+        if category is None or confidence < 0.55:
+            unclassified.append(product)
+        else:
+            classified += 1
+
+    proposals = proposer.propose(unclassified)
+    added = store.save_proposals(proposals)
+
+    return {
+        "examined": len(request.products),
+        "classified": classified,
+        "unclassified": len(unclassified),
+        "proposals": proposals,
+        "new_proposals": len(added),
+    }
+
+
+@app.get("/api/taxonomy/proposals")
+def list_proposals(status: str | None = None) -> dict[str, Any]:
+    from .taxonomy_learning import store
+
+    proposals = store.list_proposals(status)
+    return {
+        "proposals": proposals,
+        "counts": {
+            state: len(store.list_proposals(state))
+            for state in ("pending", "approved", "rejected")
+        },
+    }
+
+
+@app.post("/api/taxonomy/proposals/{proposal_id}/approve")
+def approve_proposal(proposal_id: str, payload: dict = Body(default={})) -> dict[str, Any]:
+    """Accept a proposal — the category becomes live for all future products."""
+    from .taxonomy_learning import store
+
+    proposal = store.approve(proposal_id, note=payload.get("note"))
+    if proposal is None:
+        raise HTTPException(status_code=404, detail="No such proposal.")
+    return {"proposal": proposal, "categories": len(taxonomy.categories())}
+
+
+@app.post("/api/taxonomy/proposals/{proposal_id}/reject")
+def reject_proposal(proposal_id: str, payload: dict = Body(default={})) -> dict[str, Any]:
+    from .taxonomy_learning import store
+
+    proposal = store.reject(proposal_id, note=payload.get("note"))
+    if proposal is None:
+        raise HTTPException(status_code=404, detail="No such proposal.")
+    return {"proposal": proposal}
+
+
+@app.delete("/api/taxonomy/learned/{code}")
+def revoke_learned(code: str) -> dict[str, Any]:
+    """Undo an approval, removing a learned category from the taxonomy."""
+    from .taxonomy_learning import store
+
+    if not store.revoke(code):
+        raise HTTPException(status_code=404, detail="No such learned category.")
+    return {"revoked": code, "categories": len(taxonomy.categories())}
+
+
 @app.get("/api/cache")
 def cache_stats() -> dict[str, Any]:
     return cache.stats()
