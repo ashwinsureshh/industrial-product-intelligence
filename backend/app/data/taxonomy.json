@@ -1,0 +1,2019 @@
+{
+  "version": "2026.08",
+  "note": "Codes follow UNSPSC segment/family/class conventions. Attribute specs drive extraction, validation and completeness scoring alike, so a category is defined once and used everywhere.",
+  "categories": [
+    {
+      "code": "31171500",
+      "path": [
+        "Industrial Components",
+        "Bearings & Power Transmission",
+        "Rolling Element Bearings"
+      ],
+      "noun": "Bearing",
+      "keywords": [
+        "bearing",
+        "ball bearing",
+        "roller bearing",
+        "deep groove",
+        "tapered roller",
+        "thrust bearing",
+        "needle bearing",
+        "6205",
+        "6203",
+        "spherical roller"
+      ],
+      "mpn_patterns": [
+        "^6[0-3][0-9]{2}(-?2RS|-?ZZ|-?RS|-?2Z)?$",
+        "^N[UJ]?[0-9]{3,4}$",
+        "^32[0-9]{3}$"
+      ],
+      "required": [
+        "brand",
+        "mpn",
+        "bore_diameter",
+        "outer_diameter",
+        "width"
+      ],
+      "attributes": {
+        "bore_diameter": {
+          "label": "Bore Diameter",
+          "type": "number",
+          "unit": "mm",
+          "group": "Dimensions",
+          "range": [
+            1,
+            1200
+          ],
+          "aliases": [
+            "bore",
+            "inner diameter",
+            "id",
+            "d"
+          ]
+        },
+        "outer_diameter": {
+          "label": "Outer Diameter",
+          "type": "number",
+          "unit": "mm",
+          "group": "Dimensions",
+          "range": [
+            3,
+            2000
+          ],
+          "aliases": [
+            "od",
+            "outside diameter",
+            "outer dia",
+            "D"
+          ]
+        },
+        "width": {
+          "label": "Width",
+          "type": "number",
+          "unit": "mm",
+          "group": "Dimensions",
+          "range": [
+            1,
+            500
+          ],
+          "aliases": [
+            "b",
+            "thickness",
+            "height"
+          ]
+        },
+        "seal_type": {
+          "label": "Seal Type",
+          "type": "enum",
+          "group": "Construction",
+          "values": [
+            "Open",
+            "2RS (Rubber Sealed)",
+            "ZZ (Metal Shielded)",
+            "RS (Single Rubber Seal)",
+            "Z (Single Shield)"
+          ]
+        },
+        "dynamic_load_rating": {
+          "label": "Dynamic Load Rating (C)",
+          "type": "number",
+          "unit": "kN",
+          "group": "Performance",
+          "range": [
+            0.1,
+            5000
+          ]
+        },
+        "static_load_rating": {
+          "label": "Static Load Rating (C0)",
+          "type": "number",
+          "unit": "kN",
+          "group": "Performance",
+          "range": [
+            0.05,
+            6000
+          ]
+        },
+        "max_speed": {
+          "label": "Limiting Speed",
+          "type": "number",
+          "unit": "rpm",
+          "group": "Performance",
+          "range": [
+            100,
+            120000
+          ]
+        },
+        "cage_material": {
+          "label": "Cage Material",
+          "type": "enum",
+          "group": "Materials",
+          "values": [
+            "Steel",
+            "Brass",
+            "Polyamide",
+            "Nylon"
+          ]
+        },
+        "material": {
+          "label": "Ring Material",
+          "type": "enum",
+          "group": "Materials",
+          "values": [
+            "Chrome Steel (GCr15/52100)",
+            "Stainless Steel (AISI 440C)",
+            "Ceramic",
+            "Hybrid Ceramic"
+          ]
+        },
+        "precision_class": {
+          "label": "Precision Class",
+          "type": "enum",
+          "group": "Standards",
+          "values": [
+            "ABEC-1 / P0",
+            "ABEC-3 / P6",
+            "ABEC-5 / P5",
+            "ABEC-7 / P4",
+            "ABEC-9 / P2"
+          ]
+        },
+        "operating_temp_max": {
+          "label": "Max Operating Temperature",
+          "type": "number",
+          "unit": "C",
+          "group": "Performance",
+          "range": [
+            -60,
+            350
+          ]
+        }
+      },
+      "cross_checks": [
+        {
+          "rule": "bore_lt_od",
+          "fields": [
+            "bore_diameter",
+            "outer_diameter"
+          ],
+          "message": "Bore diameter must be smaller than outer diameter."
+        },
+        {
+          "rule": "static_vs_dynamic",
+          "fields": [
+            "static_load_rating",
+            "dynamic_load_rating"
+          ],
+          "message": "Static and dynamic load ratings look transposed for this size class."
+        },
+        {
+          "rule": "sealed_speed",
+          "fields": [
+            "seal_type",
+            "max_speed"
+          ],
+          "message": "Contact-sealed bearings rarely exceed 20,000 rpm; verify the limiting speed."
+        }
+      ],
+      "series_kb": {
+        "6200": {
+          "bore_diameter": 10,
+          "outer_diameter": 30,
+          "width": 9,
+          "dynamic_load_rating": 5.1,
+          "static_load_rating": 2.36,
+          "max_speed": 32000
+        },
+        "6201": {
+          "bore_diameter": 12,
+          "outer_diameter": 32,
+          "width": 10,
+          "dynamic_load_rating": 6.8,
+          "static_load_rating": 3.05,
+          "max_speed": 28000
+        },
+        "6202": {
+          "bore_diameter": 15,
+          "outer_diameter": 35,
+          "width": 11,
+          "dynamic_load_rating": 7.8,
+          "static_load_rating": 3.75,
+          "max_speed": 24000
+        },
+        "6203": {
+          "bore_diameter": 17,
+          "outer_diameter": 40,
+          "width": 12,
+          "dynamic_load_rating": 9.6,
+          "static_load_rating": 4.75,
+          "max_speed": 20000
+        },
+        "6204": {
+          "bore_diameter": 20,
+          "outer_diameter": 47,
+          "width": 14,
+          "dynamic_load_rating": 12.7,
+          "static_load_rating": 6.55,
+          "max_speed": 18000
+        },
+        "6205": {
+          "bore_diameter": 25,
+          "outer_diameter": 52,
+          "width": 15,
+          "dynamic_load_rating": 14.0,
+          "static_load_rating": 7.8,
+          "max_speed": 16000
+        },
+        "6206": {
+          "bore_diameter": 30,
+          "outer_diameter": 62,
+          "width": 16,
+          "dynamic_load_rating": 19.5,
+          "static_load_rating": 11.2,
+          "max_speed": 13000
+        },
+        "6207": {
+          "bore_diameter": 35,
+          "outer_diameter": 72,
+          "width": 17,
+          "dynamic_load_rating": 25.5,
+          "static_load_rating": 15.3,
+          "max_speed": 11000
+        },
+        "6208": {
+          "bore_diameter": 40,
+          "outer_diameter": 80,
+          "width": 18,
+          "dynamic_load_rating": 32.5,
+          "static_load_rating": 19.0,
+          "max_speed": 10000
+        },
+        "6209": {
+          "bore_diameter": 45,
+          "outer_diameter": 85,
+          "width": 19,
+          "dynamic_load_rating": 35.1,
+          "static_load_rating": 21.6,
+          "max_speed": 9500
+        },
+        "6210": {
+          "bore_diameter": 50,
+          "outer_diameter": 90,
+          "width": 20,
+          "dynamic_load_rating": 35.1,
+          "static_load_rating": 23.2,
+          "max_speed": 9000
+        },
+        "6300": {
+          "bore_diameter": 10,
+          "outer_diameter": 35,
+          "width": 11,
+          "dynamic_load_rating": 8.1,
+          "static_load_rating": 3.4,
+          "max_speed": 30000
+        },
+        "6301": {
+          "bore_diameter": 12,
+          "outer_diameter": 37,
+          "width": 12,
+          "dynamic_load_rating": 9.75,
+          "static_load_rating": 4.15,
+          "max_speed": 26000
+        },
+        "6302": {
+          "bore_diameter": 15,
+          "outer_diameter": 42,
+          "width": 13,
+          "dynamic_load_rating": 11.4,
+          "static_load_rating": 5.4,
+          "max_speed": 24000
+        },
+        "6303": {
+          "bore_diameter": 17,
+          "outer_diameter": 47,
+          "width": 14,
+          "dynamic_load_rating": 13.5,
+          "static_load_rating": 6.55,
+          "max_speed": 20000
+        },
+        "6304": {
+          "bore_diameter": 20,
+          "outer_diameter": 52,
+          "width": 15,
+          "dynamic_load_rating": 15.9,
+          "static_load_rating": 7.8,
+          "max_speed": 18000
+        },
+        "6305": {
+          "bore_diameter": 25,
+          "outer_diameter": 62,
+          "width": 17,
+          "dynamic_load_rating": 22.5,
+          "static_load_rating": 11.6,
+          "max_speed": 15000
+        },
+        "6306": {
+          "bore_diameter": 30,
+          "outer_diameter": 72,
+          "width": 19,
+          "dynamic_load_rating": 28.1,
+          "static_load_rating": 16.0,
+          "max_speed": 13000
+        }
+      },
+      "defaults": {
+        "material": "Chrome Steel (GCr15/52100)",
+        "cage_material": "Steel",
+        "precision_class": "ABEC-1 / P0",
+        "operating_temp_max": 120
+      }
+    },
+    {
+      "code": "40141600",
+      "path": [
+        "Industrial Components",
+        "Fluid Handling",
+        "Industrial Valves"
+      ],
+      "noun": "Industrial Valve",
+      "keywords": [
+        "valve",
+        "ball valve",
+        "gate valve",
+        "globe valve",
+        "butterfly valve",
+        "check valve",
+        "solenoid valve",
+        "needle valve"
+      ],
+      "required": [
+        "brand",
+        "mpn",
+        "valve_type",
+        "nominal_size",
+        "pressure_rating",
+        "body_material"
+      ],
+      "attributes": {
+        "valve_type": {
+          "label": "Valve Type",
+          "type": "enum",
+          "group": "Configuration",
+          "values": [
+            "Ball",
+            "Gate",
+            "Globe",
+            "Butterfly",
+            "Check",
+            "Needle",
+            "Diaphragm",
+            "Plug",
+            "Solenoid"
+          ]
+        },
+        "nominal_size": {
+          "label": "Nominal Size",
+          "type": "number",
+          "unit": "in",
+          "group": "Dimensions",
+          "range": [
+            0.125,
+            60
+          ],
+          "aliases": [
+            "size",
+            "dn",
+            "nps",
+            "port size"
+          ]
+        },
+        "pressure_rating": {
+          "label": "Pressure Rating",
+          "type": "number",
+          "unit": "psi",
+          "group": "Performance",
+          "range": [
+            10,
+            20000
+          ],
+          "aliases": [
+            "wp",
+            "working pressure",
+            "max pressure",
+            "wog"
+          ]
+        },
+        "body_material": {
+          "label": "Body Material",
+          "type": "enum",
+          "group": "Materials",
+          "values": [
+            "316 Stainless Steel",
+            "304 Stainless Steel",
+            "Brass",
+            "Carbon Steel",
+            "Bronze",
+            "PVC",
+            "Cast Iron",
+            "Ductile Iron"
+          ]
+        },
+        "seat_material": {
+          "label": "Seat Material",
+          "type": "enum",
+          "group": "Materials",
+          "values": [
+            "PTFE",
+            "RPTFE",
+            "PEEK",
+            "Metal",
+            "EPDM",
+            "Viton (FKM)",
+            "Buna-N (NBR)"
+          ]
+        },
+        "connection_type": {
+          "label": "Connection Type",
+          "type": "enum",
+          "group": "Configuration",
+          "values": [
+            "NPT Threaded",
+            "BSP Threaded",
+            "Flanged",
+            "Socket Weld",
+            "Butt Weld",
+            "Tri-Clamp",
+            "Compression"
+          ]
+        },
+        "actuation": {
+          "label": "Actuation",
+          "type": "enum",
+          "group": "Configuration",
+          "values": [
+            "Manual Lever",
+            "Manual Gear",
+            "Pneumatic",
+            "Electric",
+            "Hydraulic",
+            "Solenoid"
+          ]
+        },
+        "port_configuration": {
+          "label": "Port Configuration",
+          "type": "enum",
+          "group": "Configuration",
+          "values": [
+            "2-Way",
+            "3-Way L-Port",
+            "3-Way T-Port",
+            "4-Way"
+          ]
+        },
+        "temp_rating_max": {
+          "label": "Max Temperature",
+          "type": "number",
+          "unit": "C",
+          "group": "Performance",
+          "range": [
+            -50,
+            800
+          ]
+        },
+        "cv_value": {
+          "label": "Flow Coefficient (Cv)",
+          "type": "number",
+          "group": "Performance",
+          "range": [
+            0.01,
+            50000
+          ]
+        },
+        "standards": {
+          "label": "Standards Compliance",
+          "type": "text",
+          "group": "Standards"
+        }
+      },
+      "cross_checks": [
+        {
+          "rule": "pvc_temp",
+          "fields": [
+            "body_material",
+            "temp_rating_max"
+          ],
+          "message": "PVC bodies are not rated above 60 C; the temperature rating is inconsistent with the material."
+        },
+        {
+          "rule": "ptfe_temp",
+          "fields": [
+            "seat_material",
+            "temp_rating_max"
+          ],
+          "message": "PTFE seats degrade above ~230 C; verify seat material or temperature rating."
+        },
+        {
+          "rule": "brass_pressure",
+          "fields": [
+            "body_material",
+            "pressure_rating"
+          ],
+          "message": "Brass bodies above 3000 psi are unusual; verify the pressure rating."
+        }
+      ],
+      "defaults": {
+        "seat_material": "PTFE",
+        "connection_type": "NPT Threaded",
+        "actuation": "Manual Lever",
+        "port_configuration": "2-Way"
+      }
+    },
+    {
+      "code": "26101100",
+      "path": [
+        "Industrial Components",
+        "Power & Motion",
+        "Electric Motors"
+      ],
+      "noun": "Electric Motor",
+      "keywords": [
+        "motor",
+        "electric motor",
+        "induction motor",
+        "servo motor",
+        "gear motor",
+        "ac motor",
+        "dc motor",
+        "nema",
+        "iec motor"
+      ],
+      "required": [
+        "brand",
+        "mpn",
+        "power_rating",
+        "voltage",
+        "speed",
+        "frame_size"
+      ],
+      "attributes": {
+        "power_rating": {
+          "label": "Power Rating",
+          "type": "number",
+          "unit": "kW",
+          "group": "Performance",
+          "range": [
+            0.01,
+            5000
+          ],
+          "aliases": [
+            "hp",
+            "power",
+            "output",
+            "kw",
+            "rating"
+          ]
+        },
+        "voltage": {
+          "label": "Rated Voltage",
+          "type": "number",
+          "unit": "V",
+          "group": "Electrical",
+          "range": [
+            6,
+            15000
+          ],
+          "aliases": [
+            "volts",
+            "v",
+            "supply voltage"
+          ]
+        },
+        "phase": {
+          "label": "Phase",
+          "type": "enum",
+          "group": "Electrical",
+          "values": [
+            "Single Phase",
+            "Three Phase",
+            "DC"
+          ]
+        },
+        "frequency": {
+          "label": "Frequency",
+          "type": "number",
+          "unit": "Hz",
+          "group": "Electrical",
+          "range": [
+            0,
+            400
+          ]
+        },
+        "speed": {
+          "label": "Rated Speed",
+          "type": "number",
+          "unit": "rpm",
+          "group": "Performance",
+          "range": [
+            1,
+            100000
+          ],
+          "aliases": [
+            "rpm",
+            "rotational speed"
+          ]
+        },
+        "frame_size": {
+          "label": "Frame Size",
+          "type": "text",
+          "group": "Mechanical",
+          "aliases": [
+            "frame",
+            "nema frame",
+            "iec frame"
+          ]
+        },
+        "efficiency_class": {
+          "label": "Efficiency Class",
+          "type": "enum",
+          "group": "Performance",
+          "values": [
+            "IE1 (Standard)",
+            "IE2 (High)",
+            "IE3 (Premium)",
+            "IE4 (Super Premium)",
+            "IE5 (Ultra Premium)"
+          ]
+        },
+        "enclosure": {
+          "label": "Enclosure Type",
+          "type": "enum",
+          "group": "Mechanical",
+          "values": [
+            "TEFC",
+            "ODP",
+            "TENV",
+            "TEAO",
+            "Explosion Proof"
+          ]
+        },
+        "ip_rating": {
+          "label": "Ingress Protection",
+          "type": "text",
+          "group": "Mechanical"
+        },
+        "insulation_class": {
+          "label": "Insulation Class",
+          "type": "enum",
+          "group": "Electrical",
+          "values": [
+            "Class A",
+            "Class B",
+            "Class F",
+            "Class H"
+          ]
+        },
+        "mounting": {
+          "label": "Mounting",
+          "type": "enum",
+          "group": "Mechanical",
+          "values": [
+            "Foot (B3)",
+            "Flange (B5)",
+            "Face (B14)",
+            "Foot & Flange (B35)"
+          ]
+        },
+        "full_load_current": {
+          "label": "Full Load Current",
+          "type": "number",
+          "unit": "A",
+          "group": "Electrical",
+          "range": [
+            0.05,
+            2000
+          ]
+        }
+      },
+      "cross_checks": [
+        {
+          "rule": "motor_power_current",
+          "fields": [
+            "power_rating",
+            "voltage",
+            "full_load_current"
+          ],
+          "message": "Full load current is inconsistent with the stated power and voltage."
+        },
+        {
+          "rule": "motor_pole_speed",
+          "fields": [
+            "speed",
+            "frequency"
+          ],
+          "message": "Rated speed does not correspond to a standard pole count at this frequency."
+        }
+      ],
+      "defaults": {
+        "phase": "Three Phase",
+        "frequency": 50,
+        "enclosure": "TEFC",
+        "insulation_class": "Class F",
+        "efficiency_class": "IE3 (Premium)",
+        "mounting": "Foot (B3)"
+      }
+    },
+    {
+      "code": "31161500",
+      "path": [
+        "Industrial Components",
+        "Hardware",
+        "Fasteners"
+      ],
+      "noun": "Fastener",
+      "keywords": [
+        "bolt",
+        "screw",
+        "nut",
+        "washer",
+        "fastener",
+        "hex bolt",
+        "socket cap",
+        "stud",
+        "anchor",
+        "threaded rod"
+      ],
+      "mpn_patterns": [
+        "^M[0-9]{1,2}[xX][0-9]{1,3}$"
+      ],
+      "required": [
+        "brand",
+        "mpn",
+        "thread_size",
+        "length",
+        "material",
+        "grade"
+      ],
+      "attributes": {
+        "fastener_type": {
+          "label": "Fastener Type",
+          "type": "enum",
+          "group": "Configuration",
+          "values": [
+            "Hex Bolt",
+            "Socket Head Cap Screw",
+            "Hex Nut",
+            "Flat Washer",
+            "Lock Washer",
+            "Threaded Rod",
+            "Set Screw",
+            "Carriage Bolt"
+          ]
+        },
+        "thread_size": {
+          "label": "Thread Size",
+          "type": "text",
+          "group": "Dimensions",
+          "aliases": [
+            "thread",
+            "diameter",
+            "size",
+            "nominal diameter"
+          ]
+        },
+        "thread_pitch": {
+          "label": "Thread Pitch",
+          "type": "number",
+          "unit": "mm",
+          "group": "Dimensions",
+          "range": [
+            0.2,
+            6
+          ]
+        },
+        "length": {
+          "label": "Length",
+          "type": "number",
+          "unit": "mm",
+          "group": "Dimensions",
+          "range": [
+            1,
+            2000
+          ]
+        },
+        "material": {
+          "label": "Material",
+          "type": "enum",
+          "group": "Materials",
+          "values": [
+            "Carbon Steel",
+            "Alloy Steel",
+            "304 Stainless Steel",
+            "316 Stainless Steel",
+            "Brass",
+            "Titanium",
+            "Nylon"
+          ]
+        },
+        "grade": {
+          "label": "Grade / Property Class",
+          "type": "enum",
+          "group": "Standards",
+          "values": [
+            "4.6",
+            "8.8",
+            "10.9",
+            "12.9",
+            "Grade 2",
+            "Grade 5",
+            "Grade 8",
+            "A2-70",
+            "A4-80"
+          ]
+        },
+        "finish": {
+          "label": "Finish",
+          "type": "enum",
+          "group": "Materials",
+          "values": [
+            "Plain",
+            "Zinc Plated",
+            "Hot Dip Galvanized",
+            "Black Oxide",
+            "Passivated",
+            "PTFE Coated"
+          ]
+        },
+        "drive_type": {
+          "label": "Drive Type",
+          "type": "enum",
+          "group": "Configuration",
+          "values": [
+            "Hex",
+            "Socket (Allen)",
+            "Torx",
+            "Phillips",
+            "Slotted",
+            "External Hex"
+          ]
+        },
+        "tensile_strength": {
+          "label": "Tensile Strength",
+          "type": "number",
+          "unit": "MPa",
+          "group": "Performance",
+          "range": [
+            200,
+            2000
+          ]
+        },
+        "standard": {
+          "label": "Standard",
+          "type": "text",
+          "group": "Standards"
+        }
+      },
+      "cross_checks": [
+        {
+          "rule": "stainless_grade",
+          "fields": [
+            "material",
+            "grade"
+          ],
+          "message": "Stainless fasteners use A2/A4 property classes, not carbon steel grades."
+        },
+        {
+          "rule": "grade_tensile",
+          "fields": [
+            "grade",
+            "tensile_strength"
+          ],
+          "message": "Tensile strength does not match the declared property class."
+        }
+      ],
+      "grade_kb": {
+        "4.6": {
+          "tensile_strength": 400
+        },
+        "8.8": {
+          "tensile_strength": 800
+        },
+        "10.9": {
+          "tensile_strength": 1000
+        },
+        "12.9": {
+          "tensile_strength": 1200
+        },
+        "Grade 2": {
+          "tensile_strength": 510
+        },
+        "Grade 5": {
+          "tensile_strength": 827
+        },
+        "Grade 8": {
+          "tensile_strength": 1034
+        },
+        "A2-70": {
+          "tensile_strength": 700
+        },
+        "A4-80": {
+          "tensile_strength": 800
+        }
+      },
+      "defaults": {
+        "finish": "Zinc Plated",
+        "drive_type": "Hex"
+      }
+    },
+    {
+      "code": "41111700",
+      "path": [
+        "Industrial Components",
+        "Instrumentation",
+        "Sensors & Transmitters"
+      ],
+      "noun": "Sensor",
+      "keywords": [
+        "sensor",
+        "transmitter",
+        "transducer",
+        "proximity",
+        "pressure sensor",
+        "thermocouple",
+        "rtd",
+        "photoelectric",
+        "encoder",
+        "level sensor"
+      ],
+      "required": [
+        "brand",
+        "mpn",
+        "sensor_type",
+        "measuring_range",
+        "output_signal",
+        "supply_voltage"
+      ],
+      "attributes": {
+        "sensor_type": {
+          "label": "Sensor Type",
+          "type": "enum",
+          "group": "Configuration",
+          "values": [
+            "Inductive Proximity",
+            "Capacitive Proximity",
+            "Photoelectric",
+            "Ultrasonic",
+            "Pressure",
+            "Temperature (RTD)",
+            "Temperature (Thermocouple)",
+            "Flow",
+            "Level",
+            "Rotary Encoder"
+          ]
+        },
+        "measuring_range": {
+          "label": "Measuring Range",
+          "type": "text",
+          "group": "Performance",
+          "aliases": [
+            "range",
+            "span",
+            "sensing distance"
+          ]
+        },
+        "output_signal": {
+          "label": "Output Signal",
+          "type": "enum",
+          "group": "Electrical",
+          "values": [
+            "4-20 mA",
+            "0-10 V",
+            "0-5 V",
+            "PNP Discrete",
+            "NPN Discrete",
+            "Modbus RTU",
+            "IO-Link",
+            "HART",
+            "Pulse"
+          ]
+        },
+        "supply_voltage": {
+          "label": "Supply Voltage",
+          "type": "text",
+          "group": "Electrical",
+          "aliases": [
+            "voltage",
+            "power supply",
+            "vdc"
+          ]
+        },
+        "accuracy": {
+          "label": "Accuracy",
+          "type": "text",
+          "group": "Performance"
+        },
+        "process_connection": {
+          "label": "Process Connection",
+          "type": "text",
+          "group": "Mechanical"
+        },
+        "ip_rating": {
+          "label": "Ingress Protection",
+          "type": "text",
+          "group": "Mechanical"
+        },
+        "response_time": {
+          "label": "Response Time",
+          "type": "number",
+          "unit": "ms",
+          "group": "Performance",
+          "range": [
+            0.01,
+            60000
+          ]
+        },
+        "operating_temp_max": {
+          "label": "Max Operating Temperature",
+          "type": "number",
+          "unit": "C",
+          "group": "Performance",
+          "range": [
+            -200,
+            1800
+          ]
+        },
+        "housing_material": {
+          "label": "Housing Material",
+          "type": "enum",
+          "group": "Materials",
+          "values": [
+            "316 Stainless Steel",
+            "304 Stainless Steel",
+            "Nickel Plated Brass",
+            "PBT Plastic",
+            "Aluminum"
+          ]
+        },
+        "certifications": {
+          "label": "Certifications",
+          "type": "text",
+          "group": "Standards"
+        }
+      },
+      "cross_checks": [
+        {
+          "rule": "ip_plausible",
+          "fields": [
+            "ip_rating"
+          ],
+          "message": "IP rating is not a recognised IEC 60529 code."
+        }
+      ],
+      "defaults": {
+        "ip_rating": "IP67",
+        "housing_material": "Nickel Plated Brass"
+      }
+    },
+    {
+      "code": "40151500",
+      "path": [
+        "Industrial Components",
+        "Fluid Handling",
+        "Industrial Pumps"
+      ],
+      "noun": "Industrial Pump",
+      "keywords": [
+        "pump",
+        "centrifugal pump",
+        "diaphragm pump",
+        "gear pump",
+        "submersible",
+        "peristaltic",
+        "vacuum pump"
+      ],
+      "required": [
+        "brand",
+        "mpn",
+        "pump_type",
+        "flow_rate",
+        "max_head",
+        "power_rating"
+      ],
+      "attributes": {
+        "pump_type": {
+          "label": "Pump Type",
+          "type": "enum",
+          "group": "Configuration",
+          "values": [
+            "Centrifugal",
+            "Diaphragm (AODD)",
+            "Gear",
+            "Peristaltic",
+            "Submersible",
+            "Progressive Cavity",
+            "Piston"
+          ]
+        },
+        "flow_rate": {
+          "label": "Max Flow Rate",
+          "type": "number",
+          "unit": "L/min",
+          "group": "Performance",
+          "range": [
+            0.01,
+            100000
+          ],
+          "aliases": [
+            "flow",
+            "capacity",
+            "gpm",
+            "lpm"
+          ]
+        },
+        "max_head": {
+          "label": "Max Head",
+          "type": "number",
+          "unit": "m",
+          "group": "Performance",
+          "range": [
+            0.1,
+            1000
+          ],
+          "aliases": [
+            "head",
+            "lift",
+            "discharge head"
+          ]
+        },
+        "power_rating": {
+          "label": "Motor Power",
+          "type": "number",
+          "unit": "kW",
+          "group": "Performance",
+          "range": [
+            0.01,
+            2000
+          ],
+          "aliases": [
+            "hp",
+            "power",
+            "motor"
+          ]
+        },
+        "inlet_size": {
+          "label": "Inlet Size",
+          "type": "number",
+          "unit": "in",
+          "group": "Dimensions",
+          "range": [
+            0.125,
+            48
+          ]
+        },
+        "outlet_size": {
+          "label": "Outlet Size",
+          "type": "number",
+          "unit": "in",
+          "group": "Dimensions",
+          "range": [
+            0.125,
+            48
+          ]
+        },
+        "body_material": {
+          "label": "Wetted Material",
+          "type": "enum",
+          "group": "Materials",
+          "values": [
+            "316 Stainless Steel",
+            "Cast Iron",
+            "Polypropylene",
+            "PVDF",
+            "Aluminum",
+            "Bronze"
+          ]
+        },
+        "seal_type": {
+          "label": "Seal Type",
+          "type": "enum",
+          "group": "Construction",
+          "values": [
+            "Mechanical Seal",
+            "Packed Gland",
+            "Magnetic Drive",
+            "Lip Seal"
+          ]
+        },
+        "max_temp": {
+          "label": "Max Fluid Temperature",
+          "type": "number",
+          "unit": "C",
+          "group": "Performance",
+          "range": [
+            -40,
+            400
+          ]
+        },
+        "self_priming": {
+          "label": "Self Priming",
+          "type": "boolean",
+          "group": "Configuration"
+        }
+      },
+      "cross_checks": [
+        {
+          "rule": "pump_ports",
+          "fields": [
+            "inlet_size",
+            "outlet_size"
+          ],
+          "message": "Outlet larger than inlet is atypical for this pump type; verify port sizes."
+        },
+        {
+          "rule": "pp_temp",
+          "fields": [
+            "body_material",
+            "max_temp"
+          ],
+          "message": "Polypropylene wetted parts are not rated above ~90 C."
+        }
+      ],
+      "defaults": {
+        "seal_type": "Mechanical Seal",
+        "self_priming": false
+      }
+    },
+    {
+      "code": "46181500",
+      "path": [
+        "Safety & Facility",
+        "Personal Protective Equipment",
+        "Protective Equipment"
+      ],
+      "noun": "Safety Equipment",
+      "keywords": [
+        "glove",
+        "helmet",
+        "goggles",
+        "respirator",
+        "safety",
+        "ppe",
+        "hard hat",
+        "ear muff",
+        "harness",
+        "face shield"
+      ],
+      "required": [
+        "brand",
+        "mpn",
+        "ppe_type",
+        "size",
+        "standard"
+      ],
+      "attributes": {
+        "ppe_type": {
+          "label": "PPE Type",
+          "type": "enum",
+          "group": "Configuration",
+          "values": [
+            "Safety Gloves",
+            "Hard Hat",
+            "Safety Goggles",
+            "Respirator",
+            "Ear Protection",
+            "Fall Harness",
+            "Face Shield",
+            "Safety Footwear"
+          ]
+        },
+        "size": {
+          "label": "Size",
+          "type": "text",
+          "group": "Fit"
+        },
+        "standard": {
+          "label": "Standard / Certification",
+          "type": "text",
+          "group": "Standards",
+          "aliases": [
+            "certification",
+            "compliance",
+            "en standard",
+            "ansi"
+          ]
+        },
+        "material": {
+          "label": "Material",
+          "type": "text",
+          "group": "Materials"
+        },
+        "protection_level": {
+          "label": "Protection Level",
+          "type": "text",
+          "group": "Performance"
+        },
+        "color": {
+          "label": "Color",
+          "type": "text",
+          "group": "Appearance"
+        },
+        "reusable": {
+          "label": "Reusable",
+          "type": "boolean",
+          "group": "Configuration"
+        }
+      },
+      "cross_checks": [],
+      "defaults": {
+        "reusable": true
+      }
+    },
+    {
+      "code": "27112700",
+      "path": [
+        "Industrial Components",
+        "Tooling",
+        "Cutting Tools"
+      ],
+      "noun": "Cutting Tool",
+      "keywords": [
+        "end mill",
+        "drill bit",
+        "insert",
+        "tap",
+        "reamer",
+        "carbide",
+        "cutting tool",
+        "milling cutter",
+        "lathe tool"
+      ],
+      "required": [
+        "brand",
+        "mpn",
+        "tool_type",
+        "cutting_diameter",
+        "material",
+        "flute_count"
+      ],
+      "attributes": {
+        "tool_type": {
+          "label": "Tool Type",
+          "type": "enum",
+          "group": "Configuration",
+          "values": [
+            "End Mill",
+            "Drill Bit",
+            "Turning Insert",
+            "Tap",
+            "Reamer",
+            "Face Mill",
+            "Ball Nose End Mill"
+          ]
+        },
+        "cutting_diameter": {
+          "label": "Cutting Diameter",
+          "type": "number",
+          "unit": "mm",
+          "group": "Dimensions",
+          "range": [
+            0.1,
+            500
+          ],
+          "aliases": [
+            "diameter",
+            "cutter dia",
+            "dia"
+          ]
+        },
+        "shank_diameter": {
+          "label": "Shank Diameter",
+          "type": "number",
+          "unit": "mm",
+          "group": "Dimensions",
+          "range": [
+            0.1,
+            100
+          ]
+        },
+        "overall_length": {
+          "label": "Overall Length",
+          "type": "number",
+          "unit": "mm",
+          "group": "Dimensions",
+          "range": [
+            1,
+            1000
+          ]
+        },
+        "flute_length": {
+          "label": "Flute Length",
+          "type": "number",
+          "unit": "mm",
+          "group": "Dimensions",
+          "range": [
+            0.5,
+            500
+          ]
+        },
+        "flute_count": {
+          "label": "Number of Flutes",
+          "type": "number",
+          "group": "Configuration",
+          "range": [
+            1,
+            12
+          ]
+        },
+        "material": {
+          "label": "Tool Material",
+          "type": "enum",
+          "group": "Materials",
+          "values": [
+            "Solid Carbide",
+            "HSS",
+            "HSS-Co (Cobalt)",
+            "Cermet",
+            "PCD",
+            "CBN"
+          ]
+        },
+        "coating": {
+          "label": "Coating",
+          "type": "enum",
+          "group": "Materials",
+          "values": [
+            "Uncoated",
+            "TiN",
+            "TiAlN",
+            "AlTiN",
+            "TiCN",
+            "DLC"
+          ]
+        },
+        "helix_angle": {
+          "label": "Helix Angle",
+          "type": "number",
+          "unit": "deg",
+          "group": "Geometry",
+          "range": [
+            0,
+            60
+          ]
+        },
+        "workpiece_material": {
+          "label": "Suitable Workpiece",
+          "type": "text",
+          "group": "Application"
+        }
+      },
+      "cross_checks": [
+        {
+          "rule": "flute_vs_overall",
+          "fields": [
+            "flute_length",
+            "overall_length"
+          ],
+          "message": "Flute length cannot exceed overall length."
+        }
+      ],
+      "defaults": {
+        "coating": "TiAlN"
+      }
+    },
+    {
+      "code": "39121000",
+      "path": [
+        "Industrial Components",
+        "Electrical",
+        "Drives & Controls"
+      ],
+      "noun": "Industrial Drive",
+      "keywords": [
+        "vfd",
+        "variable frequency drive",
+        "inverter",
+        "plc",
+        "servo drive",
+        "soft starter",
+        "contactor",
+        "relay",
+        "hmi"
+      ],
+      "required": [
+        "brand",
+        "mpn",
+        "device_type",
+        "power_rating",
+        "input_voltage"
+      ],
+      "attributes": {
+        "device_type": {
+          "label": "Device Type",
+          "type": "enum",
+          "group": "Configuration",
+          "values": [
+            "Variable Frequency Drive",
+            "Servo Drive",
+            "Soft Starter",
+            "PLC",
+            "HMI Panel",
+            "Contactor",
+            "Control Relay"
+          ]
+        },
+        "power_rating": {
+          "label": "Power Rating",
+          "type": "number",
+          "unit": "kW",
+          "group": "Performance",
+          "range": [
+            0.01,
+            5000
+          ],
+          "aliases": [
+            "hp",
+            "power",
+            "kw"
+          ]
+        },
+        "input_voltage": {
+          "label": "Input Voltage",
+          "type": "text",
+          "group": "Electrical",
+          "aliases": [
+            "voltage",
+            "supply",
+            "input"
+          ]
+        },
+        "output_current": {
+          "label": "Rated Output Current",
+          "type": "number",
+          "unit": "A",
+          "group": "Electrical",
+          "range": [
+            0.1,
+            5000
+          ]
+        },
+        "phase": {
+          "label": "Input Phase",
+          "type": "enum",
+          "group": "Electrical",
+          "values": [
+            "Single Phase",
+            "Three Phase"
+          ]
+        },
+        "control_method": {
+          "label": "Control Method",
+          "type": "enum",
+          "group": "Configuration",
+          "values": [
+            "V/f Scalar",
+            "Sensorless Vector",
+            "Closed Loop Vector",
+            "Servo"
+          ]
+        },
+        "communication": {
+          "label": "Communication Protocol",
+          "type": "text",
+          "group": "Connectivity"
+        },
+        "ip_rating": {
+          "label": "Ingress Protection",
+          "type": "text",
+          "group": "Mechanical"
+        },
+        "overload_capacity": {
+          "label": "Overload Capacity",
+          "type": "text",
+          "group": "Performance"
+        }
+      },
+      "cross_checks": [
+        {
+          "rule": "ip_plausible",
+          "fields": [
+            "ip_rating"
+          ],
+          "message": "IP rating is not a recognised IEC 60529 code."
+        }
+      ],
+      "defaults": {
+        "ip_rating": "IP20",
+        "control_method": "Sensorless Vector"
+      }
+    },
+    {
+      "code": "40142000",
+      "path": [
+        "Industrial Components",
+        "Fluid Handling",
+        "Hose & Fittings"
+      ],
+      "noun": "Hydraulic Hose",
+      "keywords": [
+        "hose",
+        "hydraulic hose",
+        "fitting",
+        "coupling",
+        "tubing",
+        "adapter",
+        "quick connect",
+        "ferrule"
+      ],
+      "required": [
+        "brand",
+        "mpn",
+        "inner_diameter",
+        "working_pressure",
+        "material"
+      ],
+      "attributes": {
+        "inner_diameter": {
+          "label": "Inner Diameter",
+          "type": "number",
+          "unit": "mm",
+          "group": "Dimensions",
+          "range": [
+            1,
+            500
+          ],
+          "aliases": [
+            "id",
+            "bore",
+            "inside diameter"
+          ]
+        },
+        "outer_diameter": {
+          "label": "Outer Diameter",
+          "type": "number",
+          "unit": "mm",
+          "group": "Dimensions",
+          "range": [
+            2,
+            600
+          ],
+          "aliases": [
+            "od"
+          ]
+        },
+        "working_pressure": {
+          "label": "Working Pressure",
+          "type": "number",
+          "unit": "bar",
+          "group": "Performance",
+          "range": [
+            0.5,
+            1500
+          ],
+          "aliases": [
+            "pressure",
+            "wp",
+            "max pressure"
+          ]
+        },
+        "burst_pressure": {
+          "label": "Burst Pressure",
+          "type": "number",
+          "unit": "bar",
+          "group": "Performance",
+          "range": [
+            1,
+            6000
+          ]
+        },
+        "material": {
+          "label": "Tube Material",
+          "type": "enum",
+          "group": "Materials",
+          "values": [
+            "Synthetic Rubber (NBR)",
+            "PTFE",
+            "Thermoplastic",
+            "PVC",
+            "EPDM",
+            "Silicone"
+          ]
+        },
+        "reinforcement": {
+          "label": "Reinforcement",
+          "type": "enum",
+          "group": "Construction",
+          "values": [
+            "1-Wire Braid",
+            "2-Wire Braid",
+            "4-Spiral",
+            "6-Spiral",
+            "Textile Braid",
+            "None"
+          ]
+        },
+        "bend_radius": {
+          "label": "Min Bend Radius",
+          "type": "number",
+          "unit": "mm",
+          "group": "Dimensions",
+          "range": [
+            5,
+            2000
+          ]
+        },
+        "temp_range": {
+          "label": "Temperature Range",
+          "type": "text",
+          "group": "Performance"
+        },
+        "standard": {
+          "label": "Standard",
+          "type": "text",
+          "group": "Standards"
+        }
+      },
+      "cross_checks": [
+        {
+          "rule": "burst_vs_working",
+          "fields": [
+            "burst_pressure",
+            "working_pressure"
+          ],
+          "message": "Burst pressure should be at least 3x working pressure per SAE J517."
+        },
+        {
+          "rule": "hose_id_od",
+          "fields": [
+            "inner_diameter",
+            "outer_diameter"
+          ],
+          "message": "Inner diameter must be smaller than outer diameter."
+        }
+      ],
+      "defaults": {
+        "reinforcement": "2-Wire Braid"
+      }
+    }
+  ],
+  "brands": {
+    "skf": {
+      "canonical": "SKF",
+      "country": "Sweden",
+      "categories": [
+        "31171500"
+      ]
+    },
+    "fag": {
+      "canonical": "FAG",
+      "country": "Germany",
+      "categories": [
+        "31171500"
+      ]
+    },
+    "ina": {
+      "canonical": "INA",
+      "country": "Germany",
+      "categories": [
+        "31171500"
+      ]
+    },
+    "nsk": {
+      "canonical": "NSK",
+      "country": "Japan",
+      "categories": [
+        "31171500"
+      ]
+    },
+    "ntn": {
+      "canonical": "NTN",
+      "country": "Japan",
+      "categories": [
+        "31171500"
+      ]
+    },
+    "timken": {
+      "canonical": "Timken",
+      "country": "USA",
+      "categories": [
+        "31171500"
+      ]
+    },
+    "koyo": {
+      "canonical": "Koyo",
+      "country": "Japan",
+      "categories": [
+        "31171500"
+      ]
+    },
+    "swagelok": {
+      "canonical": "Swagelok",
+      "country": "USA",
+      "categories": [
+        "40141600",
+        "40142000"
+      ]
+    },
+    "parker": {
+      "canonical": "Parker Hannifin",
+      "country": "USA",
+      "categories": [
+        "40141600",
+        "40142000"
+      ]
+    },
+    "festo": {
+      "canonical": "Festo",
+      "country": "Germany",
+      "categories": [
+        "40141600",
+        "41111700"
+      ]
+    },
+    "smc": {
+      "canonical": "SMC",
+      "country": "Japan",
+      "categories": [
+        "40141600"
+      ]
+    },
+    "asco": {
+      "canonical": "ASCO",
+      "country": "USA",
+      "categories": [
+        "40141600"
+      ]
+    },
+    "siemens": {
+      "canonical": "Siemens",
+      "country": "Germany",
+      "categories": [
+        "26101100",
+        "39121000"
+      ]
+    },
+    "abb": {
+      "canonical": "ABB",
+      "country": "Switzerland",
+      "categories": [
+        "26101100",
+        "39121000"
+      ]
+    },
+    "weg": {
+      "canonical": "WEG",
+      "country": "Brazil",
+      "categories": [
+        "26101100"
+      ]
+    },
+    "baldor": {
+      "canonical": "Baldor",
+      "country": "USA",
+      "categories": [
+        "26101100"
+      ]
+    },
+    "schneider": {
+      "canonical": "Schneider Electric",
+      "country": "France",
+      "categories": [
+        "39121000"
+      ]
+    },
+    "allen bradley": {
+      "canonical": "Allen-Bradley",
+      "country": "USA",
+      "categories": [
+        "39121000"
+      ]
+    },
+    "danfoss": {
+      "canonical": "Danfoss",
+      "country": "Denmark",
+      "categories": [
+        "39121000",
+        "40141600"
+      ]
+    },
+    "grundfos": {
+      "canonical": "Grundfos",
+      "country": "Denmark",
+      "categories": [
+        "40151500"
+      ]
+    },
+    "ksb": {
+      "canonical": "KSB",
+      "country": "Germany",
+      "categories": [
+        "40151500"
+      ]
+    },
+    "ifm": {
+      "canonical": "ifm electronic",
+      "country": "Germany",
+      "categories": [
+        "41111700"
+      ]
+    },
+    "pepperl fuchs": {
+      "canonical": "Pepperl+Fuchs",
+      "country": "Germany",
+      "categories": [
+        "41111700"
+      ]
+    },
+    "banner": {
+      "canonical": "Banner Engineering",
+      "country": "USA",
+      "categories": [
+        "41111700"
+      ]
+    },
+    "sandvik": {
+      "canonical": "Sandvik Coromant",
+      "country": "Sweden",
+      "categories": [
+        "27112700"
+      ]
+    },
+    "kennametal": {
+      "canonical": "Kennametal",
+      "country": "USA",
+      "categories": [
+        "27112700"
+      ]
+    },
+    "iscar": {
+      "canonical": "ISCAR",
+      "country": "Israel",
+      "categories": [
+        "27112700"
+      ]
+    },
+    "3m": {
+      "canonical": "3M",
+      "country": "USA",
+      "categories": [
+        "46181500"
+      ]
+    },
+    "honeywell": {
+      "canonical": "Honeywell",
+      "country": "USA",
+      "categories": [
+        "46181500",
+        "41111700"
+      ]
+    },
+    "ansell": {
+      "canonical": "Ansell",
+      "country": "Australia",
+      "categories": [
+        "46181500"
+      ]
+    },
+    "bosch": {
+      "canonical": "Bosch Rexroth",
+      "country": "Germany",
+      "categories": [
+        "40142000",
+        "39121000"
+      ]
+    },
+    "gates": {
+      "canonical": "Gates",
+      "country": "USA",
+      "categories": [
+        "40142000"
+      ]
+    },
+    "eaton": {
+      "canonical": "Eaton",
+      "country": "Ireland",
+      "categories": [
+        "40142000",
+        "39121000"
+      ]
+    }
+  }
+}

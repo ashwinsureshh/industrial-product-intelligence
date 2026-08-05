@@ -1,0 +1,16 @@
+# Normalize line endings so the repo is identical on Windows, macOS and Linux.
+* text=auto eol=lf
+
+# Scripts that only ever run on Windows keep CRLF.
+*.ps1 text eol=crlf
+*.bat text eol=crlf
+
+# Never touch binary content.
+*.png binary
+*.jpg binary
+*.pdf binary
+*.ico binary
+
+# Keep generated/lock files out of diff noise and language stats.
+frontend/package-lock.json linguist-generated=true -diff
+backend/benchmark/results/*.json linguist-generated=true

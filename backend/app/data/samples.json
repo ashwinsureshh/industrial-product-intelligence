@@ -1,0 +1,174 @@
+{
+  "note": "Demo inputs modelled on real supplier data quality. Several contain deliberate defects so the validation layer can be seen working rather than described.",
+  "samples": [
+    {
+      "id": "sparse-bearing",
+      "label": "Sparse bearing — 3 fields in, full record out",
+      "intent": "The headline case: almost no input, yet ISO 15 fixes every dimension from the designation alone.",
+      "product": {
+        "sku": "BRG-6205-2RS",
+        "mpn": "6205-2RS",
+        "brand": "skf",
+        "name": "Deep groove ball bearing"
+      }
+    },
+    {
+      "id": "messy-valve",
+      "label": "Messy valve — inconsistent units and loose spec keys",
+      "intent": "Supplier spec keys don't match any schema, sizes are fractional inches, pressure is in psi.",
+      "product": {
+        "sku": "VLV-SS-050",
+        "mpn": "BV-316-050-2W",
+        "brand": "Swagelok Company",
+        "name": "1/2\" Stainless Ball Valve, 2-way",
+        "description": "Two piece full port ball valve. Body: SS316. Working pressure 2000 WOG. Seat: PTFE. End connection NPT female both ends.",
+        "raw_specs": {
+          "Port Size": "1/2 inch",
+          "Body Matl": "SS316",
+          "Max WP": "2000 psi",
+          "Seat Matl": "PTFE",
+          "End Conn": "NPT Female",
+          "Operator": "Lever handle",
+          "Warranty": "12 months"
+        }
+      }
+    },
+    {
+      "id": "contradictory-valve",
+      "label": "Contradictory valve — plausible fields, impossible product",
+      "intent": "Every value looks reasonable alone. A PVC body rated to 180 C cannot exist; only cross-field validation catches it.",
+      "product": {
+        "sku": "VLV-PVC-200",
+        "mpn": "PV-2000-PVC",
+        "brand": "Generic Industrial",
+        "name": "2 inch PVC ball valve high temperature",
+        "raw_specs": {
+          "Size": "2 in",
+          "Body Material": "PVC",
+          "Max Temperature": "180 C",
+          "Working Pressure": "150 psi",
+          "Seat": "PTFE",
+          "Connection": "Socket Weld"
+        }
+      }
+    },
+    {
+      "id": "transposed-bearing",
+      "label": "Transposed bearing dimensions — a data entry slip",
+      "intent": "Bore and outer diameter are swapped. Geometrically impossible, and invisible to any single-field check.",
+      "product": {
+        "sku": "BRG-6308",
+        "mpn": "6308",
+        "brand": "FAG",
+        "name": "Deep groove ball bearing 6308",
+        "raw_specs": {
+          "Bore": "90 mm",
+          "Outer Diameter": "40 mm",
+          "Width": "23 mm"
+        }
+      }
+    },
+    {
+      "id": "imperial-motor",
+      "label": "Motor in imperial units — HP, volts, unstated frame",
+      "intent": "Power arrives in horsepower and must be converted to kW; full load current is then derived and cross-checked.",
+      "product": {
+        "sku": "MTR-5HP-TEFC",
+        "mpn": "W22-5HP-4P-B3",
+        "brand": "WEG",
+        "name": "5 HP three phase induction motor, 1750 rpm",
+        "description": "TEFC squirrel cage induction motor. 5 HP, 460 volts, 60 Hz, 1750 RPM, frame 184T, IE3 premium efficiency.",
+        "category_hint": "electric motors"
+      }
+    },
+    {
+      "id": "freetext-hose",
+      "label": "Hydraulic hose — unstructured catalog paragraph only",
+      "intent": "No spec table at all. Everything must come from prose, and the burst pressure is derived from SAE J517.",
+      "product": {
+        "sku": "HYD-R2-08",
+        "free_text": "Part number 4SP-08-R2. Two wire braid hydraulic hose, inner diameter 12.7 mm, outer diameter 21.4 mm. Working pressure 350 bar. Tube material synthetic rubber NBR. Minimum bend radius 130 mm. Temperature range -40 C to +100 C. Conforms to SAE 100R2AT and EN 853 2SN."
+      }
+    },
+    {
+      "id": "unsafe-hose",
+      "label": "Hose with an inadequate safety factor",
+      "intent": "Burst pressure is only 2x working pressure; SAE J517 requires 4:1. A real safety issue, not a formatting one.",
+      "product": {
+        "sku": "HYD-CHEAP-06",
+        "mpn": "GH-06-2W",
+        "brand": "Generic",
+        "name": "Hydraulic hose 3/8 inch two wire",
+        "raw_specs": {
+          "Inner Diameter": "9.5 mm",
+          "Outer Diameter": "17.4 mm",
+          "Working Pressure": "330 bar",
+          "Burst Pressure": "660 bar",
+          "Tube": "Synthetic Rubber",
+          "Reinforcement": "2 wire braid"
+        }
+      }
+    },
+    {
+      "id": "fastener-mismatch",
+      "label": "Fastener with a contradictory property class",
+      "intent": "A stainless bolt cannot carry a carbon-steel grade, and the tensile figure matches neither.",
+      "product": {
+        "sku": "FST-M10-SS",
+        "mpn": "M10x50",
+        "brand": "Generic",
+        "name": "M10 x 50 hex bolt stainless steel",
+        "raw_specs": {
+          "Thread": "M10",
+          "Length": "50 mm",
+          "Material": "316 Stainless Steel",
+          "Grade": "10.9",
+          "Tensile Strength": "1000 MPa",
+          "Finish": "Passivated",
+          "Drive": "External Hex"
+        }
+      }
+    },
+    {
+      "id": "sensor-partial",
+      "label": "Proximity sensor — partial data, invalid IP code",
+      "intent": "Shows enum mapping onto a controlled vocabulary plus an IEC 60529 format check.",
+      "product": {
+        "sku": "SNS-IND-M18",
+        "mpn": "IFM-IG5599",
+        "brand": "ifm",
+        "name": "M18 inductive proximity sensor PNP NO",
+        "raw_specs": {
+          "Sensing Distance": "8 mm",
+          "Output": "PNP",
+          "Supply": "10-30 VDC",
+          "Protection": "IP68K9",
+          "Housing": "Nickel plated brass",
+          "Response Time": "1.5 ms"
+        }
+      }
+    },
+    {
+      "id": "unknown-category",
+      "label": "Barely identifiable input",
+      "intent": "Demonstrates honest failure: low classification confidence and a blocked verdict rather than a confident guess.",
+      "product": {
+        "sku": "MISC-0001",
+        "name": "Industrial replacement part",
+        "description": "Replacement component for machinery."
+      }
+    }
+  ],
+  "batch_demo": [
+    {"sku": "BRG-6203-ZZ", "mpn": "6203-ZZ", "brand": "NSK", "name": "Deep groove ball bearing"},
+    {"sku": "BRG-6206", "mpn": "6206", "brand": "Timken", "name": "Ball bearing 6206 open"},
+    {"sku": "BRG-6301-2RS", "mpn": "6301-2RS", "brand": "koyo", "name": "Sealed ball bearing"},
+    {"sku": "VLV-BR-025", "mpn": "BV-BR-025", "brand": "Parker", "name": "1/4 inch brass ball valve", "raw_specs": {"Body": "Brass", "Max WP": "600 psi", "Size": "1/4 in"}},
+    {"sku": "MTR-3KW", "mpn": "M3KW-4P", "brand": "ABB", "name": "3 kW three phase motor 1450 rpm 400V", "category_hint": "motor"},
+    {"sku": "FST-M8-88", "mpn": "M8x30", "brand": "Generic", "name": "M8 x 30 hex bolt", "raw_specs": {"Material": "Carbon Steel", "Grade": "8.8", "Length": "30 mm", "Thread": "M8"}},
+    {"sku": "TOOL-EM-6", "mpn": "EM-6-4F-TIALN", "brand": "Sandvik", "name": "6mm 4 flute carbide end mill", "raw_specs": {"Diameter": "6 mm", "Flutes": "4", "Material": "Solid Carbide", "Coating": "TiAlN", "OAL": "57 mm", "Flute Length": "13 mm"}},
+    {"sku": "PMP-CF-15", "mpn": "CP-15-SS", "brand": "Grundfos", "name": "Centrifugal pump 1.5 kW stainless", "raw_specs": {"Flow": "200 L/min", "Head": "35 m", "Power": "1.5 kW", "Wetted Material": "316 Stainless Steel"}},
+    {"sku": "PPE-GLV-CR5", "mpn": "AN-11-724-L", "brand": "Ansell", "name": "Cut resistant gloves size L", "raw_specs": {"Size": "L", "Standard": "EN 388 4X42C", "Material": "HPPE with PU coating"}},
+    {"sku": "VFD-22KW", "mpn": "ACS580-22", "brand": "ABB", "name": "22 kW variable frequency drive 400V", "raw_specs": {"Power": "22 kW", "Input": "380-480 VAC", "Output Current": "45 A", "Protection": "IP21"}}
+  ]
+}

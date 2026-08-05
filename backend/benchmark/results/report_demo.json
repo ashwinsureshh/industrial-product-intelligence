@@ -1,0 +1,403 @@
+{
+  "corpus": {
+    "total": 102,
+    "by_category": {
+      "Rolling Element Bearings": 36,
+      "Fasteners": 18,
+      "Industrial Valves": 6,
+      "Electric Motors": 6,
+      "Sensors & Transmitters": 6,
+      "Industrial Pumps": 6,
+      "Protective Equipment": 6,
+      "Cutting Tools": 6,
+      "Drives & Controls": 6,
+      "Hose & Fittings": 6
+    },
+    "by_variant": {
+      "sparse": 51,
+      "defect": 51
+    },
+    "by_truth_source": {
+      "standards": 54,
+      "archetype": 48
+    },
+    "by_defect_kind": {
+      "transposition": 21,
+      "grade_conflict": 9,
+      "material_conflict": 6,
+      "magnitude": 3,
+      "invalid_code": 6,
+      "vocabulary": 3,
+      "geometry": 3
+    }
+  },
+  "report": {
+    "label": "demo (deterministic)",
+    "cases": 102,
+    "elapsed_s": 0.3,
+    "throughput_per_s": 338.4,
+    "coverage": {
+      "attributes_in": 129,
+      "attributes_out": 355,
+      "lift_multiple": 2.75
+    },
+    "recovery": {
+      "recovered": 226,
+      "correct": 201,
+      "contradicted": 25,
+      "withheld_total": 370,
+      "recall_pct": 61.1,
+      "precision_pct": 88.9,
+      "contradiction_pct": 11.1
+    },
+    "recovery_excluding_defaults": {
+      "recovered": 123,
+      "correct": 123,
+      "contradicted": 0,
+      "precision_pct": 100.0,
+      "contradiction_pct": 0.0
+    },
+    "by_provenance": {
+      "defaulted": {
+        "correct": 78,
+        "contradicted": 25,
+        "precision_pct": 75.7
+      },
+      "derived": {
+        "correct": 8,
+        "contradicted": 0,
+        "precision_pct": 100.0
+      },
+      "knowledge_base": {
+        "correct": 72,
+        "contradicted": 0,
+        "precision_pct": 100.0
+      },
+      "parsed": {
+        "correct": 43,
+        "contradicted": 0,
+        "precision_pct": 100.0
+      }
+    },
+    "by_truth_source": {
+      "archetype": {
+        "correct": 37,
+        "contradicted": 17,
+        "recovered": 54,
+        "withheld": 163,
+        "recall_pct": 33.1,
+        "precision_pct": 68.5
+      },
+      "standards": {
+        "correct": 164,
+        "contradicted": 8,
+        "recovered": 172,
+        "withheld": 207,
+        "recall_pct": 83.1,
+        "precision_pct": 95.3
+      }
+    },
+    "defect_detection": {
+      "expected": 51,
+      "detected": 51,
+      "recall_pct": 100.0,
+      "by_kind": {
+        "geometry": {
+          "expected": 3,
+          "detected": 3,
+          "recall_pct": 100.0
+        },
+        "grade_conflict": {
+          "expected": 9,
+          "detected": 9,
+          "recall_pct": 100.0
+        },
+        "invalid_code": {
+          "expected": 6,
+          "detected": 6,
+          "recall_pct": 100.0
+        },
+        "magnitude": {
+          "expected": 3,
+          "detected": 3,
+          "recall_pct": 100.0
+        },
+        "material_conflict": {
+          "expected": 6,
+          "detected": 6,
+          "recall_pct": 100.0
+        },
+        "transposition": {
+          "expected": 21,
+          "detected": 21,
+          "recall_pct": 100.0
+        },
+        "vocabulary": {
+          "expected": 3,
+          "detected": 3,
+          "recall_pct": 100.0
+        }
+      },
+      "missed": []
+    },
+    "false_alarms": {
+      "clean_cases": 51,
+      "cases_with_false_error": 0,
+      "rate_pct": 0.0,
+      "codes": {}
+    },
+    "verdicts_clean": {
+      "publish": 16,
+      "review": 2,
+      "blocked": 33
+    },
+    "verdicts_defect": {
+      "blocked": 42,
+      "review": 9
+    },
+    "defects_stopped_pct": 100.0,
+    "contradictions": [
+      {
+        "case": "31161500-000-sparse",
+        "attribute": "drive_type",
+        "predicted": "Hex",
+        "truth": "External Hex",
+        "provenance": "defaulted",
+        "confidence": 0.45,
+        "evidence": "Not stated by the supplier. Hex is the most common value for Fasteners and is offered as a placeholder requiring confirmation."
+      },
+      {
+        "case": "31161500-001-sparse",
+        "attribute": "drive_type",
+        "predicted": "Hex",
+        "truth": "External Hex",
+        "provenance": "defaulted",
+        "confidence": 0.45,
+        "evidence": "Not stated by the supplier. Hex is the most common value for Fasteners and is offered as a placeholder requiring confirmation."
+      },
+      {
+        "case": "31161500-002-sparse",
+        "attribute": "drive_type",
+        "predicted": "Hex",
+        "truth": "External Hex",
+        "provenance": "defaulted",
+        "confidence": 0.45,
+        "evidence": "Not stated by the supplier. Hex is the most common value for Fasteners and is offered as a placeholder requiring confirmation."
+      },
+      {
+        "case": "31161500-004-sparse",
+        "attribute": "drive_type",
+        "predicted": "Hex",
+        "truth": "External Hex",
+        "provenance": "defaulted",
+        "confidence": 0.45,
+        "evidence": "Not stated by the supplier. Hex is the most common value for Fasteners and is offered as a placeholder requiring confirmation."
+      },
+      {
+        "case": "31161500-006-sparse",
+        "attribute": "drive_type",
+        "predicted": "Hex",
+        "truth": "External Hex",
+        "provenance": "defaulted",
+        "confidence": 0.45,
+        "evidence": "Not stated by the supplier. Hex is the most common value for Fasteners and is offered as a placeholder requiring confirmation."
+      },
+      {
+        "case": "31161500-007-sparse",
+        "attribute": "finish",
+        "predicted": "Zinc Plated",
+        "truth": "Passivated",
+        "provenance": "defaulted",
+        "confidence": 0.45,
+        "evidence": "Not stated by the supplier. Zinc Plated is the most common value for Fasteners and is offered as a placeholder requiring confirmation."
+      },
+      {
+        "case": "31161500-008-sparse",
+        "attribute": "drive_type",
+        "predicted": "Hex",
+        "truth": "External Hex",
+        "provenance": "defaulted",
+        "confidence": 0.45,
+        "evidence": "Not stated by the supplier. Hex is the most common value for Fasteners and is offered as a placeholder requiring confirmation."
+      },
+      {
+        "case": "31161500-008-sparse",
+        "attribute": "finish",
+        "predicted": "Zinc Plated",
+        "truth": "Passivated",
+        "provenance": "defaulted",
+        "confidence": 0.45,
+        "evidence": "Not stated by the supplier. Zinc Plated is the most common value for Fasteners and is offered as a placeholder requiring confirmation."
+      },
+      {
+        "case": "40141600-001-sparse",
+        "attribute": "actuation",
+        "predicted": "Manual Lever",
+        "truth": "Manual Gear",
+        "provenance": "defaulted",
+        "confidence": 0.45,
+        "evidence": "Not stated by the supplier. Manual Lever is the most common value for Industrial Valves and is offered as a placeholder requiring confirmation."
+      },
+      {
+        "case": "40141600-001-sparse",
+        "attribute": "seat_material",
+        "predicted": "PTFE",
+        "truth": "EPDM",
+        "provenance": "defaulted",
+        "confidence": 0.45,
+        "evidence": "Not stated by the supplier. PTFE is the most common value for Industrial Valves and is offered as a placeholder requiring confirmation."
+      },
+      {
+        "case": "40141600-001-sparse",
+        "attribute": "connection_type",
+        "predicted": "NPT Threaded",
+        "truth": "Flanged",
+        "provenance": "defaulted",
+        "confidence": 0.45,
+        "evidence": "Not stated by the supplier. NPT Threaded is the most common value for Industrial Valves and is offered as a placeholder requiring confirmation."
+      },
+      {
+        "case": "40141600-002-sparse",
+        "attribute": "seat_material",
+        "predicted": "PTFE",
+        "truth": "Metal",
+        "provenance": "defaulted",
+        "confidence": 0.45,
+        "evidence": "Not stated by the supplier. PTFE is the most common value for Industrial Valves and is offered as a placeholder requiring confirmation."
+      },
+      {
+        "case": "26101100-001-sparse",
+        "attribute": "mounting",
+        "predicted": "Foot (B3)",
+        "truth": "Foot & Flange (B35)",
+        "provenance": "defaulted",
+        "confidence": 0.45,
+        "evidence": "Not stated by the supplier. Foot (B3) is the most common value for Electric Motors and is offered as a placeholder requiring confirmation."
+      },
+      {
+        "case": "26101100-002-sparse",
+        "attribute": "efficiency_class",
+        "predicted": "IE3 (Premium)",
+        "truth": "IE2 (High)",
+        "provenance": "defaulted",
+        "confidence": 0.45,
+        "evidence": "Not stated by the supplier. IE3 (Premium) is the most common value for Electric Motors and is offered as a placeholder requiring confirmation."
+      },
+      {
+        "case": "41111700-001-sparse",
+        "attribute": "housing_material",
+        "predicted": "Nickel Plated Brass",
+        "truth": "316 Stainless Steel",
+        "provenance": "defaulted",
+        "confidence": 0.45,
+        "evidence": "Not stated by the supplier. Nickel Plated Brass is the most common value for Sensors & Transmitters and is offered as a placeholder requiring confirmation."
+      },
+      {
+        "case": "41111700-002-sparse",
+        "attribute": "housing_material",
+        "predicted": "Nickel Plated Brass",
+        "truth": "316 Stainless Steel",
+        "provenance": "defaulted",
+        "confidence": 0.45,
+        "evidence": "Not stated by the supplier. Nickel Plated Brass is the most common value for Sensors & Transmitters and is offered as a placeholder requiring confirmation."
+      },
+      {
+        "case": "41111700-002-sparse",
+        "attribute": "ip_rating",
+        "predicted": "IP67",
+        "truth": "IP68",
+        "provenance": "defaulted",
+        "confidence": 0.45,
+        "evidence": "Not stated by the supplier. IP67 is the most common value for Sensors & Transmitters and is offered as a placeholder requiring confirmation."
+      },
+      {
+        "case": "40151500-001-sparse",
+        "attribute": "seal_type",
+        "predicted": "Mechanical Seal",
+        "truth": "Lip Seal",
+        "provenance": "defaulted",
+        "confidence": 0.45,
+        "evidence": "Not stated by the supplier. Mechanical Seal is the most common value for Industrial Pumps and is offered as a placeholder requiring confirmation."
+      },
+      {
+        "case": "46181500-002-sparse",
+        "attribute": "reusable",
+        "predicted": "True",
+        "truth": "False",
+        "provenance": "defaulted",
+        "confidence": 0.45,
+        "evidence": "Not stated by the supplier. True is the most common value for Protective Equipment and is offered as a placeholder requiring confirmation."
+      },
+      {
+        "case": "27112700-001-sparse",
+        "attribute": "coating",
+        "predicted": "TiAlN",
+        "truth": "TiN",
+        "provenance": "defaulted",
+        "confidence": 0.45,
+        "evidence": "Not stated by the supplier. TiAlN is the most common value for Cutting Tools and is offered as a placeholder requiring confirmation."
+      },
+      {
+        "case": "27112700-002-sparse",
+        "attribute": "coating",
+        "predicted": "TiAlN",
+        "truth": "AlTiN",
+        "provenance": "defaulted",
+        "confidence": 0.45,
+        "evidence": "Not stated by the supplier. TiAlN is the most common value for Cutting Tools and is offered as a placeholder requiring confirmation."
+      },
+      {
+        "case": "39121000-000-sparse",
+        "attribute": "ip_rating",
+        "predicted": "IP20",
+        "truth": "IP21",
+        "provenance": "defaulted",
+        "confidence": 0.45,
+        "evidence": "Not stated by the supplier. IP20 is the most common value for Drives & Controls and is offered as a placeholder requiring confirmation."
+      },
+      {
+        "case": "39121000-001-sparse",
+        "attribute": "control_method",
+        "predicted": "Sensorless Vector",
+        "truth": "Servo",
+        "provenance": "defaulted",
+        "confidence": 0.45,
+        "evidence": "Not stated by the supplier. Sensorless Vector is the most common value for Drives & Controls and is offered as a placeholder requiring confirmation."
+      },
+      {
+        "case": "40142000-001-sparse",
+        "attribute": "reinforcement",
+        "predicted": "2-Wire Braid",
+        "truth": "1-Wire Braid",
+        "provenance": "defaulted",
+        "confidence": 0.45,
+        "evidence": "Not stated by the supplier. 2-Wire Braid is the most common value for Hose & Fittings and is offered as a placeholder requiring confirmation."
+      },
+      {
+        "case": "40142000-002-sparse",
+        "attribute": "reinforcement",
+        "predicted": "2-Wire Braid",
+        "truth": "Textile Braid",
+        "provenance": "defaulted",
+        "confidence": 0.45,
+        "evidence": "Not stated by the supplier. 2-Wire Braid is the most common value for Hose & Fittings and is offered as a placeholder requiring confirmation."
+      }
+    ]
+  },
+  "business": {
+    "assumptions": {
+      "manual_minutes_per_sku": 10.0,
+      "analyst_cost_per_hour_usd": 35.0,
+      "assisted_records_credited_at": "50% of the manual time saving",
+      "catalog_size": 100000
+    },
+    "auto_publish_pct": 31.4,
+    "assisted_pct": 3.9,
+    "manual_baseline_hours": 16667,
+    "hours_saved": 5556,
+    "cost_saved_usd": 194444,
+    "fte_years_saved": 3.1,
+    "processing_hours": 0.08,
+    "defects_caught_per_10k": 500
+  }
+}

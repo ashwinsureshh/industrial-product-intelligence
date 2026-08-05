@@ -1,0 +1,28 @@
+# dependencies
+node_modules/
+__pycache__/
+*.py[cod]
+venv/
+.venv/
+
+# build output
+dist/
+build/
+*.egg-info/
+
+# runtime
+backend/.cache/
+*.log
+
+# secrets — the app never needs a committed key, and must never carry one
+.env
+.env.local
+
+# editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# local-only tool state (launch.json is shared, settings.local.json is not)
+.claude/settings.local.json
