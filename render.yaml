@@ -1,0 +1,31 @@
+# Render blueprint — one service, built from the repository Dockerfile.
+#
+# Render injects $PORT at runtime and the Dockerfile's CMD already honours it,
+# so no image change is needed. The free instance sleeps after ~15 minutes of
+# inactivity and takes roughly 50 seconds to wake, which matters because
+# reviewers arrive unannounced; see deploy/README.md for the keep-alive.
+
+services:
+  - type: web
+    name: industrial-product-intelligence
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    region: singapore          # closest free region to India; change if needed
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      # A public deployment must never be able to spend the owner's credits.
+      # No key is set here, and the fallback that would use one is disabled.
+      - key: PI_ALLOW_SERVER_KEY
+        value: "0"
+      # Live mode stays reachable so the bundled pre-computed results are
+      # served to reviewers who have no key of their own.
+      - key: PI_ALLOW_LIVE
+        value: "1"
+      # The image's own cache directory is writable; Render's disk is
+      # ephemeral, which is fine — the bundled results ship in the image.
+      - key: PI_CACHE_DIR
+        value: /home/app/.cache/pi
+      - key: PYTHONUNBUFFERED
+        value: "1"

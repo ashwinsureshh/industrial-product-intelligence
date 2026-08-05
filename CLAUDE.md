@@ -54,11 +54,15 @@ Consequences that shaped the design:
 - **No organizer API credits are provided.** Budget is the user's own, and it
   is nearly exhausted. See §3.
 
-Hosting: **Hugging Face Spaces** (free, always-on, no cold start).
-Deploy with `deploy/huggingface/deploy.ps1 -Space "<user>/<space>"`. It stages
-from `git archive` (tracked files only, so an untracked `.env` cannot leak),
-swaps in the Space README with its required YAML frontmatter, and greps for
-key-shaped strings before pushing.
+Hosting: **Render free tier**, built from the root `Dockerfile` via
+`render.yaml`. Hugging Face Spaces was the first choice but its Docker SDK is
+a paid tier — only Static Spaces are free, and a static host cannot run the
+backend. The `deploy/huggingface/` assets are retained in case that changes.
+
+A free Render service sleeps after ~15 minutes and takes ~50 s to wake, which
+reads as a broken link to a reviewer arriving unannounced. Keep it warm with a
+free external pinger hitting `/api/health` every 10 minutes. See
+`deploy/README.md`.
 
 ## 3. Deadlines and status
 
