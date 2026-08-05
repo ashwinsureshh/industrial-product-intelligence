@@ -26,3 +26,6 @@ Thumbs.db
 
 # local-only tool state (launch.json is shared, settings.local.json is not)
 .claude/settings.local.json
+
+# benchmark run lock (runtime only)
+backend/.benchmark.lock

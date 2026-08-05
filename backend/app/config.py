@@ -14,6 +14,30 @@ APP_DIR = Path(__file__).resolve().parent
 DATA_DIR = APP_DIR / "data"
 CACHE_DIR = Path(os.getenv("PI_CACHE_DIR", APP_DIR.parent / ".cache"))
 
+
+def _load_dotenv() -> None:
+    """Read backend/.env into the environment if present.
+
+    Deliberately minimal and dependency-free. A real environment variable
+    always wins, so this can never silently override a deployment's config.
+    The file is gitignored; nothing here is ever logged.
+    """
+    path = APP_DIR.parent / ".env"
+    if not path.exists():
+        return
+    try:
+        for line in path.read_text(encoding="utf-8").splitlines():
+            line = line.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            key, _, value = line.partition("=")
+            os.environ.setdefault(key.strip(), value.strip().strip("'\""))
+    except OSError:
+        pass
+
+
+_load_dotenv()
+
 # Server-side key is optional. If absent, live mode simply requires the caller
 # to pass one; if present it acts as the fallback for local development.
 SERVER_API_KEY = os.getenv("ANTHROPIC_API_KEY")

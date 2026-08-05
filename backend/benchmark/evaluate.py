@@ -22,13 +22,33 @@ import time
 from collections import defaultdict
 from typing import Any, Callable
 
-from app.models import RawProduct
+from app import cache
+from app.models import EnrichedProduct, RawProduct
 from app.pipeline import run as pipeline
 from app.providers.base import Provider
 
 from .corpus import Case
 
 NUMERIC_TOLERANCE = 0.01
+
+
+class BudgetExceeded(RuntimeError):
+    """Raised mid-run the moment cumulative spend crosses the hard ceiling.
+
+    This is deliberately an abort, not a warning. A projection made before the
+    run cannot bound what the run actually costs, so the only real guarantee is
+    to stop the instant the measured total crosses the line.
+    """
+
+    def __init__(self, spent: float, cap: float, completed: int, total: int) -> None:
+        super().__init__(
+            f"Spend ${spent:.2f} crossed the ${cap:.2f} ceiling after "
+            f"{completed}/{total} cases. Run aborted; completed cases are cached."
+        )
+        self.spent = spent
+        self.cap = cap
+        self.completed = completed
+        self.total = total
 
 
 def _values_match(predicted: Any, truth: Any) -> bool:
@@ -46,12 +66,46 @@ def _values_match(predicted: Any, truth: Any) -> bool:
     return str(predicted).strip().lower() == str(truth).strip().lower()
 
 
+def _enrich(
+    case: Case,
+    provider_factory: Callable[[], Provider],
+    mode: str,
+    use_cache: bool,
+) -> tuple[EnrichedProduct, bool]:
+    """Enrich one case, reusing a cached result when there is one.
+
+    Returns (result, was_cached). A cached case costs nothing, which is what
+    makes an aborted run resumable rather than wasted.
+    """
+    payload = dict(case.product)
+
+    if use_cache:
+        hit = cache.get(payload, mode)
+        if hit is not None:
+            return EnrichedProduct.model_validate(hit), True
+
+    result = pipeline.enrich(RawProduct(**payload), provider_factory())
+
+    if use_cache:
+        cache.put(payload, mode, result.model_dump(mode="json"))
+    return result, False
+
+
 def evaluate(
     cases: list[Case],
     provider_factory: Callable[[], Provider],
     label: str = "demo",
+    *,
+    mode: str = "demo",
+    use_cache: bool = False,
+    spend_guard: Callable[[int], None] | None = None,
+    progress: Callable[[int, int, bool], None] | None = None,
 ) -> dict[str, Any]:
-    """Run every case and aggregate the results."""
+    """Run every case and aggregate the results.
+
+    `spend_guard` is called after each case with the number completed; it is
+    expected to raise BudgetExceeded if the measured spend has crossed its cap.
+    """
 
     recovery = {"recovered": 0, "correct": 0, "contradicted": 0, "withheld_total": 0}
     # the same counters, but excluding category defaults
@@ -82,10 +136,16 @@ def evaluate(
     contradictions: list[dict[str, Any]] = []
 
     started = time.perf_counter()
+    cached_hits = 0
 
-    for case in cases:
-        provider = provider_factory()
-        result = pipeline.enrich(RawProduct(**case.product), provider)
+    for index, case in enumerate(cases, start=1):
+        result, was_cached = _enrich(case, provider_factory, mode, use_cache)
+        cached_hits += int(was_cached)
+        if progress:
+            progress(index, len(cases), was_cached)
+        # Check the ceiling immediately after the call that could have spent.
+        if spend_guard is not None:
+            spend_guard(index)
         verdict = result.readiness.verdict if result.readiness else "none"
 
         if case.variant == "sparse":
@@ -174,6 +234,7 @@ def evaluate(
     return {
         "label": label,
         "cases": len(cases),
+        "cached_hits": cached_hits,
         "elapsed_s": round(elapsed, 2),
         "throughput_per_s": round(len(cases) / elapsed, 1) if elapsed else 0.0,
         "coverage": {
