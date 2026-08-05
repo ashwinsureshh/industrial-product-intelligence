@@ -14,6 +14,10 @@ APP_DIR = Path(__file__).resolve().parent
 DATA_DIR = APP_DIR / "data"
 CACHE_DIR = Path(os.getenv("PI_CACHE_DIR", APP_DIR.parent / ".cache"))
 
+# Read-only results committed to the repository. Lets a reviewer without an
+# API key see genuine live-mode output for the demo products.
+PRECOMPUTED_DIR = DATA_DIR / "precomputed"
+
 
 def _load_dotenv() -> None:
     """Read backend/.env into the environment if present.

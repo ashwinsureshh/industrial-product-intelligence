@@ -28,7 +28,39 @@ it cannot defend.
 
 ---
 
-## 2. Deadlines and status
+## 2. Submission requirements (from the portal)
+
+**Deadline: Sun 23 Aug 2026, 10:31 IST.** Five deliverables, all mandatory:
+
+| Deliverable | Notes |
+| --- | --- |
+| Solution Overview | How the prototype solves the problem |
+| **Prototype Link** | A **live MVP link**. Deployment is mandatory. |
+| **Project Deck** | **A mandatory template must be used** — download it from the portal. |
+| **GitHub Repository** | Must be a **public** link. The repo is currently private; flip it at submission. |
+| Demo Video | Short walkthrough of the solution |
+
+Consequences that shaped the design:
+
+- **Judging is asynchronous.** Reviewers click a link with no API key of their
+  own. Live-mode results for the demo products are therefore pre-computed and
+  committed to `backend/app/data/precomputed/`, so selecting "Live AI" shows
+  genuine model output at zero cost to anyone.
+- **One link means one service.** FastAPI serves the built SPA from the same
+  origin (`_mount_frontend()` in `main.py`, registered last so it cannot shadow
+  an `/api` route). `frontend/dist` must exist; the Dockerfile builds it.
+- **The deployment must not be able to spend.** `PI_ALLOW_SERVER_KEY=0` and no
+  server key is configured in the image.
+- **No organizer API credits are provided.** Budget is the user's own, and it
+  is nearly exhausted. See §3.
+
+Hosting: **Hugging Face Spaces** (free, always-on, no cold start).
+Deploy with `deploy/huggingface/deploy.ps1 -Space "<user>/<space>"`. It stages
+from `git archive` (tracked files only, so an untracked `.env` cannot leak),
+swaps in the Space README with its required YAML frontmatter, and greps for
+key-shaped strings before pushing.
+
+## 3. Deadlines and status
 
 - **Submission deadline: 23 Aug 2026.** User wants development finished ~20 Aug
   to leave time for the presentation.

@@ -1,0 +1,22 @@
+**/node_modules
+**/__pycache__
+**/*.py[cod]
+**/dist
+.git
+.github
+.claude
+
+# never let a key into an image layer
+**/.env
+**/.env.local
+
+# runtime state
+backend/.cache
+backend/.benchmark.lock
+backend/app/data/learned_categories.json
+backend/app/data/proposals.json
+
+# not needed at runtime
+samples
+*.md
+!README.md

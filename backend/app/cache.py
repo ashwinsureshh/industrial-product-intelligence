@@ -15,10 +15,10 @@ import time
 from pathlib import Path
 from typing import Any
 
-from .config import CACHE_DIR, CACHE_ENABLED, MODEL
+from .config import CACHE_DIR, CACHE_ENABLED, MODEL, PRECOMPUTED_DIR
 
 _lock = threading.Lock()
-_stats = {"hits": 0, "misses": 0, "writes": 0}
+_stats = {"hits": 0, "misses": 0, "writes": 0, "bundled_hits": 0}
 
 
 def _key(payload: dict[str, Any], mode: str) -> str:
@@ -32,22 +32,36 @@ def _path(key: str) -> Path:
 
 
 def get(payload: dict[str, Any], mode: str) -> dict[str, Any] | None:
+    """Look up a result, preferring the writable cache then the bundled one.
+
+    The bundled layer ships pre-computed live-mode results in the repository.
+    It is what lets a reviewer with no API key select 'Live AI' and see genuine
+    model output for the demo products, at zero cost to anyone — the alternative
+    is either asking every reviewer for a key or leaving the AI path invisible.
+    """
     if not CACHE_ENABLED:
         return None
-    path = _path(_key(payload, mode))
-    if not path.exists():
+
+    key = _key(payload, mode)
+    for directory, bundled in ((CACHE_DIR, False), (PRECOMPUTED_DIR, True)):
+        path = directory / f"{key}.json"
+        if not path.exists():
+            continue
+        try:
+            with open(path, encoding="utf-8") as fh:
+                record = json.load(fh)
+        except (OSError, json.JSONDecodeError):
+            # A corrupt entry degrades to a miss, never breaks the request.
+            continue
         with _lock:
-            _stats["misses"] += 1
-        return None
-    try:
-        with open(path, encoding="utf-8") as fh:
-            record = json.load(fh)
-    except (OSError, json.JSONDecodeError):
-        # A corrupt entry should degrade to a miss, never break the request.
-        return None
+            _stats["hits"] += 1
+            if bundled:
+                _stats["bundled_hits"] += 1
+        return record.get("result")
+
     with _lock:
-        _stats["hits"] += 1
-    return record.get("result")
+        _stats["misses"] += 1
+    return None
 
 
 def put(payload: dict[str, Any], mode: str, result: dict[str, Any]) -> None:
@@ -69,10 +83,12 @@ def put(payload: dict[str, Any], mode: str, result: dict[str, Any]) -> None:
 
 def stats() -> dict[str, Any]:
     entries = len(list(CACHE_DIR.glob("*.json"))) if CACHE_DIR.exists() else 0
+    bundled = len(list(PRECOMPUTED_DIR.glob("*.json"))) if PRECOMPUTED_DIR.exists() else 0
     with _lock:
         snapshot = dict(_stats)
     total = snapshot["hits"] + snapshot["misses"]
     snapshot["entries"] = entries
+    snapshot["bundled"] = bundled
     snapshot["hit_rate"] = round(snapshot["hits"] / total, 3) if total else 0.0
     snapshot["enabled"] = CACHE_ENABLED
     return snapshot

@@ -16,6 +16,7 @@ from fastapi.responses import StreamingResponse
 from . import cache
 from .config import (
     ALLOW_LIVE,
+    APP_DIR,
     ALLOW_SERVER_KEY_FALLBACK,
     CORS_ORIGINS,
     DATA_DIR,
@@ -507,6 +508,33 @@ def revoke_learned(code: str) -> dict[str, Any]:
     return {"revoked": code, "categories": len(taxonomy.categories())}
 
 
+def _mount_frontend() -> None:
+    """Serve the built UI from the API process.
+
+    The submission requires a single live link, so the deployed artefact has to
+    be one service. In development the Vite dev server proxies /api here and
+    this mount simply does not exist; in production the built SPA is served
+    from the same origin, which also removes the CORS surface entirely.
+    """
+    dist = APP_DIR.parent.parent / "frontend" / "dist"
+    if not dist.is_dir():
+        return
+
+    from fastapi.responses import FileResponse
+    from fastapi.staticfiles import StaticFiles
+
+    app.mount("/assets", StaticFiles(directory=dist / "assets"), name="assets")
+
+    @app.get("/{path:path}", include_in_schema=False)
+    def spa(path: str) -> FileResponse:
+        # Anything that is not an API route resolves to the SPA entry point, so
+        # a deep link or a refresh does not 404.
+        candidate = dist / path
+        if path and candidate.is_file():
+            return FileResponse(candidate)
+        return FileResponse(dist / "index.html")
+
+
 @app.get("/api/cache")
 def cache_stats() -> dict[str, Any]:
     return cache.stats()
@@ -515,3 +543,7 @@ def cache_stats() -> dict[str, Any]:
 @app.delete("/api/cache")
 def cache_clear() -> dict[str, Any]:
     return {"removed": cache.clear()}
+
+
+# Registered last: the SPA catch-all must not shadow any /api route.
+_mount_frontend()
