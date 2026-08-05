@@ -81,6 +81,21 @@ def put(payload: dict[str, Any], mode: str, result: dict[str, Any]) -> None:
         _stats["writes"] += 1
 
 
+def put_bundled(payload: dict[str, Any], mode: str, result: dict[str, Any]) -> Path:
+    """Write a result into the committed, read-only layer.
+
+    Used once by the pre-compute script so live-mode output for the demo
+    products ships in the repository. Separate from put() because these entries
+    are deliberately durable and reviewed, not incidental runtime state.
+    """
+    PRECOMPUTED_DIR.mkdir(parents=True, exist_ok=True)
+    path = PRECOMPUTED_DIR / f"{_key(payload, mode)}.json"
+    record = {"stored_at": time.time(), "mode": mode, "result": result}
+    with open(path, "w", encoding="utf-8") as fh:
+        json.dump(record, fh, default=str)
+    return path
+
+
 def stats() -> dict[str, Any]:
     entries = len(list(CACHE_DIR.glob("*.json"))) if CACHE_DIR.exists() else 0
     bundled = len(list(PRECOMPUTED_DIR.glob("*.json"))) if PRECOMPUTED_DIR.exists() else 0
