@@ -13,6 +13,22 @@ import { Empty } from './components/shared.jsx'
 
 const BLANK_SPECS = [{ key: '', value: '' }]
 
+// Inline so the icons cannot fail to load; the project ships no icon library.
+const SUN_ICON = (
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+       strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+    <circle cx="12" cy="12" r="4.2" />
+    <path d="M12 2.4v2.2M12 19.4v2.2M4.2 4.2l1.6 1.6M18.2 18.2l1.6 1.6M2.4 12h2.2M19.4 12h2.2M4.2 19.8l1.6-1.6M18.2 5.8l1.6-1.6" />
+  </svg>
+)
+
+const MOON_ICON = (
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+       strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M20.5 14.6A8.6 8.6 0 1 1 9.4 3.5a6.8 6.8 0 0 0 11.1 11.1z" />
+  </svg>
+)
+
 export default function App() {
   const [health, setHealth] = useState(null)
   const [samples, setSamples] = useState(null)
@@ -36,6 +52,34 @@ export default function App() {
 
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
+
+  // null means "follow the operating system". Only an explicit choice is
+  // stored, so a visitor who never touches the toggle keeps tracking their
+  // OS setting instead of being frozen at whatever it was on first visit.
+  const [theme, setTheme] = useState(() => localStorage.getItem('pi-theme'))
+
+  useEffect(() => {
+    if (theme) {
+      document.documentElement.setAttribute('data-theme', theme)
+      localStorage.setItem('pi-theme', theme)
+    } else {
+      document.documentElement.removeAttribute('data-theme')
+      localStorage.removeItem('pi-theme')
+    }
+  }, [theme])
+
+  // Re-render when the OS theme changes, but only while following it.
+  const [osDark, setOsDark] = useState(
+    () => window.matchMedia('(prefers-color-scheme: dark)').matches,
+  )
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-color-scheme: dark)')
+    const onChange = (e) => setOsDark(e.matches)
+    mq.addEventListener('change', onChange)
+    return () => mq.removeEventListener('change', onChange)
+  }, [])
+
+  const isDark = theme ? theme === 'dark' : osDark
 
   useEffect(() => {
     api.getHealth().then(setHealth).catch(() => setHealth({ status: 'unreachable' }))
@@ -274,6 +318,15 @@ export default function App() {
             {health.status === 'ok' ? `${health.categories} categories` : 'API offline'}
           </span>
         )}
+
+        <button
+          className="theme-toggle"
+          onClick={() => setTheme(isDark ? 'light' : 'dark')}
+          title={`Switch to ${isDark ? 'light' : 'dark'} theme`}
+          aria-label={`Switch to ${isDark ? 'light' : 'dark'} theme`}
+        >
+          {isDark ? SUN_ICON : MOON_ICON}
+        </button>
       </header>
 
       <div className="layout">
