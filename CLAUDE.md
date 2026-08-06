@@ -313,6 +313,15 @@ Verdict shift is real: blocked 33 → 22, publish 16 → 27 on clean records,
 because gap-fills satisfied `MISSING_REQUIRED` rather than because the bar
 moved.
 
+**Reproducible by a judge.** The 102 paid live records are committed to
+`backend/benchmark/records/` (0.88 MB), keyed by the same content address the
+runtime cache uses. Verified by running `run_hybrid.py` with `PI_CACHE_DIR`
+pointed at an empty directory — a fresh clone exactly — and getting identical
+numbers. Deliberately *not* in `app/data/precomputed/`: that layer is what the
+deployed app serves to reviewers, and corpus records would inflate the
+`bundled: 20` count in `/api/health` and the image for files the service never
+reads.
+
 ---
 
 ## 8. Commands
@@ -334,7 +343,11 @@ python test_cost_guards.py         # lock, ceiling, cache guarantees
 python test_taxonomy_learning.py   # learn → approve → classify → revoke
 python test_hybrid.py              # hybrid gate: adds, never overrules
 python run_benchmark.py            # 102-case benchmark
-python run_hybrid.py               # hybrid vs demo vs live, $0 from cache
+python run_hybrid.py               # hybrid vs demo vs live, $0 from committed records
+python -m benchmark.records export # refresh committed records after a live run
+
+# Prove the benchmark reproduces on a fresh clone (no runtime cache):
+#   PI_CACHE_DIR=<empty dir> python run_hybrid.py
 
 # Live ablation — SPENDS MONEY. Confirm with the user first.
 python run_benchmark.py --live --budget 5

@@ -21,10 +21,15 @@ _lock = threading.Lock()
 _stats = {"hits": 0, "misses": 0, "writes": 0, "bundled_hits": 0}
 
 
-def _key(payload: dict[str, Any], mode: str) -> str:
+def key_for(payload: dict[str, Any], mode: str) -> str:
+    """The content address for a result. Public so other read-only layers
+    (e.g. the committed benchmark records) can be keyed identically."""
     blob = json.dumps(payload, sort_keys=True, default=str)
     fingerprint = f"{mode}|{MODEL if mode == 'live' else 'deterministic'}|{blob}"
     return hashlib.sha256(fingerprint.encode("utf-8")).hexdigest()[:32]
+
+
+_key = key_for
 
 
 def _path(key: str) -> Path:

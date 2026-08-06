@@ -15,10 +15,10 @@ import json
 import sys
 from pathlib import Path
 
-from app import cache
 from app.models import EnrichedProduct, RawProduct
 from app.pipeline import run as pipeline
 from app.providers.mock import MockProvider
+from benchmark import records
 from benchmark.corpus import build_corpus, corpus_stats
 from benchmark.evaluate import business_impact, evaluate
 from benchmark.hybrid import merge
@@ -38,13 +38,14 @@ def main() -> int:
     def hybrid_enricher(case):
         payload = dict(case.product)
 
-        live_hit = cache.get(payload, "live")
+        live_hit = records.load(payload, "live")
         if live_hit is None:
             missing.append(case.id)
             raise SystemExit(
-                f"No cached live record for '{case.id}'. Refusing to continue: "
-                f"this script never calls the API, so a miss means the ablation "
-                f"cache is incomplete. Re-run run_benchmark.py --live first."
+                f"No live record for '{case.id}'. Refusing to continue: this "
+                f"script never calls the API, so a miss means the committed "
+                f"records are incomplete. Re-run run_benchmark.py --live, then "
+                f"python -m benchmark.records export."
             )
 
         demo = pipeline.enrich(RawProduct(**payload), MockProvider())
