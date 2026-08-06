@@ -81,11 +81,13 @@ export default function App() {
 
   const isDark = theme ? theme === 'dark' : osDark
 
-  // The bottom navigation gets out of the way while you read down a long
-  // result and comes back on the way up. Two guards matter: a threshold, or
-  // sub-pixel scroll jitter flickers the bar; and a bottom check, or reaching
-  // the end of the page leaves the nav hidden with nothing left to scroll up.
-  const [navHidden, setNavHidden] = useState(false)
+  // Both bars get out of the way while you read down a long result and come
+  // back on the way up. One piece of state drives both, so the header and the
+  // nav can never disagree about whether the chrome is retreating. Two guards
+  // matter: a threshold, or sub-pixel scroll jitter flickers them; and a
+  // bottom check, or reaching the end of the page leaves them hidden with
+  // nothing left to scroll up.
+  const [chromeHidden, setChromeHidden] = useState(false)
   useEffect(() => {
     let last = window.scrollY
     let lastRun = 0
@@ -97,10 +99,10 @@ export default function App() {
       const y = window.scrollY
       const atBottom = window.innerHeight + y >= document.documentElement.scrollHeight - 8
       if (atBottom) {
-        setNavHidden(false)
+        setChromeHidden(false)
         last = y
       } else if (Math.abs(y - last) > 6) {
-        setNavHidden(y > last && y > 80)
+        setChromeHidden(y > last && y > 80)
         last = y
       }
     }
@@ -256,7 +258,7 @@ export default function App() {
 
   return (
     <div className="app">
-      <header className="topbar">
+      <header className={`topbar ${chromeHidden ? 'chrome-hidden' : ''}`}>
         <div className="brand">
           <div className="brand-mark">PI</div>
           <div className="brand-text">
@@ -267,7 +269,7 @@ export default function App() {
 
         <div className="topbar-spacer" />
 
-        <nav className={`tabs main-nav ${navHidden ? 'nav-hidden' : ''}`} aria-label="Sections">
+        <nav className={`tabs main-nav ${chromeHidden ? 'nav-hidden' : ''}`} aria-label="Sections">
           <button
             className={`tab ${tab === 'single' ? 'active' : ''}`}
             onClick={() => setTab('single')}

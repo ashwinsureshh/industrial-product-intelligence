@@ -333,12 +333,27 @@ input, textarea, select { font-family: inherit; font-size: inherit; }
   .topbar .pill { margin-left: auto; }
   .theme-toggle { width: 40px; height: 40px; }
 
-  /* Hides while reading down a long result and returns on the way up. Scoped
-     to this breakpoint because the bar is only fixed here - translating the
-     desktop nav, which sits inline in the header, would just tear a hole in
-     the layout. */
+  /* Both bars hide while reading down a long result and return on the way up.
+     Scoped to this breakpoint: above it the nav sits inline in the header and
+     translating either one would tear a hole in the layout.
+
+     This is what actually reclaims the header's height on a phone. Hiding the
+     tagline saved a single pixel, because the brand row is sized by the 30px
+     logo mark rather than the text beside it. */
   .main-nav { transition: transform 0.25s ease; }
   .main-nav.nav-hidden { transform: translateY(115%); }
+
+  /* The header retreats by animating its sticky offset, NOT by transform.
+     The nav is a DOM child of the header, and a transformed element becomes
+     the containing block for its position:fixed descendants - transforming the
+     header tore the bottom bar off the bottom of the screen and pinned it near
+     the top. Changing `top` creates no containing block, so the nav keeps
+     resolving against the viewport.
+
+     -200px rather than the 103px measured height: live mode adds a row for the
+     API key field, and overshooting offscreen costs nothing. */
+  .topbar { transition: top 0.25s ease; }
+  .topbar.chrome-hidden { top: -200px; }
 }
 
 .layout {
