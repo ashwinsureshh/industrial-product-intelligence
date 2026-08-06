@@ -76,6 +76,31 @@ input, textarea, select { font-family: inherit; font-size: inherit; }
 
 .topbar-spacer { flex: 1; }
 
+/* The header is the only thing that was not responsive, and because it is a
+   non-wrapping flex row its ~740px of content set the width of the whole
+   document: on a 375px screen every page scrolled sideways by 366px, even
+   though .layout below collapses correctly. Wrapping the header is what keeps
+   the page within the viewport, not anything in the content columns. */
+@media (max-width: 900px) {
+  /* Wrapping makes the header several rows tall, and a sticky element that
+     tall would permanently occupy a third of a phone screen. Let it scroll
+     away instead — the trade is worth it because the tab strip is a
+     navigation control, not something needed while reading a result. */
+  .topbar { position: static; flex-wrap: wrap; gap: 10px 12px; padding: 10px 14px; }
+  .topbar-spacer { display: none; }
+  .topbar > * { min-width: 0; }
+
+  /* The four nav tabs wrap 2x2 rather than shrinking below their labels or
+     scrolling out of reach; 40px keeps them thumb-sized. */
+  .topbar .tabs { flex: 1 1 100%; flex-wrap: wrap; }
+  .topbar .tab { flex: 1 1 45%; min-height: 40px; }
+
+  /* The engine toggle is narrow enough to share its row with the status
+     pill, which saves a whole row of header height. */
+  .topbar .tabs + .tabs { flex: 1 1 auto; }
+  .topbar .pill { margin-left: auto; }
+}
+
 .layout {
   flex: 1;
   display: grid;
