@@ -81,6 +81,41 @@ export default function App() {
 
   const isDark = theme ? theme === 'dark' : osDark
 
+  // The bottom navigation gets out of the way while you read down a long
+  // result and comes back on the way up. Two guards matter: a threshold, or
+  // sub-pixel scroll jitter flickers the bar; and a bottom check, or reaching
+  // the end of the page leaves the nav hidden with nothing left to scroll up.
+  const [navHidden, setNavHidden] = useState(false)
+  useEffect(() => {
+    let last = window.scrollY
+    let lastRun = 0
+
+    // Deliberately not requestAnimationFrame: the work is three property reads
+    // and a setState, and a plain time throttle stays testable in environments
+    // where rAF does not run.
+    const decide = () => {
+      const y = window.scrollY
+      const atBottom = window.innerHeight + y >= document.documentElement.scrollHeight - 8
+      if (atBottom) {
+        setNavHidden(false)
+        last = y
+      } else if (Math.abs(y - last) > 6) {
+        setNavHidden(y > last && y > 80)
+        last = y
+      }
+    }
+
+    const onScroll = () => {
+      const now = Date.now()
+      if (now - lastRun < 60) return
+      lastRun = now
+      decide()
+    }
+
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
   useEffect(() => {
     api.getHealth().then(setHealth).catch(() => setHealth({ status: 'unreachable' }))
     api.getSamples().then(setSamples).catch(() => {})
@@ -232,7 +267,7 @@ export default function App() {
 
         <div className="topbar-spacer" />
 
-        <nav className="tabs main-nav" aria-label="Sections">
+        <nav className={`tabs main-nav ${navHidden ? 'nav-hidden' : ''}`} aria-label="Sections">
           <button
             className={`tab ${tab === 'single' ? 'active' : ''}`}
             onClick={() => setTab('single')}

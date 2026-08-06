@@ -325,9 +325,20 @@ input, textarea, select { font-family: inherit; font-size: inherit; }
   }
   .main-nav .tab { position: relative; }
 
+  /* The tagline is scene-setting, not navigation. On a phone it costs a line
+     of a header that is already competing with the content for the screen. */
+  .brand-text p { display: none; }
+
   .engine-toggle { flex: 1 1 auto; width: auto; }
   .topbar .pill { margin-left: auto; }
   .theme-toggle { width: 40px; height: 40px; }
+
+  /* Hides while reading down a long result and returns on the way up. Scoped
+     to this breakpoint because the bar is only fixed here - translating the
+     desktop nav, which sits inline in the header, would just tear a hole in
+     the layout. */
+  .main-nav { transition: transform 0.25s ease; }
+  .main-nav.nav-hidden { transform: translateY(115%); }
 }
 
 .layout {
