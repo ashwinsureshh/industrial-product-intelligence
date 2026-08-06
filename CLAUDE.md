@@ -54,15 +54,21 @@ Consequences that shaped the design:
 - **No organizer API credits are provided.** Budget is the user's own, and it
   is nearly exhausted. See §3.
 
-Hosting: **Google Cloud Run** (free trial), built from the root `Dockerfile`
-by Cloud Build. Deploy from the repo root with the `gcloud run deploy --source .`
-command in `deploy/README.md`.
+### Live deployment — already done
 
-Hugging Face Spaces was the first choice, but its Docker SDK is a paid tier —
-only Static Spaces are free and a static host cannot run the backend. Render
-(`render.yaml`) is retained as a no-card fallback; its free instance sleeps
-after ~15 min and needs an external pinger on `/api/health`, which Cloud Run
-does not.
+**https://industrial-product-intelligence.onrender.com** — Render free tier,
+auto-deploys on push to `main`, built from the root `Dockerfile`.
+
+- **UptimeRobot pings `/api/health` every 5 min.** This is load-bearing, not
+  cosmetic: a sleeping free instance returns **404**, not a loading page, so a
+  reviewer's first click would look like a dead link. Do not pause that monitor.
+- Verified in production: all four tabs, PDF ingest, and the full taxonomy
+  learning loop. Warm latency ~0.28s.
+- FastAPI answers **GET and HEAD** — monitors send HEAD by default and a 405
+  makes them report the service down.
+- Hugging Face was the first choice but its Docker SDK is now paid; only Static
+  Spaces are free and a static host cannot run the backend. Cloud Run config is
+  retained in `deploy/README.md` if a faster cold start is ever wanted.
 
 ## 3. Deadlines and status
 
@@ -76,16 +82,20 @@ does not.
 | 1 | Evaluation harness + measured accuracy | **Done, committed** |
 | 2 | PDF datasheet + product-page ingestion | **Done, committed** |
 | 3 | Auto-taxonomy learning | **Backend done + committed; review UI built, verified, not yet committed** |
-| — | Live ablation (Claude vs deterministic) | **Deferred by decision to after Phase 3** |
-| 4 | Review queue, scale demo, public deploy | Not started |
-| 5 | Hardening, deck, demo video | Not started |
+| — | Live ablation (Claude vs deterministic) | **~10/102 done, cached. Resume: `python run_benchmark.py --live --budget 5` (~$1.90, skips cached)** |
+| 4 | Public deployment | **Done — live and monitored** |
+| 5 | Deck + demo video | **Blocked: need the portal's mandatory template** |
 
 ---
 
 ## 3. Cost discipline — READ BEFORE ANY LIVE RUN
 
-The user has **very limited API credit** (~$1.44 remaining as of 5 Aug). An
-earlier mistake burned ~$2.63 with nothing to show for it. Do not repeat it.
+Credit was topped up to **$9.18**; **~$0.60 spent** (precompute $0.39, partial
+ablation $0.21), so roughly **$8.55 remains**. An earlier mistake burned ~$2.63
+with nothing to show for it. Do not repeat it.
+
+The user approved a ~$3.00 plan: precompute (done), ablation (partial), and a
+live taxonomy proposer (not started). Confirm before any *further* spend.
 
 **What went wrong:** a background benchmark run was started, its empty log was
 misread as a crash (Python block-buffers stdout to a file), and a *second* run
@@ -258,6 +268,12 @@ python run_benchmark.py --live --budget 5
   2. `b4762e0` spend ceiling + run lock
   3. `53b9415` document ingestion
   4. `e207fe4` taxonomy learning (backend)
+  5. `35ed3a2` taxonomy review UI + CLAUDE.md
+  6. `60f5a47` single-value enum fix, pending-proposal refresh
+  7. `ebab3ea` single-service build, Dockerfile, bundled cache layer
+  8. `1b67f7d` HEAD support for uptime monitors
+  9. `c3823a4` 20 precomputed live results
+  10. `3e3a2a3` plain-English `docs/Project_Understanding.pdf`
 - Decision: stay private until submission, then either flip to public or add
   judges as collaborators — check the rules for which is required.
 - No LICENSE yet, deliberately: organizers may have IP terms. Check before adding.
@@ -281,15 +297,18 @@ python run_benchmark.py --live --budget 5
 
 ## 11. Immediate next steps
 
-1. **Commit the Learning UI** (`frontend/src/components/TaxonomyPanel.jsx`,
-   `App.jsx` wiring, `api.js` functions, `samples.json` `learning_demo`,
-   and the `PROPOSE_BELOW_CONFIDENCE = 0.65` change in `main.py`).
-2. **Live proposer** — `AnthropicProvider.propose_category()` so Claude
-   improves naming, enum members and cross-field rules over the deterministic
-   baseline. Build against demo mode; spend only at the end.
-3. **Phase 4** — human review queue, persistence, scale demo, public deploy.
-4. **Live ablation** once credit is topped up: `--budget 5`, ~$2.30 expected.
-5. **Deck + demo video.**
+1. **The deck.** Blocked until the user downloads the portal's mandatory
+   template. `docs/Project_Understanding.pdf` already carries most of the
+   narrative and can be adapted once the required sections are known.
+2. **Finish the ablation** — `python run_benchmark.py --live --budget 5`.
+   Roughly $1.90; cached cases are skipped so it resumes where it stopped.
+   This produces the one number the deck lacks: how much Claude adds over the
+   deterministic engine, especially on archetype categories stuck at 33% recall.
+3. **Demo video** — a short walkthrough of the live site.
+4. **Flip the repo public** at submission (mandatory) and **rotate the API key**
+   (it passed through a conversation transcript).
+5. *Optional:* live taxonomy proposer, so Claude improves category naming, enum
+   members and cross-field rules over the deterministic baseline.
 
 ### Gotchas already paid for
 
