@@ -181,6 +181,21 @@ input, textarea, select { font-family: inherit; font-size: inherit; }
 .field textarea { resize: vertical; min-height: 62px; line-height: 1.45; }
 .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 
+/* A grid item's min-width defaults to auto, so a 1fr column can never shrink
+   below its content's intrinsic width — an input's is about 181px. Two of
+   those need 372px inside a 314px row on a phone, and .card has
+   overflow:hidden, so the second column was silently clipped rather than
+   scrolled. That is why a document-level overflow check reported clean while a
+   real phone showed the right-hand fields cut off at the screen edge. */
+.field-row > *, .spec-row > * { min-width: 0; }
+
+/* Even once they fit, two ~150px columns are too cramped for labels like
+   "Manufacturer Part Number", which would wrap to two lines above a stubby
+   input. The paired fields stack on a phone. */
+@media (max-width: 620px) {
+  .field-row { grid-template-columns: 1fr; }
+}
+
 .tabs { display: flex; gap: 3px; padding: 3px; background: var(--bg); border-radius: 8px; }
 .tab {
   flex: 1; padding: 6px 12px; border: none; background: transparent;
