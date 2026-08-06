@@ -421,7 +421,12 @@ input, textarea, select { font-family: inherit; font-size: inherit; }
 
 .field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 11px; }
 .field label { font-size: 11.5px; font-weight: 600; color: var(--text-2); }
-.field input, .field textarea, .field select {
+/* Every text input in the app, not just those inside .field. Scoping this to
+   .field left the spec-table and API-key inputs on browser defaults: square
+   corners and a grey box. Invisible enough in light mode, obvious once
+   color-scheme:dark made the browser render its own dark widget. */
+.field input, .field textarea, .field select,
+.spec-row input, .key-input input {
   padding: 9px 11px;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
@@ -432,13 +437,17 @@ input, textarea, select { font-family: inherit; font-size: inherit; }
   outline: none;
   transition: border-color 0.14s ease, box-shadow 0.14s ease, background 0.14s ease;
 }
-.field input:hover, .field textarea:hover { border-color: var(--border-strong); }
-.field input:focus, .field textarea:focus, .field select:focus {
+.field input:hover, .field textarea:hover,
+.spec-row input:hover, .key-input input:hover { border-color: var(--border-strong); }
+
+.field input:focus, .field textarea:focus, .field select:focus,
+.spec-row input:focus, .key-input input:focus {
   border-color: var(--accent);
   background: var(--surface);
   box-shadow: 0 0 0 3px var(--accent-soft);
 }
-.field input::placeholder, .field textarea::placeholder { color: var(--text-3); }
+.field input::placeholder, .field textarea::placeholder,
+.spec-row input::placeholder, .key-input input::placeholder { color: var(--text-3); }
 .field textarea { resize: vertical; min-height: 62px; line-height: 1.45; }
 .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 
