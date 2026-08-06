@@ -17,7 +17,7 @@ The four stated "expected outcomes" and where each is answered:
 | --- | --- |
 | Structured data generation | taxonomy classification → extraction → typed `EnrichedProduct` |
 | Accuracy & consistency | unit normalization + 16 cross-field engineering rules |
-| AI validation & enrichment | provider layer (deterministic + Claude tool-use) |
+| AI validation & enrichment | provider layer (deterministic + Claude tool-use), bounded by the hybrid gate — §7.2 |
 | Scalable catalog engine | CSV/batch ingest, document ingest, **auto-taxonomy learning** |
 
 **Guiding principle, stated in the README and worth preserving in every change:**
@@ -51,8 +51,14 @@ Consequences that shaped the design:
   an `/api` route). `frontend/dist` must exist; the Dockerfile builds it.
 - **The deployment must not be able to spend.** `PI_ALLOW_SERVER_KEY=0` and no
   server key is configured in the image.
-- **No organizer API credits are provided.** Budget is the user's own, and it
-  is nearly exhausted. See §3.
+- **No organizer API credits are provided.** Budget is the user's own. See §3.1.
+
+Two committed result layers exist and they are **not** interchangeable:
+
+| Layer | Purpose | Served by the app? |
+| --- | --- | --- |
+| `backend/app/data/precomputed/` | 20 demo products, so a reviewer with no key sees live output | **Yes** — counted as `bundled` in `/api/health` |
+| `backend/benchmark/records/` | 102 corpus records, so the benchmark reproduces | No — benchmark only |
 
 ### Live deployment — already done
 
@@ -63,7 +69,12 @@ auto-deploys on push to `main`, built from the root `Dockerfile`.
   cosmetic: a sleeping free instance returns **404**, not a loading page, so a
   reviewer's first click would look like a dead link. Do not pause that monitor.
 - Verified in production: all four tabs, PDF ingest, and the full taxonomy
-  learning loop. Warm latency ~0.28s.
+  learning loop. Warm latency ~0.3s.
+- **Re-verified after the `54a7831` deploy** (that commit touched `app/cache.py`,
+  which the service imports): `/api/enrich` returned 200 with a classified
+  record, and the cache counters moved `0/0` → `misses 1, writes 1`, which is
+  `key_for()` executing on the server. Pinging `/api/health` alone would not
+  have proven that.
 - FastAPI answers **GET and HEAD** — monitors send HEAD by default and a 405
   makes them report the service down.
 - Hugging Face was the first choice but its Docker SDK is now paid; only Static
@@ -81,23 +92,31 @@ auto-deploys on push to `main`, built from the root `Dockerfile`.
 | --- | --- | --- |
 | 1 | Evaluation harness + measured accuracy | **Done, committed** |
 | 2 | PDF datasheet + product-page ingestion | **Done, committed** |
-| 3 | Auto-taxonomy learning | **Backend done + committed; review UI built, verified, not yet committed** |
+| 3 | Auto-taxonomy learning | **Done, committed** (backend + review UI, `35ed3a2`) |
 | — | Live ablation (Claude vs deterministic) | **Done, 102/102, $1.62. Negative result — see §7.1.** |
 | — | Hybrid gate (bounded Claude) | **Done, $0 — see §7.2. Best result in the project; benchmark only, not wired into the UI.** |
 | 4 | Public deployment | **Done — live and monitored** |
 | 5 | Deck + demo video | **Blocked: need the portal's mandatory template** |
 
+**All engineering is complete, committed and pushed.** Working tree clean, all
+five test suites pass, deployment verified. What remains is the deck, the demo
+video, and the submission-day actions in §11 — none of which are code.
+
 ---
 
-## 3. Cost discipline — READ BEFORE ANY LIVE RUN
+## 3.1 Cost discipline — READ BEFORE ANY LIVE RUN
 
 Credit was topped up to **$9.18**; **~$2.22 spent** (precompute $0.39, ablation
 $0.21 + $1.62), so roughly **$6.96 remains**. An earlier mistake burned ~$2.63
 with nothing to show for it. Do not repeat it.
 
-The user approved a ~$3.00 plan: precompute (done), ablation (**done**), and a
-live taxonomy proposer (not started, and now a weaker bet — see §7.1). Confirm
-before any *further* spend.
+The approved ~$3.00 plan is **complete**: precompute (done) and ablation (done).
+The third item, a live taxonomy proposer, was never started and is now a
+**weaker bet** — it is the same architecture the ablation showed produces
+confident-looking values it cannot defend, measured against hand-authored
+ground truth (the weaker half of the corpus). Recommendation on record: don't.
+
+**There is nothing left worth buying.** Confirm before any further spend.
 
 **What went wrong:** a background benchmark run was started, its empty log was
 misread as a crash (Python block-buffers stdout to a file), and a *second* run
@@ -163,7 +182,7 @@ score as a CSV row. Do not add a parallel path for a new input type.
 | --- | --- |
 | `models.py` | All schemas. `RawProduct`, `Attribute`, `EnrichedProduct`, `CategoryProposal` |
 | `config.py` | Env config; loads `backend/.env`; demo mode is the default |
-| `cache.py` | Content-addressed result cache (input hash + mode + model) |
+| `cache.py` | Content-addressed result cache (input hash + mode + model). `key_for()` is public so other read-only layers address records identically |
 | `main.py` | FastAPI app, all endpoints |
 | `pipeline/units.py` | Unit parsing/normalization; canonical unit per dimension |
 | `pipeline/taxonomy.py` | Category classification; merges curated + learned categories |
@@ -176,7 +195,11 @@ score as a CSV row. Do not add a parallel path for a new input type.
 | `ingest/web.py` | Product page parsing (JSON-LD first) + SSRF guard |
 | `taxonomy_learning/propose.py` | Clusters unclassified products, infers schemas |
 | `taxonomy_learning/store.py` | Proposal queue + learned-category persistence |
-| `benchmark/` | Corpus generation + evaluation |
+| `benchmark/corpus.py` | 102-case corpus; ISO-backed + archetype ground truth |
+| `benchmark/evaluate.py` | Scoring. `enricher=` scores pre-built records without a provider |
+| `benchmark/hybrid.py` | **The hybrid gate** — Claude may add, never overrule (§7.2) |
+| `benchmark/records.py` | Loader/exporter for the committed live records |
+| `benchmark/records/` | 102 committed live records, 0.88 MB — makes §7.2 reproducible |
 | `data/taxonomy.json` | 10 curated categories — **edit data, not code, to add one** |
 
 ### Frontend (`frontend/src/`)
@@ -218,7 +241,7 @@ Run: `cd backend && python run_benchmark.py`
 | Seeded defects caught | **100%** (51/51) |
 | Defective records stopped from auto-publishing | **100%** |
 | False alarms on clean records | **0.0%** |
-| Throughput | ~340 products/s |
+| Throughput | ~305 products/s |
 
 **The headline is the contradiction rate, not coverage.** Coverage is cheap —
 any system reaches 100% by inventing everything. Precision is 100% on
@@ -260,10 +283,10 @@ attributes but contradicts 38 instead of 8.
 That is worse, not better — more records clear the gate while carrying more
 contradictions.
 
-**Root cause worth fixing:** the Claude provider tags its own output with
-provenance classes (`knowledge_base`, `parsed`) that mean *evidence-backed*.
+**Root cause, since fixed by the gate:** the Claude provider tags its own output
+with provenance classes (`knowledge_base`, `parsed`) that mean *evidence-backed*.
 It inherits trust it has not earned, so reconciliation lets it overrule the
-knowledge base. See §11 item 2.
+knowledge base. §7.2 bounds this.
 
 **Caveats before this goes in the deck:** 12 cases came from an earlier cached
 run; and `inferred` exists only on the live path, so part of the precision gap
@@ -369,6 +392,10 @@ python run_benchmark.py --live --budget 5
   8. `1b67f7d` HEAD support for uptime monitors
   9. `c3823a4` 20 precomputed live results
   10. `3e3a2a3` plain-English `docs/Project_Understanding.pdf`
+  11. `872ed4e` context file updated with deployment and spend state
+  12. `411cf81` **hybrid gate** — bound the LLM to gap-filling (§7.1, §7.2)
+  13. `54a7831` **committed live records** — the hybrid result is reproducible
+- Local `main` and `origin/main` are level at `54a7831`; working tree clean.
 - Decision: stay private until submission, then either flip to public or add
   judges as collaborators — check the rules for which is required.
 - No LICENSE yet, deliberately: organizers may have IP terms. Check before adding.
@@ -392,19 +419,26 @@ python run_benchmark.py --live --budget 5
 
 ## 11. Immediate next steps
 
-1. **The deck.** Blocked until the user downloads the portal's mandatory
-   template. `docs/Project_Understanding.pdf` already carries most of the
-   narrative and can be adapted once the required sections are known.
-2. **Hybrid gate — done, $0.** See §7.2. `run_hybrid.py` re-scores the merge
-   policy against cached live records; it never imports `AnthropicProvider`, so
-   a cache miss aborts instead of spending. Any future policy tweak is free.
-   *Not yet wired into the product* — it is a benchmark result, not a live
-   mode. Exposing it as a third engine in the UI is optional and unstarted.
-3. **Demo video** — a short walkthrough of the live site.
-4. **Flip the repo public** at submission (mandatory) and **rotate the API key**
-   (it passed through a conversation transcript).
-5. *Optional:* live taxonomy proposer, so Claude improves category naming, enum
-   members and cross-field rules over the deterministic baseline.
+**No engineering is outstanding.** Everything below is either a deliverable or
+a user action.
+
+1. **The deck.** The only real blocker, and it needs the user to download the
+   portal's mandatory template. `docs/Project_Understanding.pdf` plus §7.1/§7.2
+   carry the narrative; the hybrid gate is the strongest slide.
+2. **Demo video** — a short walkthrough of the live site.
+3. **Flip the repo public** at submission. Mandatory.
+4. **Rotate the API key** (it passed through a conversation transcript) and
+   **delete `backend/.env`** once local live testing is finished.
+5. **Leave the UptimeRobot monitor running.** A sleeping free instance returns
+   404, so a reviewer's first click would look like a dead link.
+
+### Deliberately not done
+
+- **The hybrid gate is benchmark-only.** It is not selectable in the UI, so a
+  reviewer on the live site sees "Demo" and "Live AI" — the latter being the
+  engine that scored *worse*. Wiring it in as a third mode is real backend +
+  frontend work, not a small change. Skipped knowingly; cover it in the deck.
+- **Live taxonomy proposer.** See §3.1 — recommendation is don't.
 
 ### Gotchas already paid for
 
@@ -423,3 +457,16 @@ python run_benchmark.py --live --budget 5
   runs causes confusing results — delete both when debugging.
 - Restart the backend after adding routes; a stale uvicorn returns 404 and
   looks like a frontend bug.
+- **Changing `build_corpus()` silently invalidates every committed record.**
+  The cache key covers the product payload, so any edit to corpus generation
+  makes all 102 keys miss and `run_hybrid.py` aborts. That abort is correct
+  behaviour, not a bug — recovering costs another live run (~$1.62). Treat the
+  corpus as frozen unless a re-run is genuinely worth paying for.
+- To simulate a fresh clone without touching the real cache, point
+  `PI_CACHE_DIR` at an empty directory. Renaming `backend/.cache/` risks the
+  paid records; the env var does not.
+- Verifying a deploy by pinging `/api/health` proves almost nothing — it does
+  not import most of the app. Exercise a real endpoint (`/api/enrich`) when the
+  change touched code the service actually runs.
+- `git check-ignore` exits **1** when a path is *not* ignored. In a chained
+  PowerShell command that reads as a failure when it is the desired result.
