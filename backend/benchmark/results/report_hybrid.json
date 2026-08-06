@@ -32,42 +32,47 @@
     }
   },
   "report": {
-    "label": "demo (deterministic)",
+    "label": "hybrid (gated)",
     "cases": 102,
-    "cached_hits": 0,
-    "elapsed_s": 0.33,
-    "throughput_per_s": 305.3,
+    "cached_hits": 102,
+    "elapsed_s": 1.13,
+    "throughput_per_s": 89.9,
     "coverage": {
       "attributes_in": 129,
-      "attributes_out": 355,
-      "lift_multiple": 2.75
+      "attributes_out": 412,
+      "lift_multiple": 3.19
     },
     "recovery": {
-      "recovered": 226,
-      "correct": 201,
-      "contradicted": 25,
+      "recovered": 274,
+      "correct": 239,
+      "contradicted": 35,
       "withheld_total": 370,
-      "recall_pct": 61.1,
-      "precision_pct": 88.9,
-      "contradiction_pct": 11.1
+      "recall_pct": 74.1,
+      "precision_pct": 87.2,
+      "contradiction_pct": 12.8
     },
     "recovery_excluding_defaults": {
-      "recovered": 123,
-      "correct": 123,
-      "contradicted": 0,
-      "precision_pct": 100.0,
-      "contradiction_pct": 0.0
+      "recovered": 181,
+      "correct": 165,
+      "contradicted": 16,
+      "precision_pct": 91.2,
+      "contradiction_pct": 8.8
     },
     "by_provenance": {
       "defaulted": {
-        "correct": 78,
-        "contradicted": 25,
-        "precision_pct": 75.7
+        "correct": 74,
+        "contradicted": 19,
+        "precision_pct": 79.6
       },
       "derived": {
         "correct": 8,
         "contradicted": 0,
         "precision_pct": 100.0
+      },
+      "inferred": {
+        "correct": 42,
+        "contradicted": 16,
+        "precision_pct": 72.4
       },
       "knowledge_base": {
         "correct": 72,
@@ -82,20 +87,20 @@
     },
     "by_truth_source": {
       "archetype": {
-        "correct": 37,
-        "contradicted": 17,
-        "recovered": 54,
+        "correct": 47,
+        "contradicted": 21,
+        "recovered": 68,
         "withheld": 163,
-        "recall_pct": 33.1,
-        "precision_pct": 68.5
+        "recall_pct": 41.7,
+        "precision_pct": 69.1
       },
       "standards": {
-        "correct": 164,
-        "contradicted": 8,
-        "recovered": 172,
+        "correct": 192,
+        "contradicted": 14,
+        "recovered": 206,
         "withheld": 207,
-        "recall_pct": 83.1,
-        "precision_pct": 95.3
+        "recall_pct": 99.5,
+        "precision_pct": 93.2
       }
     },
     "defect_detection": {
@@ -148,9 +153,9 @@
       "codes": {}
     },
     "verdicts_clean": {
-      "publish": 16,
+      "publish": 27,
       "review": 2,
-      "blocked": 33
+      "blocked": 22
     },
     "verdicts_defect": {
       "blocked": 42,
@@ -159,6 +164,24 @@
     "defects_stopped_pct": 100.0,
     "contradictions": [
       {
+        "case": "31171500-007-sparse",
+        "attribute": "operating_temp_max",
+        "predicted": "100 C",
+        "truth": "120",
+        "provenance": "inferred",
+        "confidence": 0.55,
+        "evidence": "[hybrid: displaced category default] Typical max operating temperature for 2RS rubber-sealed bearings (NBR seal limit) per common industry specifications"
+      },
+      {
+        "case": "31161500-000-sparse",
+        "attribute": "material",
+        "predicted": "Carbon Steel",
+        "truth": "Alloy Steel",
+        "provenance": "inferred",
+        "confidence": 0.6,
+        "evidence": "[hybrid: gap fill] Grade 4.6 is a low/medium carbon steel property class per ISO 898-1"
+      },
+      {
         "case": "31161500-000-sparse",
         "attribute": "drive_type",
         "predicted": "Hex",
@@ -166,6 +189,15 @@
         "provenance": "defaulted",
         "confidence": 0.45,
         "evidence": "Not stated by the supplier. Hex is the most common value for Fasteners and is offered as a placeholder requiring confirmation."
+      },
+      {
+        "case": "31161500-000-sparse",
+        "attribute": "finish",
+        "predicted": "Plain",
+        "truth": "Zinc Plated",
+        "provenance": "inferred",
+        "confidence": 0.4,
+        "evidence": "[hybrid: displaced category default] No finish specified in raw_specs; Plain is the typical default for unspecified carbon steel fasteners"
       },
       {
         "case": "31161500-001-sparse",
@@ -177,6 +209,15 @@
         "evidence": "Not stated by the supplier. Hex is the most common value for Fasteners and is offered as a placeholder requiring confirmation."
       },
       {
+        "case": "31161500-001-sparse",
+        "attribute": "material",
+        "predicted": "Carbon Steel",
+        "truth": "Alloy Steel",
+        "provenance": "inferred",
+        "confidence": 0.6,
+        "evidence": "[hybrid: gap fill] Grade 8.8 property class per ISO 898-1 is standard for carbon steel or alloy steel bolts; combined with Zinc Plated finish, Carbon Steel is t"
+      },
+      {
         "case": "31161500-002-sparse",
         "attribute": "drive_type",
         "predicted": "Hex",
@@ -186,6 +227,24 @@
         "evidence": "Not stated by the supplier. Hex is the most common value for Fasteners and is offered as a placeholder requiring confirmation."
       },
       {
+        "case": "31161500-003-sparse",
+        "attribute": "finish",
+        "predicted": "Plain",
+        "truth": "Zinc Plated",
+        "provenance": "inferred",
+        "confidence": 0.4,
+        "evidence": "[hybrid: displaced category default] No finish specified in raw_specs; 12.9 high-strength bolts are commonly supplied in plain/black finish rather than plated"
+      },
+      {
+        "case": "31161500-004-sparse",
+        "attribute": "material",
+        "predicted": "Carbon Steel",
+        "truth": "Alloy Steel",
+        "provenance": "inferred",
+        "confidence": 0.6,
+        "evidence": "[hybrid: gap fill] Grade 2 designation corresponds to SAE J429 Grade 2 bolts, typically made from low or medium carbon steel"
+      },
+      {
         "case": "31161500-004-sparse",
         "attribute": "drive_type",
         "predicted": "Hex",
@@ -193,6 +252,15 @@
         "provenance": "defaulted",
         "confidence": 0.45,
         "evidence": "Not stated by the supplier. Hex is the most common value for Fasteners and is offered as a placeholder requiring confirmation."
+      },
+      {
+        "case": "31161500-005-sparse",
+        "attribute": "material",
+        "predicted": "Carbon Steel",
+        "truth": "Alloy Steel",
+        "provenance": "inferred",
+        "confidence": 0.6,
+        "evidence": "[hybrid: gap fill] Grade 5 is a SAE fastener grade typically manufactured from medium carbon steel, quenched and tempered"
       },
       {
         "case": "31161500-006-sparse",
@@ -205,12 +273,12 @@
       },
       {
         "case": "31161500-007-sparse",
-        "attribute": "finish",
-        "predicted": "Zinc Plated",
-        "truth": "Passivated",
-        "provenance": "defaulted",
-        "confidence": 0.45,
-        "evidence": "Not stated by the supplier. Zinc Plated is the most common value for Fasteners and is offered as a placeholder requiring confirmation."
+        "attribute": "material",
+        "predicted": "304 Stainless Steel",
+        "truth": "316 Stainless Steel",
+        "provenance": "inferred",
+        "confidence": 0.6,
+        "evidence": "[hybrid: gap fill] MPN suffix 'A2-70' designates A2 (304-family) stainless steel per ISO 3506, and Tensile Strength 700 MPa matches the -70 property class"
       },
       {
         "case": "31161500-008-sparse",
@@ -222,13 +290,13 @@
         "evidence": "Not stated by the supplier. Hex is the most common value for Fasteners and is offered as a placeholder requiring confirmation."
       },
       {
-        "case": "31161500-008-sparse",
-        "attribute": "finish",
-        "predicted": "Zinc Plated",
-        "truth": "Passivated",
-        "provenance": "defaulted",
-        "confidence": 0.45,
-        "evidence": "Not stated by the supplier. Zinc Plated is the most common value for Fasteners and is offered as a placeholder requiring confirmation."
+        "case": "40141600-000-sparse",
+        "attribute": "nominal_size",
+        "predicted": "0.25 in",
+        "truth": "0.5",
+        "provenance": "inferred",
+        "confidence": 0.4,
+        "evidence": "[hybrid: gap fill] MPN 401-1625 corresponds to Swagelok's 40 series ball valve line, which commonly includes 1/4 in NPT sizes as a typical configuration"
       },
       {
         "case": "40141600-001-sparse",
@@ -277,6 +345,15 @@
       },
       {
         "case": "26101100-002-sparse",
+        "attribute": "frequency",
+        "predicted": "60 Hz",
+        "truth": "50",
+        "provenance": "inferred",
+        "confidence": 0.4,
+        "evidence": "[hybrid: displaced category default] Brand WEG single phase motor, frame 80B; WEG single phase motors of this frame series are commonly manufactured for 60 Hz m"
+      },
+      {
+        "case": "26101100-002-sparse",
         "attribute": "efficiency_class",
         "predicted": "IE3 (Premium)",
         "truth": "IE2 (High)",
@@ -312,13 +389,22 @@
         "evidence": "Not stated by the supplier. IP67 is the most common value for Sensors & Transmitters and is offered as a placeholder requiring confirmation."
       },
       {
-        "case": "40151500-001-sparse",
-        "attribute": "seal_type",
-        "predicted": "Mechanical Seal",
-        "truth": "Lip Seal",
-        "provenance": "defaulted",
-        "confidence": 0.45,
-        "evidence": "Not stated by the supplier. Mechanical Seal is the most common value for Industrial Pumps and is offered as a placeholder requiring confirmation."
+        "case": "40151500-002-sparse",
+        "attribute": "inlet_size",
+        "predicted": "0.75 in",
+        "truth": "1",
+        "provenance": "inferred",
+        "confidence": 0.4,
+        "evidence": "[hybrid: gap fill] Outlet Size: 0.75 in (gear pumps typically have matching inlet/outlet sizes)"
+      },
+      {
+        "case": "46181500-002-sparse",
+        "attribute": "standard",
+        "predicted": "EN 149:2001+A1:2009",
+        "truth": "EN 149 FFP3",
+        "provenance": "inferred",
+        "confidence": 0.6,
+        "evidence": "[hybrid: gap fill] Protection Level: FFP3 is a classification defined under EN 149 for filtering half masks"
       },
       {
         "case": "46181500-002-sparse",
@@ -357,31 +443,40 @@
         "evidence": "Not stated by the supplier. IP20 is the most common value for Drives & Controls and is offered as a placeholder requiring confirmation."
       },
       {
-        "case": "39121000-001-sparse",
-        "attribute": "control_method",
-        "predicted": "Sensorless Vector",
-        "truth": "Servo",
-        "provenance": "defaulted",
-        "confidence": 0.45,
-        "evidence": "Not stated by the supplier. Sensorless Vector is the most common value for Drives & Controls and is offered as a placeholder requiring confirmation."
+        "case": "40142000-000-sparse",
+        "attribute": "standard",
+        "predicted": "SAE 100R2 / EN 853 2SN",
+        "truth": "SAE 100R2AT",
+        "provenance": "inferred",
+        "confidence": 0.6,
+        "evidence": "[hybrid: gap fill] 2-Wire Braid reinforcement construction with these bend radius specs corresponds to the standard 2SN hydraulic hose construction defined by S"
       },
       {
         "case": "40142000-001-sparse",
-        "attribute": "reinforcement",
-        "predicted": "2-Wire Braid",
-        "truth": "1-Wire Braid",
-        "provenance": "defaulted",
-        "confidence": 0.45,
-        "evidence": "Not stated by the supplier. 2-Wire Braid is the most common value for Hose & Fittings and is offered as a placeholder requiring confirmation."
+        "attribute": "temp_range",
+        "predicted": "-40\u00b0C to +100\u00b0C",
+        "truth": "-40 C to +100 C",
+        "provenance": "inferred",
+        "confidence": 0.6,
+        "evidence": "[hybrid: gap fill] SAE 100R1AT"
       },
       {
         "case": "40142000-002-sparse",
         "attribute": "reinforcement",
-        "predicted": "2-Wire Braid",
+        "predicted": "1-Wire Braid",
         "truth": "Textile Braid",
-        "provenance": "defaulted",
-        "confidence": 0.45,
-        "evidence": "Not stated by the supplier. 2-Wire Braid is the most common value for Hose & Fittings and is offered as a placeholder requiring confirmation."
+        "provenance": "inferred",
+        "confidence": 0.55,
+        "evidence": "[hybrid: displaced category default] SAE 100R14 covers both single and double wire braid reinforced PTFE hoses per SAE J517; smaller OD (13.4mm) is typical of s"
+      },
+      {
+        "case": "40142000-002-sparse",
+        "attribute": "temp_range",
+        "predicted": "-73\u00b0C to +232\u00b0C",
+        "truth": "-70 C to +260 C",
+        "provenance": "inferred",
+        "confidence": 0.6,
+        "evidence": "[hybrid: gap fill] SAE 100R14 PTFE hoses are standardized for extreme temperature service per SAE J517 specification"
       }
     ]
   },
@@ -392,13 +487,18 @@
       "assisted_records_credited_at": "50% of the manual time saving",
       "catalog_size": 100000
     },
-    "auto_publish_pct": 31.4,
+    "auto_publish_pct": 52.9,
     "assisted_pct": 3.9,
     "manual_baseline_hours": 16667,
-    "hours_saved": 5556,
-    "cost_saved_usd": 194444,
-    "fte_years_saved": 3.1,
-    "processing_hours": 0.09,
+    "hours_saved": 9150,
+    "cost_saved_usd": 320261,
+    "fte_years_saved": 5.1,
+    "processing_hours": 0.31,
     "defects_caught_per_10k": 500
+  },
+  "policy_actions": {
+    "gap_filled": 57,
+    "displaced_defaults": 10,
+    "refused_overrules": 28
   }
 }

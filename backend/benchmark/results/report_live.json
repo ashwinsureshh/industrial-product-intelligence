@@ -1,0 +1,595 @@
+{
+  "corpus": {
+    "total": 102,
+    "by_category": {
+      "Rolling Element Bearings": 36,
+      "Fasteners": 18,
+      "Industrial Valves": 6,
+      "Electric Motors": 6,
+      "Sensors & Transmitters": 6,
+      "Industrial Pumps": 6,
+      "Protective Equipment": 6,
+      "Cutting Tools": 6,
+      "Drives & Controls": 6,
+      "Hose & Fittings": 6
+    },
+    "by_variant": {
+      "sparse": 51,
+      "defect": 51
+    },
+    "by_truth_source": {
+      "standards": 54,
+      "archetype": 48
+    },
+    "by_defect_kind": {
+      "transposition": 21,
+      "grade_conflict": 9,
+      "material_conflict": 6,
+      "magnitude": 3,
+      "invalid_code": 6,
+      "vocabulary": 3,
+      "geometry": 3
+    }
+  },
+  "report": {
+    "label": "live (claude)",
+    "cases": 102,
+    "cached_hits": 13,
+    "elapsed_s": 1276.85,
+    "throughput_per_s": 0.1,
+    "coverage": {
+      "attributes_in": 129,
+      "attributes_out": 385,
+      "lift_multiple": 2.98
+    },
+    "recovery": {
+      "recovered": 247,
+      "correct": 201,
+      "contradicted": 46,
+      "withheld_total": 370,
+      "recall_pct": 66.8,
+      "precision_pct": 81.4,
+      "contradiction_pct": 18.6
+    },
+    "recovery_excluding_defaults": {
+      "recovered": 158,
+      "correct": 132,
+      "contradicted": 26,
+      "precision_pct": 83.5,
+      "contradiction_pct": 16.5
+    },
+    "by_provenance": {
+      "defaulted": {
+        "correct": 69,
+        "contradicted": 20,
+        "precision_pct": 77.5
+      },
+      "inferred": {
+        "correct": 9,
+        "contradicted": 6,
+        "precision_pct": 60.0
+      },
+      "knowledge_base": {
+        "correct": 67,
+        "contradicted": 17,
+        "precision_pct": 79.8
+      },
+      "parsed": {
+        "correct": 56,
+        "contradicted": 3,
+        "precision_pct": 94.9
+      }
+    },
+    "by_truth_source": {
+      "archetype": {
+        "correct": 36,
+        "contradicted": 8,
+        "recovered": 44,
+        "withheld": 163,
+        "recall_pct": 27.0,
+        "precision_pct": 81.8
+      },
+      "standards": {
+        "correct": 165,
+        "contradicted": 38,
+        "recovered": 203,
+        "withheld": 207,
+        "recall_pct": 98.1,
+        "precision_pct": 81.3
+      }
+    },
+    "defect_detection": {
+      "expected": 51,
+      "detected": 51,
+      "recall_pct": 100.0,
+      "by_kind": {
+        "geometry": {
+          "expected": 3,
+          "detected": 3,
+          "recall_pct": 100.0
+        },
+        "grade_conflict": {
+          "expected": 9,
+          "detected": 9,
+          "recall_pct": 100.0
+        },
+        "invalid_code": {
+          "expected": 6,
+          "detected": 6,
+          "recall_pct": 100.0
+        },
+        "magnitude": {
+          "expected": 3,
+          "detected": 3,
+          "recall_pct": 100.0
+        },
+        "material_conflict": {
+          "expected": 6,
+          "detected": 6,
+          "recall_pct": 100.0
+        },
+        "transposition": {
+          "expected": 21,
+          "detected": 21,
+          "recall_pct": 100.0
+        },
+        "vocabulary": {
+          "expected": 3,
+          "detected": 3,
+          "recall_pct": 100.0
+        }
+      },
+      "missed": []
+    },
+    "false_alarms": {
+      "clean_cases": 51,
+      "cases_with_false_error": 1,
+      "rate_pct": 2.0,
+      "codes": {
+        "STRENGTH_MISMATCH": 1
+      }
+    },
+    "verdicts_clean": {
+      "publish": 26,
+      "review": 2,
+      "blocked": 23
+    },
+    "verdicts_defect": {
+      "blocked": 42,
+      "review": 9
+    },
+    "defects_stopped_pct": 100.0,
+    "contradictions": [
+      {
+        "case": "31171500-001-sparse",
+        "attribute": "max_speed",
+        "predicted": "32000 rpm",
+        "truth": "28000",
+        "provenance": "defaulted",
+        "confidence": 0.55,
+        "evidence": "Typical limiting speed for grease-lubricated 6201-2RS sealed deep groove ball bearing per standard manufacturer catalogs (e.g., FAG/SKF) is around 32000 rpm"
+      },
+      {
+        "case": "31171500-002-sparse",
+        "attribute": "dynamic_load_rating",
+        "predicted": "7.65 kN",
+        "truth": "7.8",
+        "provenance": "knowledge_base",
+        "confidence": 0.85,
+        "evidence": "Standard published catalog value for 6202 series deep groove ball bearing (NSK/ISO reference tables), dynamic load rating C \u2248 7.65 kN"
+      },
+      {
+        "case": "31171500-003-sparse",
+        "attribute": "max_speed",
+        "predicted": "19000 rpm",
+        "truth": "20000",
+        "provenance": "defaulted",
+        "confidence": 0.55,
+        "evidence": "Typical limiting speed for 6203 deep groove ball bearing (grease lubrication) per standard bearing catalogs (NTN/SKF) is approximately 19,000 rpm"
+      },
+      {
+        "case": "31171500-003-sparse",
+        "attribute": "dynamic_load_rating",
+        "predicted": "9.7 kN",
+        "truth": "9.6",
+        "provenance": "knowledge_base",
+        "confidence": 0.85,
+        "evidence": "MPN '6203' - standard catalog dynamic load rating (C) for 6203 deep groove ball bearing per major bearing manufacturers (NTN, SKF, FAG) is 9.7 kN, consistent wi"
+      },
+      {
+        "case": "31171500-004-sparse",
+        "attribute": "max_speed",
+        "predicted": "14000 rpm",
+        "truth": "18000",
+        "provenance": "defaulted",
+        "confidence": 0.55,
+        "evidence": "Typical limiting speed (grease lubrication) for 6204-2RS sealed deep groove ball bearing per standard manufacturer catalogs"
+      },
+      {
+        "case": "31171500-005-sparse",
+        "attribute": "dynamic_load_rating",
+        "predicted": "14.8 kN",
+        "truth": "14.0",
+        "provenance": "knowledge_base",
+        "confidence": 0.85,
+        "evidence": "Standard published catalog value for 6205 series deep groove ball bearing (e.g., Koyo/NTN/NSK catalogs) dynamic load rating C \u2248 14.8 kN"
+      },
+      {
+        "case": "31171500-005-sparse",
+        "attribute": "max_speed",
+        "predicted": "14000 rpm",
+        "truth": "16000",
+        "provenance": "defaulted",
+        "confidence": 0.55,
+        "evidence": "Typical limiting speed for 6205-ZZ shielded deep groove ball bearing per common manufacturer catalogs (grease lubrication, shielded type)"
+      },
+      {
+        "case": "31171500-006-sparse",
+        "attribute": "max_speed",
+        "predicted": "19000 rpm",
+        "truth": "13000",
+        "provenance": "defaulted",
+        "confidence": 0.55,
+        "evidence": "SKF catalog limiting speed for grease-lubricated open 6206 bearing is typically around 19,000 rpm"
+      },
+      {
+        "case": "31171500-007-sparse",
+        "attribute": "operating_temp_max",
+        "predicted": "100 C",
+        "truth": "120",
+        "provenance": "defaulted",
+        "confidence": 0.55,
+        "evidence": "Typical max operating temperature for 2RS rubber-sealed bearings (NBR seal limit) per common industry specifications"
+      },
+      {
+        "case": "31171500-007-sparse",
+        "attribute": "max_speed",
+        "predicted": "9500 rpm",
+        "truth": "11000",
+        "provenance": "defaulted",
+        "confidence": 0.55,
+        "evidence": "Typical limiting speed for grease-lubricated 6207 series bearing with rubber seals (2RS), per standard bearing catalogs"
+      },
+      {
+        "case": "31171500-008-sparse",
+        "attribute": "max_speed",
+        "predicted": "9500 rpm",
+        "truth": "10000",
+        "provenance": "defaulted",
+        "confidence": 0.55,
+        "evidence": "NSK catalog typical limiting speed for 6208-ZZ (metal shielded, 40mm bore) bearings with grease lubrication is approximately 9500 rpm based on standard NSK bear"
+      },
+      {
+        "case": "31171500-009-sparse",
+        "attribute": "dynamic_load_rating",
+        "predicted": "34.5 kN",
+        "truth": "35.1",
+        "provenance": "defaulted",
+        "confidence": 0.55,
+        "evidence": "Standard catalog value for NTN/ generic 6209 open deep groove ball bearing: Dynamic load rating (C) \u2248 34.5 kN, consistent with static load rating of 21.6 kN giv"
+      },
+      {
+        "case": "31171500-010-sparse",
+        "attribute": "max_speed",
+        "predicted": "8500 rpm",
+        "truth": "9000",
+        "provenance": "defaulted",
+        "confidence": 0.5,
+        "evidence": "Typical limiting speed for 6210-2RS sealed deep groove ball bearing (grease lubrication) as listed in standard bearing catalogs is around 8500 rpm"
+      },
+      {
+        "case": "31171500-012-sparse",
+        "attribute": "static_load_rating",
+        "predicted": "3.45 kN",
+        "truth": "4.15",
+        "provenance": "knowledge_base",
+        "confidence": 0.85,
+        "evidence": "Standard SKF 6301 deep groove ball bearing catalog static load rating (C0) is 3.45 kN, per published SKF bearing dimension tables for the 6301 series."
+      },
+      {
+        "case": "31171500-012-sparse",
+        "attribute": "dynamic_load_rating",
+        "predicted": "7.65 kN",
+        "truth": "9.75",
+        "provenance": "knowledge_base",
+        "confidence": 0.85,
+        "evidence": "Standard SKF 6301 deep groove ball bearing catalog dynamic load rating (C) is 7.65 kN, per published SKF bearing dimension tables for the 6301 series."
+      },
+      {
+        "case": "31171500-012-sparse",
+        "attribute": "max_speed",
+        "predicted": "32000 rpm",
+        "truth": "26000",
+        "provenance": "defaulted",
+        "confidence": 0.55,
+        "evidence": "SKF catalog reference (grease) limiting speed for 6301 series open bearings is approximately 32000 rpm, based on typical SKF published limiting speed data for t"
+      },
+      {
+        "case": "31171500-013-sparse",
+        "attribute": "static_load_rating",
+        "predicted": "5.85 kN",
+        "truth": "5.4",
+        "provenance": "defaulted",
+        "confidence": 0.55,
+        "evidence": "Standard catalog value for 6302 series deep groove ball bearing (15x42x13mm) as published by major bearing manufacturers"
+      },
+      {
+        "case": "31171500-013-sparse",
+        "attribute": "max_speed",
+        "predicted": "22000 rpm",
+        "truth": "24000",
+        "provenance": "defaulted",
+        "confidence": 0.55,
+        "evidence": "Typical limiting speed for grease-lubricated 6302-2RS sealed bearing per standard manufacturer catalogs (open bearing limiting speed ~28000 rpm, reduced for 2RS"
+      },
+      {
+        "case": "31171500-014-sparse",
+        "attribute": "max_speed",
+        "predicted": "19000 rpm",
+        "truth": "20000",
+        "provenance": "defaulted",
+        "confidence": 0.55,
+        "evidence": "Typical limiting speed for grease-lubricated 6303-ZZ shielded bearing per NSK catalog conventions for this bore size series"
+      },
+      {
+        "case": "31171500-015-sparse",
+        "attribute": "max_speed",
+        "predicted": "19000 rpm",
+        "truth": "18000",
+        "provenance": "defaulted",
+        "confidence": 0.55,
+        "evidence": "Typical grease-lubricated limiting speed for a 6304-size (20mm bore) open deep groove ball bearing per common manufacturer catalogs (NTN/SKF) is around 19,000 r"
+      },
+      {
+        "case": "31171500-015-sparse",
+        "attribute": "static_load_rating",
+        "predicted": "7.88 kN",
+        "truth": "7.8",
+        "provenance": "knowledge_base",
+        "confidence": 0.8,
+        "evidence": "Standard NTN 6304 catalog rating: dynamic load rating C=15.9 kN paired with static load rating C0=7.88 kN for this bearing series"
+      },
+      {
+        "case": "31171500-017-sparse",
+        "attribute": "dynamic_load_rating",
+        "predicted": "27 kN",
+        "truth": "28.1",
+        "provenance": "defaulted",
+        "confidence": 0.55,
+        "evidence": "Standard catalog dynamic load rating for 6306-series deep groove ball bearings (e.g. Koyo/NSK/SKF catalogs) is approximately 27 kN, consistent with static load "
+      },
+      {
+        "case": "31161500-000-sparse",
+        "attribute": "material",
+        "predicted": "Carbon Steel",
+        "truth": "Alloy Steel",
+        "provenance": "knowledge_base",
+        "confidence": 0.7,
+        "evidence": "Grade 4.6 is a low/medium carbon steel property class per ISO 898-1"
+      },
+      {
+        "case": "31161500-000-sparse",
+        "attribute": "drive_type",
+        "predicted": "Hex",
+        "truth": "External Hex",
+        "provenance": "inferred",
+        "confidence": 0.85,
+        "evidence": "name: Hex Bolt"
+      },
+      {
+        "case": "31161500-000-sparse",
+        "attribute": "finish",
+        "predicted": "Plain",
+        "truth": "Zinc Plated",
+        "provenance": "defaulted",
+        "confidence": 0.4,
+        "evidence": "No finish specified in raw_specs; Plain is the typical default for unspecified carbon steel fasteners"
+      },
+      {
+        "case": "31161500-001-sparse",
+        "attribute": "drive_type",
+        "predicted": "Hex",
+        "truth": "External Hex",
+        "provenance": "inferred",
+        "confidence": 0.85,
+        "evidence": "Product name 'Hex Bolt' indicates hexagonal head driven by hex/wrench, standard drive type for hex bolts"
+      },
+      {
+        "case": "31161500-001-sparse",
+        "attribute": "material",
+        "predicted": "Carbon Steel",
+        "truth": "Alloy Steel",
+        "provenance": "inferred",
+        "confidence": 0.85,
+        "evidence": "Grade 8.8 property class per ISO 898-1 is standard for carbon steel or alloy steel bolts; combined with Zinc Plated finish, Carbon Steel is the typical material"
+      },
+      {
+        "case": "31161500-002-sparse",
+        "attribute": "drive_type",
+        "predicted": "Hex",
+        "truth": "External Hex",
+        "provenance": "inferred",
+        "confidence": 0.85,
+        "evidence": "name: Hex Bolt"
+      },
+      {
+        "case": "31161500-002-sparse",
+        "attribute": "tensile_strength",
+        "predicted": "1040 MPa",
+        "truth": "1000",
+        "provenance": "knowledge_base",
+        "confidence": 0.9,
+        "evidence": "Grade 10.9 property class per ISO 898-1 specifies minimum tensile strength of 1040 MPa"
+      },
+      {
+        "case": "31161500-003-sparse",
+        "attribute": "tensile_strength",
+        "predicted": "1220 MPa",
+        "truth": "1200",
+        "provenance": "knowledge_base",
+        "confidence": 0.9,
+        "evidence": "ISO 898-1 property class 12.9 specifies minimum tensile strength of 1220 MPa"
+      },
+      {
+        "case": "31161500-003-sparse",
+        "attribute": "finish",
+        "predicted": "Plain",
+        "truth": "Zinc Plated",
+        "provenance": "defaulted",
+        "confidence": 0.4,
+        "evidence": "No finish specified in raw_specs; 12.9 high-strength bolts are commonly supplied in plain/black finish rather than plated"
+      },
+      {
+        "case": "31161500-004-sparse",
+        "attribute": "tensile_strength",
+        "predicted": "414 MPa",
+        "truth": "510",
+        "provenance": "knowledge_base",
+        "confidence": 0.75,
+        "evidence": "SAE J429 Grade 2 minimum tensile strength for bolts up to 3/4 in diameter is 60,000 psi (~414 MPa); M16 falls in comparable size range for Grade 2 fasteners"
+      },
+      {
+        "case": "31161500-004-sparse",
+        "attribute": "material",
+        "predicted": "Carbon Steel",
+        "truth": "Alloy Steel",
+        "provenance": "knowledge_base",
+        "confidence": 0.6,
+        "evidence": "Grade 2 designation corresponds to SAE J429 Grade 2 bolts, typically made from low or medium carbon steel"
+      },
+      {
+        "case": "31161500-004-sparse",
+        "attribute": "drive_type",
+        "predicted": "Hex",
+        "truth": "External Hex",
+        "provenance": "parsed",
+        "confidence": 0.9,
+        "evidence": "name: Hex Bolt"
+      },
+      {
+        "case": "31161500-005-sparse",
+        "attribute": "material",
+        "predicted": "Carbon Steel",
+        "truth": "Alloy Steel",
+        "provenance": "knowledge_base",
+        "confidence": 0.7,
+        "evidence": "Grade 5 is a SAE fastener grade typically manufactured from medium carbon steel, quenched and tempered"
+      },
+      {
+        "case": "31161500-006-sparse",
+        "attribute": "drive_type",
+        "predicted": "Hex",
+        "truth": "External Hex",
+        "provenance": "parsed",
+        "confidence": 0.9,
+        "evidence": "name: 'Hex Bolt' indicates external hexagonal head driven with wrench"
+      },
+      {
+        "case": "31161500-007-sparse",
+        "attribute": "material",
+        "predicted": "304 Stainless Steel",
+        "truth": "316 Stainless Steel",
+        "provenance": "knowledge_base",
+        "confidence": 0.85,
+        "evidence": "MPN suffix 'A2-70' designates A2 (304-family) stainless steel per ISO 3506, and Tensile Strength 700 MPa matches the -70 property class"
+      },
+      {
+        "case": "31161500-008-sparse",
+        "attribute": "drive_type",
+        "predicted": "Hex",
+        "truth": "External Hex",
+        "provenance": "parsed",
+        "confidence": 0.9,
+        "evidence": "name: Hex Bolt"
+      },
+      {
+        "case": "40141600-000-sparse",
+        "attribute": "nominal_size",
+        "predicted": "0.25 in",
+        "truth": "0.5",
+        "provenance": "defaulted",
+        "confidence": 0.4,
+        "evidence": "MPN 401-1625 corresponds to Swagelok's 40 series ball valve line, which commonly includes 1/4 in NPT sizes as a typical configuration"
+      },
+      {
+        "case": "26101100-002-sparse",
+        "attribute": "frequency",
+        "predicted": "60 Hz",
+        "truth": "50",
+        "provenance": "defaulted",
+        "confidence": 0.4,
+        "evidence": "Brand WEG single phase motor, frame 80B; WEG single phase motors of this frame series are commonly manufactured for 60 Hz markets (e.g., Brazil/Americas), but n"
+      },
+      {
+        "case": "40151500-002-sparse",
+        "attribute": "inlet_size",
+        "predicted": "0.75 in",
+        "truth": "1",
+        "provenance": "inferred",
+        "confidence": 0.4,
+        "evidence": "Outlet Size: 0.75 in (gear pumps typically have matching inlet/outlet sizes)"
+      },
+      {
+        "case": "46181500-002-sparse",
+        "attribute": "standard",
+        "predicted": "EN 149:2001+A1:2009",
+        "truth": "EN 149 FFP3",
+        "provenance": "knowledge_base",
+        "confidence": 0.85,
+        "evidence": "Protection Level: FFP3 is a classification defined under EN 149 for filtering half masks"
+      },
+      {
+        "case": "40142000-000-sparse",
+        "attribute": "standard",
+        "predicted": "SAE 100R2 / EN 853 2SN",
+        "truth": "SAE 100R2AT",
+        "provenance": "inferred",
+        "confidence": 0.6,
+        "evidence": "2-Wire Braid reinforcement construction with these bend radius specs corresponds to the standard 2SN hydraulic hose construction defined by SAE 100R2 and EN 853"
+      },
+      {
+        "case": "40142000-001-sparse",
+        "attribute": "temp_range",
+        "predicted": "-40\u00b0C to +100\u00b0C",
+        "truth": "-40 C to +100 C",
+        "provenance": "knowledge_base",
+        "confidence": 0.7,
+        "evidence": "SAE 100R1AT"
+      },
+      {
+        "case": "40142000-002-sparse",
+        "attribute": "reinforcement",
+        "predicted": "1-Wire Braid",
+        "truth": "Textile Braid",
+        "provenance": "knowledge_base",
+        "confidence": 0.55,
+        "evidence": "SAE 100R14 covers both single and double wire braid reinforced PTFE hoses per SAE J517; smaller OD (13.4mm) is typical of single braid construction"
+      },
+      {
+        "case": "40142000-002-sparse",
+        "attribute": "temp_range",
+        "predicted": "-73\u00b0C to +232\u00b0C",
+        "truth": "-70 C to +260 C",
+        "provenance": "knowledge_base",
+        "confidence": 0.7,
+        "evidence": "SAE 100R14 PTFE hoses are standardized for extreme temperature service per SAE J517 specification"
+      }
+    ]
+  },
+  "business": {
+    "assumptions": {
+      "manual_minutes_per_sku": 10.0,
+      "analyst_cost_per_hour_usd": 35.0,
+      "assisted_records_credited_at": "50% of the manual time saving",
+      "catalog_size": 100000
+    },
+    "auto_publish_pct": 51.0,
+    "assisted_pct": 3.9,
+    "manual_baseline_hours": 16667,
+    "hours_saved": 8824,
+    "cost_saved_usd": 308824,
+    "fte_years_saved": 4.9,
+    "processing_hours": 277.78,
+    "defects_caught_per_10k": 500
+  }
+}

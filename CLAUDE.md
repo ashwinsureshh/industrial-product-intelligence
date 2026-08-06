@@ -82,7 +82,8 @@ auto-deploys on push to `main`, built from the root `Dockerfile`.
 | 1 | Evaluation harness + measured accuracy | **Done, committed** |
 | 2 | PDF datasheet + product-page ingestion | **Done, committed** |
 | 3 | Auto-taxonomy learning | **Backend done + committed; review UI built, verified, not yet committed** |
-| — | Live ablation (Claude vs deterministic) | **~10/102 done, cached. Resume: `python run_benchmark.py --live --budget 5` (~$1.90, skips cached)** |
+| — | Live ablation (Claude vs deterministic) | **Done, 102/102, $1.62. Negative result — see §7.1.** |
+| — | Hybrid gate (bounded Claude) | **Done, $0 — see §7.2. Best result in the project; benchmark only, not wired into the UI.** |
 | 4 | Public deployment | **Done — live and monitored** |
 | 5 | Deck + demo video | **Blocked: need the portal's mandatory template** |
 
@@ -90,12 +91,13 @@ auto-deploys on push to `main`, built from the root `Dockerfile`.
 
 ## 3. Cost discipline — READ BEFORE ANY LIVE RUN
 
-Credit was topped up to **$9.18**; **~$0.60 spent** (precompute $0.39, partial
-ablation $0.21), so roughly **$8.55 remains**. An earlier mistake burned ~$2.63
+Credit was topped up to **$9.18**; **~$2.22 spent** (precompute $0.39, ablation
+$0.21 + $1.62), so roughly **$6.96 remains**. An earlier mistake burned ~$2.63
 with nothing to show for it. Do not repeat it.
 
-The user approved a ~$3.00 plan: precompute (done), ablation (partial), and a
-live taxonomy proposer (not started). Confirm before any *further* spend.
+The user approved a ~$3.00 plan: precompute (done), ablation (**done**), and a
+live taxonomy proposer (not started, and now a weaker bet — see §7.1). Confirm
+before any *further* spend.
 
 **What went wrong:** a background benchmark run was started, its empty log was
 misread as a crash (Python block-buffers stdout to a file), and a *second* run
@@ -229,9 +231,87 @@ tuned to it without also being right in reality). Other categories use
 hand-authored archetypes and are **reported separately**. Only *withheld*
 attributes are scored.
 
-**Known gap that motivates the live ablation:** recall is 83.1% on
-standards-backed categories vs 33.1% on archetype categories. That gap is the
-argument for the LLM.
+**Known gap that motivated the live ablation:** recall is 83.1% on
+standards-backed categories vs 33.1% on archetype categories.
+
+---
+
+## 7.1 Live ablation result (102/102, $1.62) — a negative result
+
+The LLM did **not** close the archetype gap. It widened it, and it broke the
+submission's headline claim.
+
+| Metric | demo (deterministic) | live (Claude) |
+| --- | --- | --- |
+| Archetype recall | 33.1% | **27.0%** |
+| Standards recall | 83.1% | **98.1%** |
+| Standards precision | 95.3% | **81.3%** |
+| Contradiction rate | 11.1% | 18.6% |
+| **…excluding flagged defaults** | **0.0%** | **16.5%** |
+| False alarms | 0.0% | 2.0% |
+| Throughput | 305/s | 0.1/s |
+
+Precision by provenance shows where it fails: `knowledge_base` 100% → 79.8%,
+`parsed` 100% → 94.9%, plus a live-only `inferred` class at 60.0%. On ISO 15 /
+ISO 898-1 values — externally fixed ground truth — Claude recovers 31 more
+attributes but contradicts 38 instead of 8.
+
+**Trap in the summary line:** live reports "auto-publishable 51.0%" vs 31.4%.
+That is worse, not better — more records clear the gate while carrying more
+contradictions.
+
+**Root cause worth fixing:** the Claude provider tags its own output with
+provenance classes (`knowledge_base`, `parsed`) that mean *evidence-backed*.
+It inherits trust it has not earned, so reconciliation lets it overrule the
+knowledge base. See §11 item 2.
+
+**Caveats before this goes in the deck:** 12 cases came from an earlier cached
+run; and `inferred` exists only on the live path, so part of the precision gap
+is a provenance-policy difference rather than pure model error.
+
+**Framing:** this validates the architecture. The deterministic engine is the
+correct default; the LLM is a recall instrument that must be gated behind
+validation, not trusted as a source.
+
+---
+
+## 7.2 The hybrid gate — the result to lead with
+
+`benchmark/hybrid.py`. Policy, not prompt engineering: under the existing
+provenance rank a model proposal is worth less than evidence and more than a
+category default, so Claude gets exactly two moves — **fill a gap** and
+**displace a `defaulted` value** — and everything it contributes is re-stamped
+`inferred`. It may never overrule `supplied` / `parsed` / `knowledge_base` /
+`derived`.
+
+| Metric | demo | live | **hybrid** |
+| --- | --- | --- | --- |
+| Standards recall | 83.1% | 98.1% | **99.5%** |
+| Archetype recall | 33.1% | 27.0% | **41.7%** |
+| Contradiction rate | 11.1% | 18.6% | 12.8% |
+| False alarms | 0.0% | 2.0% | **0.0%** |
+| Defects caught | 100% | 100% | **100%** |
+| Defects stopped | 100% | 100% | **100%** |
+| Auto-publishable | 31.4% | 51.0% | **52.9%** |
+
+**The claim that survives, and it is the important one:** precision on
+`knowledge_base`, `parsed` and `derived` is **still exactly 100.0%** (72/0,
+43/0, 8/0 — byte-identical to the deterministic run). The gate raised standards
+recall by 16.4 points and archetype recall by 8.6 without touching a single
+evidence-backed value. The hybrid beats the raw LLM on *both* recall axes.
+
+Gate actions across 102 cases: **57 gap-filled, 10 defaults displaced, 28
+overrules refused.** Those 28 refusals are most of the live engine's damage.
+
+**Do not quote "contradiction excluding defaults" for the hybrid** (8.8% vs the
+deterministic 0.0%) without explaining it: that bucket now contains the new
+`inferred` class (72.4% precision — better than live's 60.0%), which the
+deterministic engine simply does not have. The like-for-like comparison is the
+per-provenance table, where nothing regressed.
+
+Verdict shift is real: blocked 33 → 22, publish 16 → 27 on clean records,
+because gap-fills satisfied `MISSING_REQUIRED` rather than because the bar
+moved.
 
 ---
 
@@ -252,7 +332,9 @@ python smoke_test.py               # 10 demo cases, pipeline behaviour
 python test_ingest.py              # PDF (3 layouts) + web + SSRF guard
 python test_cost_guards.py         # lock, ceiling, cache guarantees
 python test_taxonomy_learning.py   # learn → approve → classify → revoke
+python test_hybrid.py              # hybrid gate: adds, never overrules
 python run_benchmark.py            # 102-case benchmark
+python run_hybrid.py               # hybrid vs demo vs live, $0 from cache
 
 # Live ablation — SPENDS MONEY. Confirm with the user first.
 python run_benchmark.py --live --budget 5
@@ -300,10 +382,11 @@ python run_benchmark.py --live --budget 5
 1. **The deck.** Blocked until the user downloads the portal's mandatory
    template. `docs/Project_Understanding.pdf` already carries most of the
    narrative and can be adapted once the required sections are known.
-2. **Finish the ablation** — `python run_benchmark.py --live --budget 5`.
-   Roughly $1.90; cached cases are skipped so it resumes where it stopped.
-   This produces the one number the deck lacks: how much Claude adds over the
-   deterministic engine, especially on archetype categories stuck at 33% recall.
+2. **Hybrid gate — done, $0.** See §7.2. `run_hybrid.py` re-scores the merge
+   policy against cached live records; it never imports `AnthropicProvider`, so
+   a cache miss aborts instead of spending. Any future policy tweak is free.
+   *Not yet wired into the product* — it is a benchmark result, not a live
+   mode. Exposing it as a third engine in the UI is optional and unstarted.
 3. **Demo video** — a short walkthrough of the live site.
 4. **Flip the repo public** at submission (mandatory) and **rotate the API key**
    (it passed through a conversation transcript).

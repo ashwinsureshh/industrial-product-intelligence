@@ -1,0 +1,11 @@
+{
+  "cases_run": 102,
+  "input_tokens": 283251,
+  "output_tokens": 105249,
+  "spent_usd": 1.619,
+  "projected_full_run_usd": 1.62,
+  "pricing": "Sonnet 5 introductory pricing ($2/$10 per MTok), valid through 2026-08-31",
+  "aborted": false,
+  "cases_completed": 102,
+  "ceiling_usd": 3.0
+}

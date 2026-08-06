@@ -1,27 +1,28 @@
 # Benchmark Results
 
-Engine: **demo (deterministic)** · 102 cases · 0.33 s · 305.3 products/s
+Engine: **hybrid (gated)** · 102 cases · 1.13 s · 89.9 products/s
 
 ## Headline
 
 | Metric | Value |
 | --- | --- |
-| Attribute coverage lift | **2.75x** (129 → 355) |
-| Withheld attributes recovered | **61.1%** |
-| Recovered values correct | **88.9%** |
-| **Contradiction rate** | **11.1%** |
-| Contradiction rate, excluding flagged defaults | **0.0%** |
+| Attribute coverage lift | **3.19x** (129 → 412) |
+| Withheld attributes recovered | **74.1%** |
+| Recovered values correct | **87.2%** |
+| **Contradiction rate** | **12.8%** |
+| Contradiction rate, excluding flagged defaults | **8.8%** |
 | Seeded defects caught | **100.0%** (51/51) |
 | False alarms on clean records | **0.0%** |
-| Auto-publishable (clean records) | **31.4%** |
+| Auto-publishable (clean records) | **52.9%** |
 | Defective records stopped | **100.0%** |
 
 ## Accuracy by provenance
 
 | Provenance | Correct | Contradicted | Precision |
 | --- | --- | --- | --- |
-| defaulted | 78 | 25 | 75.7% |
+| defaulted | 74 | 19 | 79.6% |
 | derived | 8 | 0 | 100.0% |
+| inferred | 42 | 16 | 72.4% |
 | knowledge_base | 72 | 0 | 100.0% |
 | parsed | 43 | 0 | 100.0% |
 
@@ -31,8 +32,8 @@ Engine: **demo (deterministic)** · 102 cases · 0.33 s · 305.3 products/s
 
 | Source | Recall | Precision |
 | --- | --- | --- |
-| archetype | 33.1% | 68.5% |
-| standards | 83.1% | 95.3% |
+| archetype | 41.7% | 69.1% |
+| standards | 99.5% | 93.2% |
 
 ## Defect detection by kind
 
@@ -53,10 +54,10 @@ Modelled on a **100,000 SKU** catalog.
 | Metric | Value |
 | --- | --- |
 | Manual baseline | 16,667 hours |
-| Hours saved | **5,556** |
-| Cost saved | **$194,444** |
-| FTE-years saved | 3.1 |
-| Machine processing time | 0.09 hours |
+| Hours saved | **9,150** |
+| Cost saved | **$320,261** |
+| FTE-years saved | 5.1 |
+| Machine processing time | 0.31 hours |
 
 Assumptions: 10.0 min/SKU manual enrichment, $35.0/hour analyst cost, records needing review credited at 50% of the manual time saving.
 

@@ -93,18 +93,23 @@ def _enrich(
 
 def evaluate(
     cases: list[Case],
-    provider_factory: Callable[[], Provider],
+    provider_factory: Callable[[], Provider] | None = None,
     label: str = "demo",
     *,
     mode: str = "demo",
     use_cache: bool = False,
     spend_guard: Callable[[int], None] | None = None,
     progress: Callable[[int, int, bool], None] | None = None,
+    enricher: Callable[[Case], tuple[EnrichedProduct, bool]] | None = None,
 ) -> dict[str, Any]:
     """Run every case and aggregate the results.
 
     `spend_guard` is called after each case with the number completed; it is
     expected to raise BudgetExceeded if the measured spend has crossed its cap.
+
+    `enricher` supplies an already-built record instead of running a provider.
+    It exists so a merge policy can be scored against records that were already
+    paid for, on exactly the same metrics, without reaching the API again.
     """
 
     recovery = {"recovered": 0, "correct": 0, "contradicted": 0, "withheld_total": 0}
@@ -139,7 +144,10 @@ def evaluate(
     cached_hits = 0
 
     for index, case in enumerate(cases, start=1):
-        result, was_cached = _enrich(case, provider_factory, mode, use_cache)
+        if enricher is not None:
+            result, was_cached = enricher(case)
+        else:
+            result, was_cached = _enrich(case, provider_factory, mode, use_cache)
         cached_hits += int(was_cached)
         if progress:
             progress(index, len(cases), was_cached)
