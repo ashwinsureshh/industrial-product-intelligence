@@ -475,8 +475,82 @@ def build():
         ["Product types with no such standard", "33%"],
     ], [95 * mm, 70 * mm], aligns={1: "CENTER"}))
 
-    a(P("That gap is precisely the AI's job. Where a rule exists, use the rule. "
-        "Where no rule can exist, use judgement — and label it as judgement.", "lead"))
+    a(P("That gap looks like the AI's job. So rather than assume it, the "
+        "project measured it — and the obvious approach failed.", "lead"))
+
+    a(P("What happened when the AI was given a free hand", "h2"))
+
+    a(P("Every one of the 102 test products was run through the AI engine and "
+        "scored the same way as the rules engine. The result was not the one "
+        "the project expected:"))
+
+    a(table([
+        ["", "Rules engine", "AI, unrestricted"],
+        ["Found, where a standard exists", "83%",
+         "<font color='#059669'>98%</font>"],
+        ["Found, where no standard exists", "33%",
+         "<font color='#DC2626'>27%</font>"],
+        ["Wrong, where a standard exists", "5%",
+         "<font color='#DC2626'>19%</font>"],
+        ["False alarms on clean products", "0%",
+         "<font color='#DC2626'>2%</font>"],
+    ], [58 * mm, 40 * mm, 67 * mm], aligns={1: "CENTER", 2: "CENTER"}))
+
+    a(P("The AI found considerably more, and got considerably more wrong. On "
+        "the product types with no published standard — the very gap it was "
+        "meant to close — it did <i>worse</i> than the rules engine."))
+
+    a(callout("The cause was not a weak AI",
+              "The AI was allowed to overwrite values the rules engine had "
+              "already established from a published standard. A confident "
+              "guess was being treated as equal to a measured fact, so it won "
+              "arguments it should never have been allowed to enter.",
+              tint=colors.HexColor("#FEF2F2"), bar=BAD))
+
+    a(P("The fix: let the AI add, never overrule", "h2"))
+
+    a(P("The system already ranks information by where it came from: a supplier's "
+        "own figure outranks a standards lookup, which outranks a calculation, "
+        "which outranks a guess. The fix was to hold the AI to that ranking "
+        "rather than to write a better instruction for it. The AI is now "
+        "permitted exactly two moves:"))
+
+    a(bullets([
+        "<b>Fill a blank</b> &mdash; suggest a value where the rules engine "
+        "found nothing at all.",
+        "<b>Replace a placeholder</b> &mdash; a value marked &ldquo;typical, "
+        "please confirm&rdquo; is not evidence, so an informed judgement "
+        "genuinely beats it.",
+    ]))
+
+    a(P("It may never overwrite a value that came from a supplier, a part "
+        "number, a published standard or a calculation. Anything it does "
+        "contribute is relabelled as judgement, so the receipt attached to the "
+        "value stays honest."))
+
+    a(table([
+        ["", "Rules engine", "AI, unrestricted", "<b>Both, AI restricted</b>"],
+        ["Found, where a standard exists", "83%", "98%", "<b>99%</b>"],
+        ["Found, where no standard exists", "33%", "27%", "<b>42%</b>"],
+        ["False alarms on clean products", "0%", "2%", "<b>0%</b>"],
+        ["Planted errors caught", "100%", "100%", "<b>100%</b>"],
+    ], [50 * mm, 33 * mm, 38 * mm, 44 * mm],
+        aligns={1: "CENTER", 2: "CENTER", 3: "CENTER"}))
+
+    a(callout("The restricted version beats the unrestricted one at its own job",
+              "Not only are there fewer wrong answers &mdash; there are "
+              "<b>more right ones</b>, on both kinds of product. And the "
+              "guarantee that matters held completely: of every value backed "
+              "by a supplier, a part number, a standard or a calculation, the "
+              "number that contradicted the truth stayed at <b>zero</b>. The "
+              "AI raised the total found without touching a single established "
+              "fact.",
+              tint=colors.HexColor("#ECFDF5"), bar=GOOD))
+
+    a(P("Across the 102 products the restriction stepped in <b>28 times</b> to "
+        "block the AI from overwriting an established value. Those 28 "
+        "interventions are the difference between the two AI columns above.",
+        "lead"))
 
     a(P("Seeing the AI without needing an account", "h2"))
     a(P("There is a practical problem with demonstrating this. Using the AI "
@@ -532,8 +606,8 @@ def build():
         ["Planted errors caught", "100%", "All 51 deliberate mistakes were "
          "detected"],
         ["False alarms", "0%", "It never cried wolf on a clean product"],
-        ["Speed", "340 per second", "A 200,000-product catalogue in about "
-         "ten minutes"],
+        ["Speed", "305 per second", "A 200,000-product catalogue in about "
+         "eleven minutes"],
     ], [55 * mm, 25 * mm, 85 * mm], aligns={1: "CENTER"}))
 
     a(callout("Which number actually matters",
@@ -555,7 +629,19 @@ def build():
         "results are reported separately and not blended into the headline.",
         "Scanned documents &mdash; photographs of paper — cannot be read. The "
         "system detects this and says so rather than returning nothing.",
+        "For product types with no published standard, even the best "
+        "configuration finds only about four details in ten. That is a real "
+        "improvement on three in ten, but it is not a solved problem, and the "
+        "project does not claim otherwise.",
     ]))
+
+    a(callout("Anyone can check these numbers",
+              "The AI comparison cost real money to run, so its results were "
+              "saved into the code repository. A reviewer can re-run the "
+              "entire measurement on their own machine, with no account and "
+              "at no cost, and get the same figures. A measurement nobody else "
+              "can repeat is an assertion; this one is checkable.",
+              tint=BLUE_SOFT, bar=ACCENT))
 
     a(Spacer(1, 6))
 
@@ -572,7 +658,12 @@ def build():
          "decision recorded"],
         ["Automated tests",
          "Five test suites, all passing, none of which cost anything to run"],
-        ["Measured results", "Published, with the method open to inspection"],
+        ["Measured results",
+         "Published, with the method open to inspection and the AI comparison "
+         "reproducible by anyone"],
+        ["AI comparison",
+         "<font color='#059669'><b>Complete</b></font> &mdash; all 102 "
+         "products, including the restricted version that performed best"],
         ["Presentation deck",
          "<font color='#D97706'>Not started</font> &mdash; awaiting the "
          "required template"],
@@ -598,6 +689,9 @@ def build():
          "Working out new product categories automatically, with human approval"],
         ["Deployment",
          "Packaged as a single unit, published to the internet, monitored"],
+        ["AI comparison",
+         "All 102 products measured against the AI engine, the result "
+         "understood, and the restriction that fixes it built and tested"],
     ], [30 * mm, 135 * mm]))
 
     a(P("A note on cost control", "h2"))
@@ -614,35 +708,55 @@ def build():
         "Completed work is saved, so a stopped job <b>resumes for free</b> "
         "rather than starting again.",
     ]))
-    a(P("Total spent on the project so far: <b>about $0.60</b>. The published "
-        "website is deliberately incapable of spending anything at all, no "
-        "matter how many people use it.", "lead"))
+    a(P("Total spent on the project: <b>about $2.20</b>, of which $1.62 bought "
+        "the AI comparison in section 6. Because those results were saved into "
+        "the repository, testing further variations of the restriction costs "
+        "nothing at all. The published website is deliberately incapable of "
+        "spending anything, no matter how many people use it.", "lead"))
 
     a(Spacer(1, 6))
 
     # ------------------------------------------------- 9. remaining
     a(P("9. What is left", "h1"))
 
+    a(P("The building is finished. Nothing on this list is engineering.",
+        "small"))
+
     a(table([
         ["Task", "Notes"],
         ["Presentation deck", "Blocked until the required template is "
          "downloaded from the submission portal"],
         ["Demo video", "A short walkthrough of the live site"],
-        ["Finish the AI comparison",
-         "A partially-completed measurement of exactly how much the AI adds "
-         "over the rules engine. Roughly $2 to finish."],
         ["Make the code repository public", "Required at submission; it is "
          "private while under development"],
+        ["Replace the access key",
+         "Routine housekeeping &mdash; the key used during development is "
+         "retired and a fresh one issued"],
     ], [45 * mm, 120 * mm]))
 
+    a(P("One thing deliberately not built", "h2"))
+    a(P("The restricted AI configuration described in section 6 &mdash; the "
+        "best-performing one &mdash; exists as a measured result, but is not "
+        "offered as a choice on the live website. A visitor sees two options: "
+        "the rules engine and the unrestricted AI, the latter being the weaker "
+        "of the two. Adding the third option is genuine work rather than a "
+        "quick change, and with the deck and video still outstanding it was "
+        "judged the wrong place to spend the remaining time. It is called out "
+        "here so it reads as a decision rather than an oversight."))
+
     a(P("Honest assessment", "h2"))
-    a(P("The engineering is in good shape and comfortably ahead of schedule. "
-        "The remaining risk is not technical — it is that the work is currently "
+    a(P("The engineering is complete and comfortably ahead of schedule. The "
+        "remaining risk is not technical — it is that the work is currently "
         "better than the explanation of it. A reviewer will spend a few minutes "
         "forming a judgement, and right now there is no deck or video to shape "
         "that judgement.", "lead"))
     a(P("The sensible course from here is to stop adding capability and spend "
-        "the remaining time making what exists easy to understand quickly."))
+        "the remaining time making what exists easy to understand quickly. "
+        "That is particularly true of section 6: the most interesting thing "
+        "this project found is that the obvious use of AI made the results "
+        "worse, and that restraining it made them better than either engine "
+        "managed alone. That finding is invisible to anyone who only clicks "
+        "around the website."))
 
     a(PageBreak())
 
@@ -668,7 +782,12 @@ def build():
          "example, the exact dimensions a bearing labelled 6205 must have."],
         ["Provenance",
          "The record of where a piece of information came from — the receipt "
-         "attached to every value."],
+         "attached to every value. It also sets the pecking order when two "
+         "sources disagree."],
+        ["Ablation",
+         "A test that removes or swaps one part of a system to measure what "
+         "that part was actually contributing. Here: replacing the rules "
+         "engine with the AI to see what the AI adds."],
         ["Readiness score",
          "A mark out of 100 combining how complete a record is, how confident, "
          "and how many problems were found."],
