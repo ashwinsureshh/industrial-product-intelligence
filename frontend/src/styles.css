@@ -6,7 +6,7 @@
   --border-strong: #cdd4dd;
   --text: #16202c;
   --text-2: #5b6775;
-  --text-3: #8a95a3;
+  --text-3: #646e7c;
 
   --accent: #2563eb;
   --accent-soft: #eff4ff;
@@ -53,9 +53,34 @@
   --ok: #047857;
   --ok-soft: #ecfdf5;
 
-  --radius: 10px;
-  --radius-sm: 6px;
+  --radius: 12px;
+  --radius-sm: 8px;
+  --radius-pill: 999px;
+
+  /* One spacing scale, so gaps relate to each other instead of being guessed
+     per rule. Everything below is a multiple of 4. */
+  --s1: 4px;
+  --s2: 8px;
+  --s3: 12px;
+  --s4: 16px;
+  --s5: 24px;
+  --s6: 32px;
+
+  /* Type scale. Named by role rather than size so a component asks for the
+     meaning it wants and stays consistent when the scale is retuned. */
+  --fs-micro: 10.5px;
+  --fs-label: 11.5px;
+  --fs-sm: 12.5px;
+  --fs-base: 14px;
+  --fs-lg: 16px;
+  --fs-xl: 20px;
+
+  /* Three elevation steps rather than one, so a card, a raised control and a
+     floating bar are visually ranked instead of all reading the same. */
+  --shadow-sm: 0 1px 2px rgba(16, 32, 52, 0.05);
   --shadow: 0 1px 2px rgba(16, 32, 52, 0.04), 0 4px 12px rgba(16, 32, 52, 0.05);
+  --shadow-lg: 0 2px 4px rgba(16, 32, 52, 0.05), 0 12px 28px rgba(16, 32, 52, 0.10);
+
   --mono: ui-monospace, 'SF Mono', 'Cascadia Mono', 'Roboto Mono', Menlo, monospace;
 
   color-scheme: light;
@@ -81,7 +106,7 @@
     --border-strong: #38434f;
     --text: #e6ecf3;
     --text-2: #a3b0bf;
-    --text-3: #75828f;
+    --text-3: #97a4b2;
 
     --accent: #5b8cff;
     --accent-soft: #1b2740;
@@ -121,7 +146,9 @@
 
     /* Elevation cannot be read from a shadow on a dark ground, so the shadow
        recedes and the surface/border contrast carries the hierarchy. */
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.32);
     --shadow: 0 1px 2px rgba(0, 0, 0, 0.36), 0 4px 14px rgba(0, 0, 0, 0.30);
+    --shadow-lg: 0 2px 6px rgba(0, 0, 0, 0.40), 0 14px 32px rgba(0, 0, 0, 0.42);
   }
 }
 
@@ -133,7 +160,7 @@
   --border-strong: #38434f;
   --text: #e6ecf3;
   --text-2: #a3b0bf;
-  --text-3: #75828f;
+  --text-3: #97a4b2;
 
   --accent: #5b8cff;
   --accent-soft: #1b2740;
@@ -169,7 +196,9 @@
   --ok: #34d399;
   --ok-soft: rgba(52, 211, 153, 0.12);
 
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.32);
   --shadow: 0 1px 2px rgba(0, 0, 0, 0.36), 0 4px 14px rgba(0, 0, 0, 0.30);
+  --shadow-lg: 0 2px 6px rgba(0, 0, 0, 0.40), 0 14px 32px rgba(0, 0, 0, 0.42);
 }
 
 * { box-sizing: border-box; }
@@ -253,23 +282,50 @@ input, textarea, select { font-family: inherit; font-size: inherit; }
    document: on a 375px screen every page scrolled sideways by 366px, even
    though .layout below collapses correctly. Wrapping the header is what keeps
    the page within the viewport, not anything in the content columns. */
+.main-nav { width: 380px; }
+.engine-toggle { width: 150px; }
+
+/* Below 900px the header cannot hold five control groups on one line. Rather
+   than wrap them into a stack that ate a third of the screen, the primary
+   navigation moves to a fixed bottom bar - within thumb reach, out of the way
+   of the content, and the pattern a phone user already expects. It is the same
+   DOM node repositioned, not a second copy, so there is one source of truth
+   for which tab is active. */
 @media (max-width: 900px) {
-  /* Wrapping makes the header several rows tall, and a sticky element that
-     tall would permanently occupy a third of a phone screen. Let it scroll
-     away instead - the trade is worth it because the tab strip is a
-     navigation control, not something needed while reading a result. */
-  .topbar { position: static; flex-wrap: wrap; gap: 10px 12px; padding: 10px 14px; }
+  .topbar {
+    position: sticky; top: 0;
+    flex-wrap: wrap; gap: var(--s2) var(--s3);
+    padding: var(--s2) var(--s3);
+  }
   .topbar-spacer { display: none; }
   .topbar > * { min-width: 0; }
 
-  /* The four nav tabs wrap 2x2 rather than shrinking below their labels or
-     scrolling out of reach; 40px keeps them thumb-sized. */
-  .topbar .tabs { flex: 1 1 100%; flex-wrap: wrap; }
-  .topbar .tab { flex: 1 1 45%; min-height: 40px; }
+  .main-nav {
+    position: fixed; bottom: 0; left: 0; right: 0; z-index: 30;
+    width: auto; gap: 0;
+    padding: var(--s1) var(--s2);
+    padding-bottom: max(var(--s1), env(safe-area-inset-bottom));
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    border-radius: 0;
+    box-shadow: var(--shadow-lg);
+  }
+  .main-nav .tab {
+    flex: 1 1 0; min-width: 0; min-height: 44px;
+    font-size: var(--fs-label);
+    border-radius: var(--radius-sm);
+    padding: var(--s1) var(--s1);
+  }
+  /* The active pill would look heavy in a bottom bar; a colour change plus a
+     top marker reads more like native navigation. */
+  .main-nav .tab.active { background: transparent; box-shadow: none; color: var(--accent); }
+  .main-nav .tab.active::before {
+    content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+    width: 22px; height: 2px; border-radius: var(--radius-pill); background: var(--accent);
+  }
+  .main-nav .tab { position: relative; }
 
-  /* The engine toggle is narrow enough to share its row with the status
-     pill, which saves a whole row of header height. */
-  .topbar .tabs + .tabs { flex: 1 1 auto; }
+  .engine-toggle { flex: 1 1 auto; width: auto; }
   .topbar .pill { margin-left: auto; }
   .theme-toggle { width: 40px; height: 40px; }
 }
@@ -287,6 +343,16 @@ input, textarea, select { font-family: inherit; font-size: inherit; }
   .layout { grid-template-columns: 1fr; }
 }
 
+/* Must come after the .layout rule above, not with the rest of the mobile
+   block: same specificity means source order decides, and declaring it earlier
+   let the base padding win and left the last card under the fixed nav bar. */
+@media (max-width: 900px) {
+  .layout {
+    padding: var(--s3) var(--s3);
+    padding-bottom: calc(54px + var(--s4) + env(safe-area-inset-bottom));
+  }
+}
+
 .col { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
 .sticky-col { position: sticky; top: 74px; }
 
@@ -298,34 +364,49 @@ input, textarea, select { font-family: inherit; font-size: inherit; }
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  box-shadow: var(--shadow);
+  /* A hairline border and a whisper of shadow, rather than both competing.
+     Depth comes from the surface stepping off the page, not from a drop
+     shadow doing the work twice. */
+  box-shadow: var(--shadow-sm);
   overflow: hidden;
 }
 
 .card-head {
-  display: flex; align-items: center; gap: 10px;
-  padding: 12px 15px;
+  display: flex; align-items: center; gap: var(--s2);
+  /* Wrap rather than let a trailing badge push out of the card and be cut off
+     by its overflow:hidden, which is what happened on a narrow column. */
+  flex-wrap: wrap;
+  padding: var(--s3) var(--s4);
   border-bottom: 1px solid var(--border);
-  background: var(--surface-2);
+  background: transparent;
 }
-.card-head h3 { font-size: 12.5px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-2); }
+.card-head > * { min-width: 0; }
+.card-head h3 {
+  font-size: var(--fs-label);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-3);
+  font-weight: 700;
+}
 .card-head .spacer { flex: 1; }
-.card-body { padding: 15px; }
+.card-body { padding: var(--s4); }
 .card-body.tight { padding: 0; }
 
 /* ----------------------------------------------------------------- controls */
 
 .btn {
-  display: inline-flex; align-items: center; gap: 7px;
-  padding: 8px 14px;
+  display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+  padding: 9px 14px;
   border: 1px solid var(--border-strong);
   border-radius: var(--radius-sm);
   background: var(--surface);
   color: var(--text);
-  font-weight: 500;
-  transition: background 0.12s, border-color 0.12s;
+  font-weight: 550;
+  transition: background 0.14s ease, border-color 0.14s ease, transform 0.06s ease;
 }
 .btn:hover:not(:disabled) { background: var(--surface-2); border-color: var(--text-3); }
+/* A 1px press is enough to feel physical without looking like a toy. */
+.btn:active:not(:disabled) { transform: translateY(1px); }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
 .btn-primary {
@@ -341,18 +422,23 @@ input, textarea, select { font-family: inherit; font-size: inherit; }
 .field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 11px; }
 .field label { font-size: 11.5px; font-weight: 600; color: var(--text-2); }
 .field input, .field textarea, .field select {
-  padding: 8px 10px;
-  border: 1px solid var(--border-strong);
+  padding: 9px 11px;
+  border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  background: var(--surface);
+  /* Inputs sit a step back from the card so the form reads as fillable space
+     rather than more panels stacked on panels. */
+  background: var(--surface-2);
   color: var(--text);
   outline: none;
-  transition: border-color 0.12s, box-shadow 0.12s;
+  transition: border-color 0.14s ease, box-shadow 0.14s ease, background 0.14s ease;
 }
+.field input:hover, .field textarea:hover { border-color: var(--border-strong); }
 .field input:focus, .field textarea:focus, .field select:focus {
   border-color: var(--accent);
+  background: var(--surface);
   box-shadow: 0 0 0 3px var(--accent-soft);
 }
+.field input::placeholder, .field textarea::placeholder { color: var(--text-3); }
 .field textarea { resize: vertical; min-height: 62px; line-height: 1.45; }
 .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 
@@ -372,12 +458,21 @@ input, textarea, select { font-family: inherit; font-size: inherit; }
   .field label { font-size: 11px; }
 }
 
-.tabs { display: flex; gap: 3px; padding: 3px; background: var(--bg); border-radius: 8px; }
+/* Segmented control: one recessed track, the active segment raised out of it. */
+.tabs {
+  display: flex; gap: var(--s1); padding: var(--s1);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
 .tab {
   flex: 1; padding: 6px 12px; border: none; background: transparent;
-  border-radius: var(--radius-sm); color: var(--text-2); font-weight: 500;
+  border-radius: 6px; color: var(--text-2); font-weight: 550;
+  font-size: var(--fs-sm);
+  transition: background 0.14s ease, color 0.14s ease;
 }
-.tab.active { background: var(--surface); color: var(--text); box-shadow: var(--shadow); }
+.tab:hover:not(.active) { color: var(--text); background: var(--surface-2); }
+.tab.active { background: var(--surface); color: var(--text); box-shadow: var(--shadow-sm); }
 
 /* ------------------------------------------------------------------ badges */
 
@@ -407,9 +502,11 @@ input, textarea, select { font-family: inherit; font-size: inherit; }
 .verdict-blocked { background: var(--error-soft); color: var(--error); }
 
 .pill {
-  padding: 3px 9px; border-radius: 20px;
-  border: 1px solid var(--border-strong);
-  background: var(--surface); font-size: 11.5px; color: var(--text-2);
+  display: inline-flex; align-items: center;
+  padding: 4px 10px; border-radius: var(--radius-pill);
+  border: 1px solid var(--border);
+  background: var(--surface-2); font-size: var(--fs-label); color: var(--text-2);
+  white-space: nowrap;
 }
 
 /* ------------------------------------------------------------------- score */
@@ -568,16 +665,29 @@ table.grid tr { cursor: pointer; }
 table.grid tr:hover td { background: var(--surface-2); }
 table.grid tr.selected td { background: var(--accent-soft); }
 .table-scroll { max-height: 420px; overflow: auto; }
+/* Wide data tables scroll inside their card instead of being clipped by its
+   overflow:hidden. -webkit-overflow-scrolling keeps momentum on iOS. */
+.table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 .mono { font-family: var(--mono); font-size: 11.5px; }
 
 /* ------------------------------------------------------------------- misc */
 
 .empty {
-  padding: 52px 24px; text-align: center; color: var(--text-3);
+  padding: var(--s6) var(--s5); text-align: center; color: var(--text-3);
+  min-height: 260px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
 }
-.empty-icon { font-size: 30px; margin-bottom: 10px; opacity: 0.5; }
-.empty h3 { font-size: 14px; color: var(--text-2); margin-bottom: 5px; }
-.empty p { font-size: 12.5px; max-width: 340px; margin: 0 auto; line-height: 1.6; }
+/* The icon sits in a soft disc so an empty panel reads as a deliberate state
+   rather than a page that failed to load. */
+.empty-icon {
+  font-size: 24px; line-height: 1; margin-bottom: var(--s3);
+  width: 52px; height: 52px; border-radius: var(--radius-pill);
+  display: grid; place-items: center;
+  background: var(--surface-2); border: 1px solid var(--border);
+  opacity: 1;
+}
+.empty h3 { font-size: var(--fs-lg); color: var(--text); margin-bottom: var(--s2); }
+.empty p { font-size: var(--fs-sm); max-width: 360px; margin: 0 auto; line-height: 1.65; }
 
 .banner {
   display: flex; gap: 10px; padding: 10px 13px;
@@ -598,16 +708,30 @@ table.grid tr.selected td { background: var(--accent-soft); }
 .spinner-dark { border-color: var(--border-strong); border-top-color: var(--accent); }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-.sample-list { display: flex; flex-direction: column; gap: 6px; }
+.sample-list { display: flex; flex-direction: column; gap: var(--s2); }
 .sample {
-  text-align: left; padding: 9px 11px;
+  position: relative;
+  text-align: left; padding: var(--s3) var(--s3) var(--s3) var(--s4);
   border: 1px solid var(--border); border-radius: var(--radius-sm);
-  background: var(--surface); transition: border-color 0.12s, background 0.12s;
+  background: var(--surface);
+  transition: border-color 0.14s ease, background 0.14s ease, transform 0.14s ease;
 }
-.sample:hover { border-color: var(--accent); background: var(--accent-soft); }
+/* An accent rail on the left rather than flooding the whole card: the demo
+   list is the first thing a reviewer scans, and eight filled tiles compete
+   with the result beside them. */
+.sample::before {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+  border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+  background: transparent; transition: background 0.14s ease;
+}
+.sample:hover { border-color: var(--border-strong); background: var(--surface-2); }
+.sample:hover::before { background: var(--border-strong); }
 .sample.active { border-color: var(--accent); background: var(--accent-soft); }
-.sample-label { font-weight: 600; font-size: 12.5px; margin-bottom: 2px; }
-.sample-intent { font-size: 11.5px; color: var(--text-2); line-height: 1.45; }
+.sample.active::before { background: var(--accent); }
+.sample-label {
+  font-weight: 650; font-size: var(--fs-sm); margin-bottom: 3px; color: var(--text);
+}
+.sample-intent { font-size: var(--fs-label); color: var(--text-2); line-height: 1.5; }
 
 .spec-row { display: grid; grid-template-columns: 1fr 1fr auto; gap: 7px; margin-bottom: 6px; }
 .spec-row input { padding: 6px 9px; font-size: 12.5px; }

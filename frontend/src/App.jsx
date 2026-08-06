@@ -232,10 +232,11 @@ export default function App() {
 
         <div className="topbar-spacer" />
 
-        <div className="tabs" style={{ width: 380 }}>
+        <nav className="tabs main-nav" aria-label="Sections">
           <button
             className={`tab ${tab === 'single' ? 'active' : ''}`}
             onClick={() => setTab('single')}
+            aria-current={tab === 'single' ? 'page' : undefined}
           >
             Single Product
           </button>
@@ -243,12 +244,14 @@ export default function App() {
             className={`tab ${tab === 'document' ? 'active' : ''}`}
             onClick={() => setTab('document')}
             title="Read a datasheet PDF or a supplier product page"
+            aria-current={tab === 'document' ? 'page' : undefined}
           >
             Document
           </button>
           <button
             className={`tab ${tab === 'batch' ? 'active' : ''}`}
             onClick={() => setTab('batch')}
+            aria-current={tab === 'batch' ? 'page' : undefined}
           >
             Catalog
           </button>
@@ -259,12 +262,13 @@ export default function App() {
               if (proposals === null) refreshProposals()
             }}
             title="Propose and approve categories the engine has never seen"
+            aria-current={tab === 'taxonomy' ? 'page' : undefined}
           >
             Learning
           </button>
-        </div>
+        </nav>
 
-        <div className="tabs" style={{ width: 150 }}>
+        <div className="tabs engine-toggle">
           <button
             className={`tab ${mode === 'demo' ? 'active' : ''}`}
             onClick={() => setMode('demo')}

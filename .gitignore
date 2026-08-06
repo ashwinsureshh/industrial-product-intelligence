@@ -33,3 +33,6 @@ backend/.benchmark.lock
 # learned taxonomy state (runtime; the repo ships the curated base only)
 backend/app/data/learned_categories.json
 backend/app/data/proposals.json
+
+# Skill definitions pulled in by the agent runtime, not project source.
+.claude/skills/

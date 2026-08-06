@@ -109,8 +109,10 @@ function ProposalCard({ proposal, onReview, busy }) {
       </div>
 
       {/* No max height: a proposal has a dozen attributes at most, and a
-          clipped final row reads as broken rather than scrollable. */}
-      <div>
+          clipped final row reads as broken rather than scrollable. The
+          horizontal scroll matters on a phone, where five columns do not fit
+          and the card's overflow:hidden would otherwise cut them off. */}
+      <div className="table-wrap">
         <table className="grid">
           <thead>
             <tr>
