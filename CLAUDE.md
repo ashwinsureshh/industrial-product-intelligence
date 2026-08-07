@@ -94,7 +94,7 @@ auto-deploys on push to `main`, built from the root `Dockerfile`.
 | 2 | PDF datasheet + product-page ingestion | **Done, committed** |
 | 3 | Auto-taxonomy learning | **Done, committed** (backend + review UI, `35ed3a2`) |
 | — | Live ablation (Claude vs deterministic) | **Done, 102/102, $1.62. Negative result — see §7.1.** |
-| — | Hybrid gate (bounded Claude) | **Done, $0 — see §7.2. Best result in the project; benchmark only, not wired into the UI.** |
+| — | Hybrid gate (bounded Claude) | **Done, $0 — see §7.2. Best result in the project, and now a selectable engine in the product with a refusal ledger.** |
 | 4 | Public deployment | **Done — live and monitored** |
 | 5 | Deck + demo video | **Blocked: need the portal's mandatory template** |
 
@@ -189,6 +189,7 @@ score as a CSV row. Do not add a parallel path for a new input type.
 | `pipeline/extract.py` | Deterministic extraction (spec tables + 3 prose strategies) |
 | `pipeline/validate.py` | Range/vocabulary/required checks + 16 cross-field rules |
 | `pipeline/run.py` | Stage orchestration, reconciliation, readiness scoring |
+| `pipeline/gate.py` | **The hybrid gate** — model may add, never overrule; records every decision |
 | `providers/mock.py` | Deterministic engine — knowledge-base driven, free, default |
 | `providers/anthropic_provider.py` | Claude engine via tool-schema structured output |
 | `ingest/pdf.py` | Datasheet parsing (3 layouts) |
@@ -197,7 +198,7 @@ score as a CSV row. Do not add a parallel path for a new input type.
 | `taxonomy_learning/store.py` | Proposal queue + learned-category persistence |
 | `benchmark/corpus.py` | 102-case corpus; ISO-backed + archetype ground truth |
 | `benchmark/evaluate.py` | Scoring. `enricher=` scores pre-built records without a provider |
-| `benchmark/hybrid.py` | **The hybrid gate** — Claude may add, never overrule (§7.2) |
+| `benchmark/hybrid.py` | Thin re-export of `pipeline/gate.py` in the shape the scorer wants |
 | `benchmark/records.py` | Loader/exporter for the committed live records |
 | `benchmark/records/` | 102 committed live records, 0.88 MB — makes §7.2 reproducible |
 | `data/taxonomy.json` | 10 curated categories — **edit data, not code, to add one** |
@@ -205,7 +206,17 @@ score as a CSV row. Do not add a parallel path for a new input type.
 ### Frontend (`frontend/src/`)
 
 React 19 + Vite, no runtime UI dependencies. Four tabs: **Single Product**,
-**Document**, **Catalog**, **Learning**. Vite proxies `/api` to port 8000.
+**Document**, **Catalog**, **Learning**. Three engines: **Demo**, **Hybrid**,
+**Live AI**. Vite proxies `/api` to port 8000.
+
+Design tokens in `styles.css` (`--s1..--s6` spacing, `--fs-*` type, three
+elevation steps) and a dark theme driven by `prefers-color-scheme` plus a
+`data-theme` override, so an explicit light choice beats an OS set to dark.
+Below 900px the primary nav becomes a fixed bottom bar and both bars retreat on
+a downward scroll. The header retreats by animating its sticky `top`, **never**
+by transform: the nav is its DOM child, and a transformed ancestor becomes the
+containing block for `position: fixed` descendants, which tears the bottom bar
+off the screen.
 
 ---
 
@@ -336,6 +347,25 @@ Verdict shift is real: blocked 33 → 22, publish 16 → 27 on clean records,
 because gap-fills satisfied `MISSING_REQUIRED` rather than because the bar
 moved.
 
+**Shipped in the product, not just the benchmark.** `Hybrid` is a third engine
+beside Demo and Live AI. The policy lives in `app/pipeline/gate.py` and
+`benchmark/hybrid.py` re-exports it, so the published figures and the running
+service can never describe different software — verified by the benchmark
+reproducing 99.5 / 41.7 / 57-10-28 unchanged after the move.
+
+Hybrid costs **nothing** on the demo products: it merges the deterministic run
+with the live record already in `app/data/precomputed/`, so a reviewer with no
+API key sees the gate work. Proven by `test_hybrid.py`, which asserts the cache
+write count does not move — a write would mean a provider call, which would mean
+spend. With no stored record and no key it returns the deterministic record and
+says so, rather than pretending a gate ran with nothing to gate.
+
+The UI shows a **refusal ledger**: every model proposal, whether it was accepted
+or refused, and why. Refusals sort first. On the headline bearing the model
+proposes 14.8 kN against ISO 15's 14 kN and 14000 rpm against 16000 — both
+refused, with a Polyamide cage accepted over the `Steel` default. That is the
+architecture's claim made visible in one screen.
+
 **Reproducible by a judge.** The 102 paid live records are committed to
 `backend/benchmark/records/` (0.88 MB), keyed by the same content address the
 runtime cache uses. Verified by running `run_hybrid.py` with `PI_CACHE_DIR`
@@ -434,10 +464,6 @@ a user action.
 
 ### Deliberately not done
 
-- **The hybrid gate is benchmark-only.** It is not selectable in the UI, so a
-  reviewer on the live site sees "Demo" and "Live AI" — the latter being the
-  engine that scored *worse*. Wiring it in as a third mode is real backend +
-  frontend work, not a small change. Skipped knowingly; cover it in the deck.
 - **Live taxonomy proposer.** See §3.1 — recommendation is don't.
 
 ### Gotchas already paid for

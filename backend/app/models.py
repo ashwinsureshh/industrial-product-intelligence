@@ -132,6 +132,39 @@ class StageTrace(BaseModel):
     details: dict[str, Any] = Field(default_factory=dict)
 
 
+class GateAction(BaseModel):
+    """One decision the hybrid gate took about a model-proposed value.
+
+    Refusals are recorded as deliberately as acceptances. A system that only
+    reports what the AI contributed cannot be audited; what it was *stopped*
+    from doing is the evidence that the guardrail is real.
+    """
+
+    key: str
+    label: str
+    action: Literal["gap_filled", "displaced_default", "refused"]
+    proposed: str = Field(description="The value the model put forward.")
+    kept: str | None = Field(
+        default=None, description="The value that survived, when the model was refused."
+    )
+    kept_provenance: str | None = None
+    reason: str
+
+
+class GateDecision(BaseModel):
+    """Summary of how the gate treated the model's proposals for one product."""
+
+    gap_filled: int = 0
+    displaced_defaults: int = 0
+    refused: int = 0
+    actions: list[GateAction] = Field(default_factory=list)
+    live_source: Literal["api", "precomputed", "cache"] | None = Field(
+        default=None,
+        description="Where the model's contribution came from, so a reviewer "
+                    "can tell a live call from a replayed one.",
+    )
+
+
 class EnrichedProduct(BaseModel):
     input: RawProduct
     identity: dict[str, Any] = Field(default_factory=dict)
@@ -141,6 +174,7 @@ class EnrichedProduct(BaseModel):
     issues: list[ValidationIssue] = Field(default_factory=list)
     readiness: ReadinessScore | None = None
     trace: list[StageTrace] = Field(default_factory=list)
+    gate: GateDecision | None = None
     mode: str = "demo"
     cached: bool = False
 
@@ -230,7 +264,7 @@ class CategoryProposal(BaseModel):
 
 class EnrichRequest(BaseModel):
     product: RawProduct
-    mode: Literal["demo", "live"] = "demo"
+    mode: Literal["demo", "live", "hybrid"] = "demo"
     api_key: str | None = Field(
         default=None,
         description="Caller-supplied Anthropic key. Never persisted to disk.",
@@ -239,5 +273,5 @@ class EnrichRequest(BaseModel):
 
 class BatchEnrichRequest(BaseModel):
     products: list[RawProduct]
-    mode: Literal["demo", "live"] = "demo"
+    mode: Literal["demo", "live", "hybrid"] = "demo"
     api_key: str | None = None

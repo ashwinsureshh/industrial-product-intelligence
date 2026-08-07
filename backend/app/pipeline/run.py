@@ -114,7 +114,7 @@ def _reconcile(attributes: list[Attribute]) -> tuple[list[Attribute], list[str]]
     return list(best.values()), conflicts
 
 
-def _score(
+def score_readiness(
     attributes: list[Attribute],
     category: dict[str, Any] | None,
     issues: list,
@@ -336,7 +336,7 @@ def enrich(raw: RawProduct, provider: Provider) -> EnrichedProduct:
 
     # -------------------------------------------------------------------- score
     with _Timer() as t:
-        readiness = _score(attributes, category, issues, missing)
+        readiness = score_readiness(attributes, category, issues, missing)
     trace.append(StageTrace(
         stage="score",
         summary=f"Readiness {readiness.overall}/100 — verdict '{readiness.verdict}'.",

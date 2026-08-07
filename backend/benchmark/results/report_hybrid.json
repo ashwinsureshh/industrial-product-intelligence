@@ -35,8 +35,8 @@
     "label": "hybrid (gated)",
     "cases": 102,
     "cached_hits": 102,
-    "elapsed_s": 1.3,
-    "throughput_per_s": 78.3,
+    "elapsed_s": 0.34,
+    "throughput_per_s": 295.7,
     "coverage": {
       "attributes_in": 129,
       "attributes_out": 412,
@@ -170,7 +170,7 @@
         "truth": "120",
         "provenance": "inferred",
         "confidence": 0.55,
-        "evidence": "[hybrid: displaced category default] Typical max operating temperature for 2RS rubber-sealed bearings (NBR seal limit) per common industry specifications"
+        "evidence": "[gate: displaced category default] Typical max operating temperature for 2RS rubber-sealed bearings (NBR seal limit) per common industry specifications"
       },
       {
         "case": "31161500-000-sparse",
@@ -179,7 +179,7 @@
         "truth": "Alloy Steel",
         "provenance": "inferred",
         "confidence": 0.6,
-        "evidence": "[hybrid: gap fill] Grade 4.6 is a low/medium carbon steel property class per ISO 898-1"
+        "evidence": "[gate: gap fill] Grade 4.6 is a low/medium carbon steel property class per ISO 898-1"
       },
       {
         "case": "31161500-000-sparse",
@@ -197,7 +197,7 @@
         "truth": "Zinc Plated",
         "provenance": "inferred",
         "confidence": 0.4,
-        "evidence": "[hybrid: displaced category default] No finish specified in raw_specs; Plain is the typical default for unspecified carbon steel fasteners"
+        "evidence": "[gate: displaced category default] No finish specified in raw_specs; Plain is the typical default for unspecified carbon steel fasteners"
       },
       {
         "case": "31161500-001-sparse",
@@ -215,7 +215,7 @@
         "truth": "Alloy Steel",
         "provenance": "inferred",
         "confidence": 0.6,
-        "evidence": "[hybrid: gap fill] Grade 8.8 property class per ISO 898-1 is standard for carbon steel or alloy steel bolts; combined with Zinc Plated finish, Carbon Steel is t"
+        "evidence": "[gate: gap fill] Grade 8.8 property class per ISO 898-1 is standard for carbon steel or alloy steel bolts; combined with Zinc Plated finish, Carbon Steel is the"
       },
       {
         "case": "31161500-002-sparse",
@@ -233,7 +233,7 @@
         "truth": "Zinc Plated",
         "provenance": "inferred",
         "confidence": 0.4,
-        "evidence": "[hybrid: displaced category default] No finish specified in raw_specs; 12.9 high-strength bolts are commonly supplied in plain/black finish rather than plated"
+        "evidence": "[gate: displaced category default] No finish specified in raw_specs; 12.9 high-strength bolts are commonly supplied in plain/black finish rather than plated"
       },
       {
         "case": "31161500-004-sparse",
@@ -242,7 +242,7 @@
         "truth": "Alloy Steel",
         "provenance": "inferred",
         "confidence": 0.6,
-        "evidence": "[hybrid: gap fill] Grade 2 designation corresponds to SAE J429 Grade 2 bolts, typically made from low or medium carbon steel"
+        "evidence": "[gate: gap fill] Grade 2 designation corresponds to SAE J429 Grade 2 bolts, typically made from low or medium carbon steel"
       },
       {
         "case": "31161500-004-sparse",
@@ -260,7 +260,7 @@
         "truth": "Alloy Steel",
         "provenance": "inferred",
         "confidence": 0.6,
-        "evidence": "[hybrid: gap fill] Grade 5 is a SAE fastener grade typically manufactured from medium carbon steel, quenched and tempered"
+        "evidence": "[gate: gap fill] Grade 5 is a SAE fastener grade typically manufactured from medium carbon steel, quenched and tempered"
       },
       {
         "case": "31161500-006-sparse",
@@ -278,7 +278,7 @@
         "truth": "316 Stainless Steel",
         "provenance": "inferred",
         "confidence": 0.6,
-        "evidence": "[hybrid: gap fill] MPN suffix 'A2-70' designates A2 (304-family) stainless steel per ISO 3506, and Tensile Strength 700 MPa matches the -70 property class"
+        "evidence": "[gate: gap fill] MPN suffix 'A2-70' designates A2 (304-family) stainless steel per ISO 3506, and Tensile Strength 700 MPa matches the -70 property class"
       },
       {
         "case": "31161500-008-sparse",
@@ -296,7 +296,7 @@
         "truth": "0.5",
         "provenance": "inferred",
         "confidence": 0.4,
-        "evidence": "[hybrid: gap fill] MPN 401-1625 corresponds to Swagelok's 40 series ball valve line, which commonly includes 1/4 in NPT sizes as a typical configuration"
+        "evidence": "[gate: gap fill] MPN 401-1625 corresponds to Swagelok's 40 series ball valve line, which commonly includes 1/4 in NPT sizes as a typical configuration"
       },
       {
         "case": "40141600-001-sparse",
@@ -350,7 +350,7 @@
         "truth": "50",
         "provenance": "inferred",
         "confidence": 0.4,
-        "evidence": "[hybrid: displaced category default] Brand WEG single phase motor, frame 80B; WEG single phase motors of this frame series are commonly manufactured for 60 Hz m"
+        "evidence": "[gate: displaced category default] Brand WEG single phase motor, frame 80B; WEG single phase motors of this frame series are commonly manufactured for 60 Hz mar"
       },
       {
         "case": "26101100-002-sparse",
@@ -395,7 +395,7 @@
         "truth": "1",
         "provenance": "inferred",
         "confidence": 0.4,
-        "evidence": "[hybrid: gap fill] Outlet Size: 0.75 in (gear pumps typically have matching inlet/outlet sizes)"
+        "evidence": "[gate: gap fill] Outlet Size: 0.75 in (gear pumps typically have matching inlet/outlet sizes)"
       },
       {
         "case": "46181500-002-sparse",
@@ -404,7 +404,7 @@
         "truth": "EN 149 FFP3",
         "provenance": "inferred",
         "confidence": 0.6,
-        "evidence": "[hybrid: gap fill] Protection Level: FFP3 is a classification defined under EN 149 for filtering half masks"
+        "evidence": "[gate: gap fill] Protection Level: FFP3 is a classification defined under EN 149 for filtering half masks"
       },
       {
         "case": "46181500-002-sparse",
@@ -449,7 +449,7 @@
         "truth": "SAE 100R2AT",
         "provenance": "inferred",
         "confidence": 0.6,
-        "evidence": "[hybrid: gap fill] 2-Wire Braid reinforcement construction with these bend radius specs corresponds to the standard 2SN hydraulic hose construction defined by S"
+        "evidence": "[gate: gap fill] 2-Wire Braid reinforcement construction with these bend radius specs corresponds to the standard 2SN hydraulic hose construction defined by SAE"
       },
       {
         "case": "40142000-001-sparse",
@@ -458,7 +458,7 @@
         "truth": "-40 C to +100 C",
         "provenance": "inferred",
         "confidence": 0.6,
-        "evidence": "[hybrid: gap fill] SAE 100R1AT"
+        "evidence": "[gate: gap fill] SAE 100R1AT"
       },
       {
         "case": "40142000-002-sparse",
@@ -467,7 +467,7 @@
         "truth": "Textile Braid",
         "provenance": "inferred",
         "confidence": 0.55,
-        "evidence": "[hybrid: displaced category default] SAE 100R14 covers both single and double wire braid reinforced PTFE hoses per SAE J517; smaller OD (13.4mm) is typical of s"
+        "evidence": "[gate: displaced category default] SAE 100R14 covers both single and double wire braid reinforced PTFE hoses per SAE J517; smaller OD (13.4mm) is typical of sin"
       },
       {
         "case": "40142000-002-sparse",
@@ -476,7 +476,7 @@
         "truth": "-70 C to +260 C",
         "provenance": "inferred",
         "confidence": 0.6,
-        "evidence": "[hybrid: gap fill] SAE 100R14 PTFE hoses are standardized for extreme temperature service per SAE J517 specification"
+        "evidence": "[gate: gap fill] SAE 100R14 PTFE hoses are standardized for extreme temperature service per SAE J517 specification"
       }
     ]
   },
@@ -493,7 +493,7 @@
     "hours_saved": 9150,
     "cost_saved_usd": 320261,
     "fte_years_saved": 5.1,
-    "processing_hours": 0.35,
+    "processing_hours": 0.09,
     "defects_caught_per_10k": 500
   },
   "policy_actions": {

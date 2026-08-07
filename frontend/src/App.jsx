@@ -3,6 +3,7 @@ import * as api from './api.js'
 import AttributeTable from './components/AttributeTable.jsx'
 import BatchInput, { BatchEmpty, BatchSummary, BatchTable } from './components/BatchView.jsx'
 import ContentPanel from './components/ContentPanel.jsx'
+import GateLedger from './components/GateLedger.jsx'
 import DocumentInput, { IngestReport } from './components/DocumentPanel.jsx'
 import InputPanel, { emptyProduct, fromProduct, toProduct } from './components/InputPanel.jsx'
 import IssueList from './components/IssueList.jsx'
@@ -251,10 +252,17 @@ export default function App() {
     return result
   }, [tab, result, batch, selectedRow])
 
-  const liveWarning =
-    mode === 'live' && !apiKey && !health?.server_key_fallback
+  // Hybrid is not simply "live with a gate" from the user's side: the demo
+  // products ship stored AI proposals, so it costs nothing and needs no key.
+  // Only a product the app has never seen requires one, and even then it
+  // degrades to the deterministic record rather than failing.
+  const liveWarning = !apiKey && !health?.server_key_fallback
+    ? mode === 'live'
       ? 'Live mode needs your own Anthropic API key. Without one the request runs on the demo engine.'
-      : null
+      : mode === 'hybrid'
+        ? 'Hybrid replays AI proposals that ship with the demo products, so it costs you nothing and needs no key here. To run it on a product of your own, enter a key under Live AI first — it carries over. Without one there is no proposal to gate, so you get the deterministic record.'
+        : null
+    : null
 
   return (
     <div className="app">
@@ -312,6 +320,15 @@ export default function App() {
             title="Deterministic engine — no API key, no cost, identical output every run."
           >
             Demo
+          </button>
+          <button
+            className={`tab ${mode === 'hybrid' ? 'active' : ''}`}
+            onClick={() => setMode('hybrid')}
+            title="Deterministic engine plus a bounded AI contribution: it may fill a
+                   blank or replace a default, never overwrite evidence. Best measured
+                   result. Free on the demo products."
+          >
+            Hybrid
           </button>
           <button
             className={`tab ${mode === 'live' ? 'active' : ''}`}
@@ -497,6 +514,7 @@ export default function App() {
                 cached={detail.cached}
                 mode={detail.mode}
               />
+              <GateLedger gate={detail.gate} />
               <IssueList issues={detail.issues} />
               <AttributeTable attributes={detail.attributes} />
               <ContentPanel content={detail.content} />

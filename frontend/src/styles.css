@@ -329,9 +329,15 @@ input, textarea, select { font-family: inherit; font-size: inherit; }
      of a header that is already competing with the content for the screen. */
   .brand-text p { display: none; }
 
-  .engine-toggle { flex: 1 1 auto; width: auto; }
-  .topbar .pill { margin-left: auto; }
-  .theme-toggle { width: 40px; height: 40px; }
+  /* Explicit ordering rather than DOM order: a third engine mode made the
+     toggle too wide to share a line, which pushed the status pill and theme
+     button onto a row of their own. Those two are small, so they ride with the
+     brand and the toggle gets the full width below - one row fewer. */
+  .brand { order: 1; flex: 1 1 auto; }
+  .topbar .pill { order: 2; margin-left: auto; }
+  .theme-toggle { order: 3; width: 40px; height: 40px; }
+  .engine-toggle { order: 4; flex: 1 1 100%; width: auto; }
+  .key-input { order: 5; flex: 1 1 100%; width: auto !important; }
 
   /* Both bars hide while reading down a long result and return on the way up.
      Scoped to this breakpoint: above it the nav sits inline in the header and
@@ -780,6 +786,42 @@ table.grid tr.selected td { background: var(--accent-soft); }
 
 .key-input { display: flex; gap: 7px; align-items: center; }
 .key-input input { flex: 1; font-family: var(--mono); font-size: 12px; }
+
+/* ---------------------------------------------------------------- ai gate */
+
+.gate-intro {
+  padding: var(--s3) var(--s4);
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-2);
+  font-size: var(--fs-sm); line-height: 1.55; color: var(--text-2);
+}
+.gate-empty {
+  padding: var(--s5) var(--s4); text-align: center;
+  font-size: var(--fs-sm); color: var(--text-2);
+}
+
+.gate-row {
+  padding: var(--s3) var(--s4);
+  border-bottom: 1px solid var(--border);
+  /* A colour rail keyed to the outcome, so refusals are scannable without
+     reading a word of it. */
+  border-left: 3px solid var(--defaulted);
+}
+.gate-row:last-child { border-bottom: none; }
+.gate-row.refused { border-left-color: var(--error); }
+.gate-row.displaced_default, .gate-row.gap_filled { border-left-color: var(--inferred); }
+
+.gate-row-head { display: flex; align-items: center; gap: var(--s2); margin-bottom: var(--s2); }
+.gate-attr { font-weight: 650; font-size: var(--fs-sm); }
+
+.gate-values {
+  display: flex; flex-wrap: wrap; gap: var(--s1) var(--s4);
+  font-size: var(--fs-sm); margin-bottom: var(--s1);
+}
+.gate-proposed { color: var(--text-2); }
+.gate-kept { color: var(--text); }
+.gate-prov { color: var(--text-3); font-size: var(--fs-label); }
+.gate-reason { font-size: var(--fs-label); color: var(--text-2); line-height: 1.5; }
 
 .legend { display: flex; flex-wrap: wrap; gap: 7px; padding: 11px 15px; border-top: 1px solid var(--border); background: var(--surface-2); }
 .legend-item { display: flex; align-items: center; gap: 5px; font-size: 10.5px; color: var(--text-2); }

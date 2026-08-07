@@ -24,6 +24,7 @@ from .config import (
     SERVER_API_KEY,
 )
 from .models import BatchEnrichRequest, EnrichedProduct, EnrichRequest, RawProduct
+from .pipeline import gate
 from .pipeline import run as pipeline
 from .pipeline import taxonomy
 from .providers.base import Provider
@@ -91,6 +92,39 @@ def _cache_payload(product: RawProduct) -> dict[str, Any]:
     return product.model_dump(exclude_none=True)
 
 
+def _enrich_hybrid(product: RawProduct, api_key: str | None) -> EnrichedProduct:
+    """Deterministic engine, with a bounded model contribution merged in.
+
+    The model half is taken from a stored live record whenever one exists, so
+    hybrid mode costs nothing for every product the repository ships a result
+    for. That is what lets a reviewer with no API key see the gate work.
+    """
+    payload = _cache_payload(product)
+    deterministic = pipeline.enrich(product, MockProvider())
+
+    stored = cache.get(payload, "live")
+    if stored is not None:
+        model_record = EnrichedProduct.model_validate(stored)
+        merged = gate.apply(deterministic, model_record, live_source="precomputed")
+        merged.cached = True
+        return merged
+
+    provider, warning = _resolve_provider("live", api_key)
+    if warning:
+        # No key and nothing stored: return the deterministic record and say so,
+        # rather than pretending a gate ran with nothing to gate.
+        deterministic.trace.insert(0, pipeline.StageTrace(
+            stage="provider",
+            summary=f"{warning} The hybrid gate needs a model proposal to act on, "
+                    f"so this record is the deterministic engine's alone.",
+        ))
+        return deterministic
+
+    model_record = pipeline.enrich(product, provider)
+    cache.put(payload, "live", model_record.model_dump(mode="json"))
+    return gate.apply(deterministic, model_record, live_source="api")
+
+
 def _enrich_one(product: RawProduct, mode: str, api_key: str | None) -> EnrichedProduct:
     payload = _cache_payload(product)
     hit = cache.get(payload, mode)
@@ -98,6 +132,12 @@ def _enrich_one(product: RawProduct, mode: str, api_key: str | None) -> Enriched
         result = EnrichedProduct.model_validate(hit)
         result.cached = True
         return result
+
+    if mode == "hybrid":
+        # Deliberately not cached under its own key: the merge is deterministic
+        # given the two parents, and a third cache mode would double the stored
+        # results for no saving.
+        return _enrich_hybrid(product, api_key)
 
     provider, warning = _resolve_provider(mode, api_key)
     result = pipeline.enrich(product, provider)
