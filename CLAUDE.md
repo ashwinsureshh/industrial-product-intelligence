@@ -201,6 +201,8 @@ score as a CSV row. Do not add a parallel path for a new input type.
 | `benchmark/hybrid.py` | Thin re-export of `pipeline/gate.py` in the shape the scorer wants |
 | `benchmark/records.py` | Loader/exporter for the committed live records |
 | `benchmark/records/` | 102 committed live records, 0.88 MB — makes §7.2 reproducible |
+| `export/profiles.py` | Profile-driven output rendering; target schema is data |
+| `data/export_profiles/` | `catalog_csv`, `schema_org` — **add a customer schema here, not in code** |
 | `data/taxonomy.json` | 10 curated categories — **edit data, not code, to add one** |
 
 ### Frontend (`frontend/src/`)
@@ -395,6 +397,8 @@ python test_ingest.py              # PDF (3 layouts) + web + SSRF guard
 python test_cost_guards.py         # lock, ceiling, cache guarantees
 python test_taxonomy_learning.py   # learn → approve → classify → revoke
 python test_hybrid.py              # hybrid gate: adds, never overrules
+python test_export.py              # output profiles, incl. a schema added at runtime
+python run_cost_model.py           # cost per SKU under deterministic-first triage
 python run_benchmark.py            # 102-case benchmark
 python run_hybrid.py               # hybrid vs demo vs live, $0 from committed records
 python -m benchmark.records export # refresh committed records after a live run

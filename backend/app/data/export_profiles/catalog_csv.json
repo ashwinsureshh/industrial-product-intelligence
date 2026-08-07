@@ -1,0 +1,30 @@
+{
+  "id": "catalog_csv",
+  "label": "Catalog import sheet (CSV)",
+  "format": "csv",
+  "description": "Flat one-row-per-SKU sheet. Every attribute ships with its provenance, confidence and source so a downstream PIM inherits the audit trail rather than a summary of it.",
+  "fields": [
+    { "target": "sku", "from": "input.sku" },
+    { "target": "mpn", "from": "identity.mpn" },
+    { "target": "brand", "from": "identity.brand" },
+    { "target": "category_code", "from": "category.code" },
+    { "target": "category_path", "from": "category.path" },
+    { "target": "title", "from": "content.title" },
+    { "target": "short_description", "from": "content.short_description" },
+    { "target": "long_description", "from": "content.long_description" },
+    { "target": "bullets", "from": "content.bullets" },
+    { "target": "keywords", "from": "content.keywords" },
+    { "target": "readiness", "from": "readiness.overall" },
+    { "target": "verdict", "from": "readiness.verdict" },
+    { "target": "errors", "from": "issues.errors" },
+    { "target": "warnings", "from": "issues.warnings" }
+  ],
+  "attributes": {
+    "columns": [
+      { "suffix": "", "from": "attr:{key}" },
+      { "suffix": ".provenance", "from": "attr:{key}.provenance" },
+      { "suffix": ".confidence", "from": "attr:{key}.confidence" },
+      { "suffix": ".source_url", "from": "attr:{key}.source_url" }
+    ]
+  }
+}

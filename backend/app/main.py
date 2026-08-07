@@ -24,6 +24,7 @@ from .config import (
     SERVER_API_KEY,
 )
 from .models import BatchEnrichRequest, EnrichedProduct, EnrichRequest, RawProduct
+from .export import profiles
 from .pipeline import gate
 from .pipeline import run as pipeline
 from .pipeline import taxonomy
@@ -334,6 +335,60 @@ def _summarize(results: list[EnrichedProduct], started: float) -> dict[str, Any]
         "cached": sum(1 for r in results if r.cached),
         "elapsed_ms": int((time.perf_counter() - started) * 1000),
     }
+
+
+@app.get("/api/export/profiles")
+def export_profiles() -> dict[str, Any]:
+    """The output schemas this engine can render into.
+
+    Exposed because the target format is a customer-supplied artefact: a new
+    schema is a JSON profile dropped into app/data/export_profiles/, not a code
+    change, and this endpoint is how a caller discovers what is installed.
+    """
+    return {"profiles": profiles.available()}
+
+
+@app.post("/api/export")
+def export_profiled(
+    results: list[EnrichedProduct] = Body(...),
+    profile: str = "catalog_csv",
+) -> StreamingResponse:
+    """Render enriched records into a named output schema."""
+    if not results:
+        raise HTTPException(status_code=400, detail="Nothing to export.")
+
+    try:
+        spec = profiles.get(profile)
+    except profiles.ProfileError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+    fmt = spec.get("format", "json")
+
+    if fmt == "csv":
+        header, rows = profiles.to_rows(spec, results)
+        buffer = io.StringIO()
+        writer = csv.writer(buffer, lineterminator="\n")
+        writer.writerow(header)
+        writer.writerows(rows)
+        buffer.seek(0)
+        return StreamingResponse(
+            iter([buffer.getvalue()]),
+            media_type="text/csv",
+            headers={"Content-Disposition":
+                     f'attachment; filename="{profile}.csv"'},
+        )
+
+    documents = profiles.to_documents(spec, results)
+    # A single product renders as one document rather than a list of one, which
+    # is what a JSON-LD consumer expects to paste into a page.
+    payload = documents[0] if len(documents) == 1 else documents
+    media = "application/ld+json" if fmt == "jsonld" else "application/json"
+    return StreamingResponse(
+        iter([json.dumps(payload, indent=2, default=str)]),
+        media_type=media,
+        headers={"Content-Disposition":
+                 f'attachment; filename="{profile}.json"'},
+    )
 
 
 @app.post("/api/export/csv")

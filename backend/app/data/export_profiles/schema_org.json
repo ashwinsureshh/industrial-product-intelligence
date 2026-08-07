@@ -1,0 +1,27 @@
+{
+  "id": "schema_org",
+  "label": "schema.org Product (JSON-LD)",
+  "format": "jsonld",
+  "description": "Standards-compliant Product markup. Each enriched attribute becomes a PropertyValue carrying its unit and, where the value was read from a document, the URL it came from.",
+  "fields": [
+    { "target": "@context", "const": "https://schema.org" },
+    { "target": "@type", "const": "Product" },
+    { "target": "sku", "from": "input.sku" },
+    { "target": "mpn", "from": "identity.mpn" },
+    { "target": "brand", "from": "identity.brand" },
+    { "target": "name", "from": "content.title" },
+    { "target": "description", "from": "content.short_description" },
+    { "target": "category", "from": "category.path" }
+  ],
+  "attributes": {
+    "target": "additionalProperty",
+    "item": {
+      "@type": { "const": "PropertyValue" },
+      "propertyID": "attr:{key}.key",
+      "name": "attr:{key}.label",
+      "value": "attr:{key}.value",
+      "unitText": "attr:{key}.unit",
+      "url": "attr:{key}.source_url"
+    }
+  }
+}
