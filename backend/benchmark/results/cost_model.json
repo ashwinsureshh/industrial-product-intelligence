@@ -3,14 +3,30 @@
   "model_calls_needed": 72,
   "model_calls_skipped": 30,
   "call_rate_pct": 70.6,
-  "cost_per_call_usd": 0.01587,
-  "cost_per_sku_naive_usd": 0.01587,
-  "cost_per_sku_triaged_usd": 0.0112,
   "attributes_forfeited_by_triage": 0,
+  "tokens_per_call": {
+    "input": 2777,
+    "output": 1032
+  },
+  "output_share_of_cost_pct": 65.0,
+  "cost_per_sku_usd": {
+    "introductory_rate_every_sku": 0.01587,
+    "standard_rate_every_sku": 0.02381,
+    "standard_rate_triaged": 0.01681,
+    "standard_rate_triaged_batched": 0.0084
+  },
   "monthly_at_target": {
     "skus": 750000,
-    "naive_usd": 11904.41,
-    "triaged_usd": 8403.11
+    "model_calls": 529412,
+    "every_sku_usd": 17856.53,
+    "triaged_usd": 12604.61,
+    "triaged_batched_usd": 6302.3
   },
+  "scalability_at_target": {
+    "deterministic_compute_hours": 0.68,
+    "model_calls_per_second_sustained": 0.204
+  },
+  "measured": "triage rate, tokens, introductory cost",
+  "projected": "standard-rate and batch figures, from published rates",
   "pricing_note": "Sonnet 5 introductory pricing ($2/$10 per MTok), valid through 2026-08-31"
 }

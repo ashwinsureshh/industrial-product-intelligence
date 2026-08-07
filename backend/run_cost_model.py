@@ -36,6 +36,21 @@ RESULTS = Path(__file__).parent / "benchmark" / "results"
 CURRENT_SKUS_PER_MONTH = 150_000
 TARGET_SKUS_PER_MONTH = 750_000
 
+# The ablation was billed at Sonnet 5 introductory rates, which lapse on
+# 2026-08-31 — eight days after the submission deadline. Quoting only the
+# introductory figure would put a number in the deck that stops being true
+# almost immediately, so both are reported and the standard rate leads.
+INTRO_INPUT_PER_MTOK, INTRO_OUTPUT_PER_MTOK = 2.00, 10.00
+STANDARD_INPUT_PER_MTOK, STANDARD_OUTPUT_PER_MTOK = 3.00, 15.00
+
+# Published discount for the Message Batches API. Catalog enrichment is the
+# textbook case for it: nobody is waiting on an individual SKU, and a month's
+# work is a handful of batches.
+BATCH_DISCOUNT = 0.50
+
+# Deterministic throughput, measured on the 102-case benchmark.
+DETERMINISTIC_PER_SECOND = 305.3
+
 
 def needs_model(record: EnrichedProduct) -> tuple[bool, str]:
     """Could the model legally change this record? Returns (needed, why)."""
@@ -90,42 +105,91 @@ def main() -> int:
 
     total = len(cases)
     call_rate = needed / total
-    blended = per_call * call_rate
+
+    # Recompute from raw tokens rather than scaling the billed total, so the
+    # standard-rate figure is derived rather than estimated.
+    tokens_in = spend["input_tokens"] / spend["cases_run"]
+    tokens_out = spend["output_tokens"] / spend["cases_run"]
+
+    def per_call_at(rate_in: float, rate_out: float) -> float:
+        return tokens_in / 1e6 * rate_in + tokens_out / 1e6 * rate_out
+
+    intro = per_call_at(INTRO_INPUT_PER_MTOK, INTRO_OUTPUT_PER_MTOK)
+    standard = per_call_at(STANDARD_INPUT_PER_MTOK, STANDARD_OUTPUT_PER_MTOK)
+
+    # Where the money actually goes. Output is the larger share, which is why
+    # prompt caching — an input-side discount — is a smaller lever here than
+    # the batch discount, which applies to both.
+    output_share = (tokens_out / 1e6 * STANDARD_OUTPUT_PER_MTOK) / standard
+
+    triaged = standard * call_rate
+    batched = triaged * (1 - BATCH_DISCOUNT)
+
+    calls_per_month = TARGET_SKUS_PER_MONTH * call_rate
+    seconds_per_month = 30 * 24 * 3600
 
     report = {
         "cases": total,
         "model_calls_needed": needed,
         "model_calls_skipped": skipped,
         "call_rate_pct": round(100 * call_rate, 1),
-        "cost_per_call_usd": round(per_call, 5),
-        "cost_per_sku_naive_usd": round(per_call, 5),
-        "cost_per_sku_triaged_usd": round(blended, 5),
         "attributes_forfeited_by_triage": forfeited,
+        "tokens_per_call": {"input": round(tokens_in), "output": round(tokens_out)},
+        "output_share_of_cost_pct": round(100 * output_share, 1),
+        "cost_per_sku_usd": {
+            "introductory_rate_every_sku": round(intro, 5),
+            "standard_rate_every_sku": round(standard, 5),
+            "standard_rate_triaged": round(triaged, 5),
+            "standard_rate_triaged_batched": round(batched, 5),
+        },
         "monthly_at_target": {
             "skus": TARGET_SKUS_PER_MONTH,
-            "naive_usd": round(per_call * TARGET_SKUS_PER_MONTH, 2),
-            "triaged_usd": round(blended * TARGET_SKUS_PER_MONTH, 2),
+            "model_calls": round(calls_per_month),
+            "every_sku_usd": round(standard * TARGET_SKUS_PER_MONTH, 2),
+            "triaged_usd": round(triaged * TARGET_SKUS_PER_MONTH, 2),
+            "triaged_batched_usd": round(batched * TARGET_SKUS_PER_MONTH, 2),
         },
+        "scalability_at_target": {
+            "deterministic_compute_hours": round(
+                TARGET_SKUS_PER_MONTH / DETERMINISTIC_PER_SECOND / 3600, 2
+            ),
+            "model_calls_per_second_sustained": round(
+                calls_per_month / seconds_per_month, 3
+            ),
+        },
+        "measured": "triage rate, tokens, introductory cost",
+        "projected": "standard-rate and batch figures, from published rates",
         "pricing_note": spend.get("pricing"),
     }
 
     RESULTS.mkdir(parents=True, exist_ok=True)
     (RESULTS / "cost_model.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
 
-    print("=" * 66)
+    print("=" * 68)
     print("  COST PER SKU  (replayed from committed records, $0.00 to run)")
-    print("=" * 66)
-    print(f"  measured cost per model call   ${per_call:.5f}")
-    print(f"  SKUs that need a model call    {needed}/{total} ({100*call_rate:.1f}%)")
-    print(f"  SKUs answered deterministically {skipped}/{total}")
+    print("=" * 68)
+    print(f"  SKUs needing a model call      {needed}/{total} ({100*call_rate:.1f}%)")
     print(f"  attributes lost by skipping    {forfeited}  <- must be 0")
+    print(f"  tokens per call                {tokens_in:,.0f} in / {tokens_out:,.0f} out")
+    print(f"  output share of spend          {100*output_share:.0f}%")
     print()
-    print(f"  cost per SKU, every SKU to the model   ${per_call:.5f}")
-    print(f"  cost per SKU, deterministic-first      ${blended:.5f}")
+    print("  cost per SKU")
+    print(f"    every SKU, introductory rate       ${intro:.5f}   (expires 2026-08-31)")
+    print(f"    every SKU, standard rate           ${standard:.5f}")
+    print(f"    + deterministic-first triage       ${triaged:.5f}")
+    print(f"    + batch API (50%)                  ${batched:.5f}")
     print()
-    print(f"  at {TARGET_SKUS_PER_MONTH:,} SKUs/month:")
-    print(f"    naive            ${per_call * TARGET_SKUS_PER_MONTH:,.0f}/month")
-    print(f"    deterministic-first ${blended * TARGET_SKUS_PER_MONTH:,.0f}/month")
+    print(f"  at {TARGET_SKUS_PER_MONTH:,} SKUs/month, standard rate:")
+    print(f"    every SKU to the model   ${standard * TARGET_SKUS_PER_MONTH:,.0f}/month")
+    print(f"    triaged                  ${triaged * TARGET_SKUS_PER_MONTH:,.0f}/month")
+    print(f"    triaged + batched        ${batched * TARGET_SKUS_PER_MONTH:,.0f}/month")
+    print()
+    print("  scalability at that volume:")
+    print(f"    deterministic compute    {TARGET_SKUS_PER_MONTH / DETERMINISTIC_PER_SECOND / 3600:.1f} hours/month")
+    print(f"    sustained model calls    {calls_per_month / seconds_per_month:.2f}/second")
+    print()
+    print("  measured: triage rate, tokens, introductory cost")
+    print("  projected: standard-rate and batch figures, from published rates")
     print()
     print(f"Report written to {RESULTS / 'cost_model.json'}")
     return 0
