@@ -1,0 +1,16 @@
+{
+  "cases": 102,
+  "model_calls_needed": 72,
+  "model_calls_skipped": 30,
+  "call_rate_pct": 70.6,
+  "cost_per_call_usd": 0.01587,
+  "cost_per_sku_naive_usd": 0.01587,
+  "cost_per_sku_triaged_usd": 0.0112,
+  "attributes_forfeited_by_triage": 0,
+  "monthly_at_target": {
+    "skus": 750000,
+    "naive_usd": 11904.41,
+    "triaged_usd": 8403.11
+  },
+  "pricing_note": "Sonnet 5 introductory pricing ($2/$10 per MTok), valid through 2026-08-31"
+}

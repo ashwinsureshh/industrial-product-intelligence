@@ -162,6 +162,28 @@ def assert_enriches(product: RawProduct, label: str, expect_specs: int) -> None:
         check(bool(traced),
               f"{label}: evidence traces back to '{product.source_document}'")
 
+    # Source citation is a stated requirement, not a nicety: every value read
+    # out of a document must name where it came from, and a value read off a
+    # web page must carry the URL itself.
+    from_doc = [
+        a for a in result.attributes
+        if a.provenance.value in ("supplied", "parsed")
+    ]
+    cited = [a for a in from_doc if a.source_url or a.source_locator]
+    check(len(cited) == len(from_doc),
+          f"{label}: all {len(from_doc)} document-sourced values carry a source "
+          f"(got {len(cited)})")
+
+    if product.source_url:
+        with_url = [a for a in from_doc if a.source_url == product.source_url]
+        check(len(with_url) == len(from_doc),
+              f"{label}: document-sourced values cite the page URL")
+
+    if product.spec_sources:
+        located = [a for a in from_doc if a.source_locator]
+        check(bool(located) and any("page" in (a.source_locator or "") for a in located),
+              f"{label}: at least one value cites the page it was read from")
+
     print(f"       -> {len(result.attributes)} attributes, "
           f"readiness {result.readiness.overall}/100 ({result.readiness.verdict})")
 

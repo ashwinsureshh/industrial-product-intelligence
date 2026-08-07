@@ -225,6 +225,7 @@ def from_pdf(data: bytes, filename: str = "datasheet.pdf") -> tuple[RawProduct, 
     report = IngestReport(source=filename)
     specs: dict[str, str] = {}
     page_texts: list[str] = []
+    spec_pages: dict[str, str] = {}
 
     try:
         pdf = pdfplumber.open(io.BytesIO(data))
@@ -252,6 +253,9 @@ def from_pdf(data: bytes, filename: str = "datasheet.pdf") -> tuple[RawProduct, 
                 for key, value in pairs:
                     if key not in specs:
                         specs[key] = value
+                        # Recorded per key, not per document: a datasheet spans
+                        # pages and "page 2" is what makes a value checkable.
+                        spec_pages[key] = f"page {number}"
                         added += 1
                 if added and label not in report.strategies_used:
                     report.strategies_used.append(label)
@@ -311,6 +315,7 @@ def from_pdf(data: bytes, filename: str = "datasheet.pdf") -> tuple[RawProduct, 
         brand=_detect_brand(corpus),
         name=_detect_name(corpus),
         raw_specs=dict(specs),
+        spec_sources=dict(spec_pages),
         free_text=corpus.strip() or None,
         source_document=filename,
     )

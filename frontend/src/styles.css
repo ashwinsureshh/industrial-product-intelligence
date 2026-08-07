@@ -787,6 +787,15 @@ table.grid tr.selected td { background: var(--accent-soft); }
 .key-input { display: flex; gap: 7px; align-items: center; }
 .key-input input { flex: 1; font-family: var(--mono); font-size: 12px; }
 
+/* A citation nobody can follow is not a citation. The URL wraps rather than
+   truncates, because a reviewer checking a spec needs the whole address. */
+.source-link {
+  color: var(--accent); word-break: break-all; text-decoration: none;
+  border-bottom: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+}
+.source-link:hover { border-bottom-color: var(--accent); }
+.source-where { color: var(--text-3); }
+
 /* ---------------------------------------------------------------- ai gate */
 
 .gate-intro {

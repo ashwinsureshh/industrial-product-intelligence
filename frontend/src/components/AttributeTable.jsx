@@ -64,6 +64,30 @@ function AttributeRow({ attribute }) {
               {meta.label} — {meta.hint}
             </div>
           </div>
+          {(attribute.source_url || attribute.source_locator) && (
+            <div className="evidence-row">
+              <div className="evidence-key">Source</div>
+              <div className="evidence-val">
+                {attribute.source_url ? (
+                  <a
+                    className="source-link"
+                    href={attribute.source_url}
+                    target="_blank"
+                    rel="noopener noreferrer nofollow"
+                  >
+                    {attribute.source_url}
+                  </a>
+                ) : (
+                  attribute.source_locator
+                )}
+                {attribute.source_url && attribute.source_locator &&
+                  attribute.source_locator !== attribute.source_url && (
+                    <span className="source-where"> · {attribute.source_locator}</span>
+                  )}
+              </div>
+            </div>
+          )}
+
           <div className="evidence-row">
             <div className="evidence-key">Method</div>
             <div className="evidence-val">

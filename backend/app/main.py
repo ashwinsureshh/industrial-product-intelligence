@@ -89,7 +89,16 @@ def _resolve_provider(mode: str, api_key: str | None) -> tuple[Provider, str | N
 
 
 def _cache_payload(product: RawProduct) -> dict[str, Any]:
-    return product.model_dump(exclude_none=True)
+    """The identity of a product for caching purposes.
+
+    `spec_sources` is excluded deliberately. It records *where inside a
+    document* each raw spec was found, which is provenance metadata rather than
+    part of what the product is — and because the cache key hashes this payload,
+    including it would change every key and silently orphan the 20 precomputed
+    live results the deployment serves. Any future field that describes the
+    fetch rather than the product belongs in this exclusion too.
+    """
+    return product.model_dump(exclude_none=True, exclude={"spec_sources"})
 
 
 def _enrich_hybrid(product: RawProduct, api_key: str | None) -> EnrichedProduct:
@@ -342,8 +351,14 @@ def export_csv(results: list[EnrichedProduct] = Body(...)) -> StreamingResponse:
     base = ["sku", "mpn", "brand", "category_code", "category_path", "title",
             "short_description", "long_description", "bullets", "keywords",
             "readiness", "verdict", "errors", "warnings"]
-    # Each attribute ships with its provenance so downstream systems inherit the audit trail.
-    header = base + [c for k in attribute_keys for c in (k, f"{k}__provenance", f"{k}__confidence")]
+    # Each attribute ships with its provenance AND its source so downstream
+    # systems inherit the whole audit trail, not a summary of it. The source
+    # column is what lets a buyer re-check any value against the page it came
+    # from without coming back to us.
+    header = base + [
+        c for k in attribute_keys
+        for c in (k, f"{k}__provenance", f"{k}__confidence", f"{k}__source")
+    ]
 
     buffer = io.StringIO()
     writer = csv.writer(buffer, lineterminator="\n")
@@ -370,10 +385,14 @@ def export_csv(results: list[EnrichedProduct] = Body(...)) -> StreamingResponse:
         for key in attribute_keys:
             attr = by_key.get(key)
             if attr is None:
-                row += ["", "", ""]
+                row += ["", "", "", ""]
             else:
                 unit = f" {attr.unit}" if attr.unit else ""
-                row += [f"{attr.value}{unit}", attr.provenance.value, attr.confidence]
+                source = " · ".join(
+                    p for p in (attr.source_url, attr.source_locator) if p
+                )
+                row += [f"{attr.value}{unit}", attr.provenance.value,
+                        attr.confidence, source]
         writer.writerow(row)
 
     buffer.seek(0)

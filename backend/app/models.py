@@ -42,6 +42,14 @@ class RawProduct(BaseModel):
     price: float | None = None
     currency: str | None = None
     raw_specs: dict[str, Any] = Field(default_factory=dict)
+    spec_sources: dict[str, str] = Field(
+        default_factory=dict,
+        description=(
+            "Per-spec-key origin inside the source document, e.g. "
+            "{'Bore': 'page 2'}. Lets an extracted attribute cite the exact "
+            "place it came from rather than the document as a whole."
+        ),
+    )
     source_url: str | None = None
     free_text: str | None = Field(
         default=None,
@@ -76,6 +84,19 @@ class Attribute(BaseModel):
     confidence: float = Field(ge=0.0, le=1.0)
     evidence: str = Field(
         description="The specific text or rule that justifies this value."
+    )
+    # Where the value physically came from. A buyer auditing a spec needs to
+    # reach the page it was read off, not just be told a stage produced it.
+    # Null for values a standard or calculation yields rather than a document:
+    # inventing a URL for those would be worse than admitting there isn't one,
+    # which is why `evidence` still names the standard.
+    source_url: str | None = Field(
+        default=None,
+        description="URL of the manufacturer page or document the value was read from.",
+    )
+    source_locator: str | None = Field(
+        default=None,
+        description="Where inside that source, e.g. 'page 2' or 'datasheet.pdf'.",
     )
     method: str = Field(description="Which pipeline stage produced it.")
     group: str = "General"

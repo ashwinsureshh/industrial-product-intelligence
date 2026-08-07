@@ -183,6 +183,8 @@ def from_raw_specs(
                 provenance=Provenance.SUPPLIED if best_score > 0.95 else Provenance.PARSED,
                 confidence=confidence,
                 evidence=evidence,
+                source_url=raw.source_url,
+                source_locator=raw.spec_sources.get(supplier_key) or raw.source_document,
                 method="structured-spec-mapping",
                 group=spec.get("group", "General"),
             )
@@ -430,6 +432,18 @@ def from_free_text(
         found.append(attr)
         already.add(key)
         claimed_text.append(matched if matched else str(attr.value))
+
+    # Stamped once here rather than threaded through the three matchers: every
+    # prose match, whichever strategy found it, came from this product's text,
+    # so they all cite the same document.
+    if raw.source_url or raw.source_document:
+        found = [
+            a.model_copy(update={
+                "source_url": raw.source_url,
+                "source_locator": raw.source_document,
+            })
+            for a in found
+        ]
 
     return found
 
