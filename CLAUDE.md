@@ -28,6 +28,49 @@ it cannot defend.
 
 ---
 
+## 1.5 Organizer briefing — the authoritative brief
+
+The user attended a **UniHack live session with the organizers (Unilog)** and
+relayed it on 6 Aug. This supersedes inference from the portal text. Anything in
+this file that predates it was written from the portal blurb alone.
+
+**The core problem as they state it:** take **minimal input — a manufacturer
+name and part number — and search manufacturer websites, catalogues, PDFs, user
+manuals and videos** to find detailed specifications, then output structured,
+commerce-ready data. Unilog does this partly manually today and wants to scale
+**150,000 → 750,000 SKUs/month on the same capacity**.
+
+**Four judging criteria, equally weighted:** Innovation, Accuracy, Scalability,
+Quality. Beyond those: cost-effectiveness **per SKU** (thin margins), source
+transparency, completeness of submission, and a **working MVP** rather than a
+production system.
+
+**Hard requirements:**
+
+- **Source URLs for every extracted value.** Stated three separate times — in
+  the objectives, the judging criteria, and the definition of commerce-ready.
+- **Output into a schema Unilog provides.** As of 6 Aug they had **not** given
+  one; the user expects input/output sample data "in some days". §5 `export/`
+  is the answer — target format is a profile, not code.
+- **No e-commerce sources.** Amazon, eBay and similar are prohibited;
+  manufacturer-provided sources only.
+- **Generic across segments** — HVAC, plumbing, electrical — not single-domain.
+- **Deliverables:** deck (their template), **public** GitHub repo, and a
+  **3-minute** demo video.
+
+**Nice to have:** schema.org compliance (shipped — §5 `export_profiles/`),
+and extraction from manufacturer videos or tech talks (not built; roadmap).
+
+**What this validated:** explainable outputs are an explicit ask (the refusal
+ledger is directly on target), as are validation for trustworthiness and
+domain-generic design.
+
+**The one real gap:** autonomous **discovery** from brand + MPN. We enrich from
+MPN via ISO decoding, which is genuinely on-target, but we do not search the
+web. Held deliberately until their sample data arrives — see §11.
+
+---
+
 ## 2. Submission requirements (from the portal)
 
 **Deadline: Sun 23 Aug 2026, 10:31 IST.** Five deliverables, all mandatory:
@@ -98,9 +141,15 @@ auto-deploys on push to `main`, built from the root `Dockerfile`.
 | 4 | Public deployment | **Done — live and monitored** |
 | 5 | Deck + demo video | **Blocked: need the portal's mandatory template** |
 
-**All engineering is complete, committed and pushed.** Working tree clean, all
-five test suites pass, deployment verified. What remains is the deck, the demo
-video, and the submission-day actions in §11 — none of which are code.
+**Everything above is complete, committed, pushed and deployed.** Seven test
+suites pass, benchmark reproduces, live site verified on desktop and phone.
+
+**Post-briefing work (6 Aug), all $0:** per-attribute source URLs (§5.5), the
+cost model (§7.05), profile-driven export (§5 `export/`), and the hybrid gate
+shipped as a product engine with a refusal ledger (§7.2).
+
+**One engineering item remains: discovery from brand + MPN — §11.1.** It is the
+organizers' stated core problem and is held pending their sample data.
 
 ---
 
@@ -180,7 +229,7 @@ score as a CSV row. Do not add a parallel path for a new input type.
 
 | Path | Role |
 | --- | --- |
-| `models.py` | All schemas. `RawProduct`, `Attribute`, `EnrichedProduct`, `CategoryProposal` |
+| `models.py` | All schemas. `RawProduct`, `Attribute`, `EnrichedProduct`, `GateDecision`, `CategoryProposal` |
 | `config.py` | Env config; loads `backend/.env`; demo mode is the default |
 | `cache.py` | Content-addressed result cache (input hash + mode + model). `key_for()` is public so other read-only layers address records identically |
 | `main.py` | FastAPI app, all endpoints |
@@ -219,6 +268,28 @@ a downward scroll. The header retreats by animating its sticky `top`, **never**
 by transform: the nav is its DOM child, and a transformed ancestor becomes the
 containing block for `position: fixed` descendants, which tears the bottom bar
 off the screen.
+
+---
+
+## 5.5 Source citation — a stated "must"
+
+`Attribute` carries `source_url` and `source_locator`. A value read off a web
+page cites the page URL; a value read out of a datasheet cites **the page
+number** it was found on, because "page 2" is what makes a spec checkable.
+`RawProduct.spec_sources` maps each raw spec key to its origin, which is how the
+page number survives into the attribute. Both travel into the UI (a followable
+link in the attribute drawer) and the CSV export (a per-attribute column).
+
+Values a **standard or calculation** yields keep a null `source_url`
+deliberately — inventing a URL for an ISO 15 lookup would be worse than
+admitting there is not one, and `evidence` already names the standard.
+
+**Trap, already paid for:** `spec_sources` is excluded from `_cache_payload()`
+in `main.py`. The cache key hashes that payload, so including it changed every
+key and silently orphaned all 20 precomputed live results — hybrid mode would
+have quietly stopped working for keyless reviewers. Any future field describing
+the *fetch* rather than the *product* belongs in that exclusion. Caught only
+because `test_hybrid.py` asserts the precomputed path still runs.
 
 ---
 
@@ -269,6 +340,42 @@ attributes are scored.
 
 **Known gap that motivated the live ablation:** recall is 83.1% on
 standards-backed categories vs 33.1% on archetype categories.
+
+---
+
+## 7.05 Cost per SKU — an explicit judging factor
+
+Run: `cd backend && python run_cost_model.py` ($0 — replays committed records).
+
+**Triage is sound, not heuristic.** Under the gate policy the model may only
+fill a gap or displace a default, so a record with neither offers it nothing it
+is *allowed* to change. Skipping those forfeits nothing, and the script proves
+it by gating the skipped cases anyway and asserting zero acceptances.
+
+| | $/SKU | $/month at 750k |
+| --- | --- | --- |
+| Every SKU to the model, standard rate | $0.02381 | $17,857 |
+| + deterministic-first triage (70.6% call rate) | $0.01681 | $12,605 |
+| + Batch API (50%) | **$0.00840** | **$6,302** |
+
+Against the organizers' own baseline — 10 min/SKU at $35/hr = **$5.83/SKU** —
+that is **0.14% of manual cost**. Scalability at that volume: **0.7 compute
+hours/month** deterministic and **0.20 sustained model calls/second**. The
+binding constraint is the API rate limit, not the engine.
+
+**Two traps this section exists to prevent:**
+
+1. **The ablation was billed at Sonnet 5 *introductory* rates ($2/$10 per
+   MTok), which lapse 2026-08-31 — eight days after the deadline.** Quote the
+   standard $3/$15 figures above; the $0.01587 number that appears in
+   `spend_live.json` is the introductory one.
+2. **Output is 65% of spend** (2,777 input vs 1,032 output tokens per call), so
+   prompt caching — an input-side discount — is a *smaller* lever than the
+   Batch API, which discounts both halves.
+
+Measured: triage rate, token counts, introductory cost. Projected: standard-rate
+and batch figures, from published rates. `run_cost_model.py` labels which is
+which, and the deck should too.
 
 ---
 
@@ -429,7 +536,13 @@ python run_benchmark.py --live --budget 5
   11. `872ed4e` context file updated with deployment and spend state
   12. `411cf81` **hybrid gate** — bound the LLM to gap-filling (§7.1, §7.2)
   13. `54a7831` **committed live records** — the hybrid result is reproducible
-- Local `main` and `origin/main` are level at `54a7831`; working tree clean.
+  14. `3e3a2a3`→`87f19ab` UI: dark theme, bottom nav, design tokens, responsive
+      fixes (see §5 Frontend)
+  15. `73af8d5` **hybrid shipped as a third engine** + refusal ledger (§7.2)
+  16. `36263b9` **per-attribute source URLs** (§5.5) + first cost model
+  17. `e54c7f4` **export profiles** — output schema is data (§5 `export/`)
+  18. `f26aae4` cost model at standard rates + batch/scalability (§7.05)
+- Local `main` and `origin/main` are level at `f26aae4`; working tree clean.
 - Decision: stay private until submission, then either flip to public or add
   judges as collaborators — check the rules for which is required.
 - No LICENSE yet, deliberately: organizers may have IP terms. Check before adding.
@@ -453,22 +566,52 @@ python run_benchmark.py --live --budget 5
 
 ## 11. Immediate next steps
 
-**No engineering is outstanding.** Everything below is either a deliverable or
-a user action.
+**One engineering item is outstanding — discovery (§11.1).** Everything else is
+a deliverable or a user action.
 
-1. **The deck.** The only real blocker, and it needs the user to download the
-   portal's mandatory template. `docs/Project_Understanding.pdf` plus §7.1/§7.2
+1. **When Unilog's input/output sample data arrives** (expected mid-Aug), in
+   this order: (a) map their schema to a JSON profile in
+   `app/data/export_profiles/` — should be a file, not code, and
+   `test_export.py` proves it; (b) re-run the benchmark against their ground
+   truth; (c) decide on discovery with real examples in hand.
+2. **The deck.** The user has the portal template and will supply it once
+   engineering settles. `docs/Project_Understanding.pdf`, §7.1/§7.2 and §7.05
    carry the narrative; the hybrid gate is the strongest slide.
-2. **Demo video** — a short walkthrough of the live site.
-3. **Flip the repo public** at submission. Mandatory.
-4. **Rotate the API key** (it passed through a conversation transcript) and
+3. **Demo video — 3 minutes** (organizer-specified). Best 20 seconds: switch to
+   the Hybrid engine on the sparse bearing and point at the two refusals.
+4. **Flip the repo public** at submission. Mandatory.
+5. **Rotate the API key** (it passed through a conversation transcript) and
    **delete `backend/.env`** once local live testing is finished.
-5. **Leave the UptimeRobot monitor running.** A sleeping free instance returns
+6. **Leave the UptimeRobot monitor running.** A sleeping free instance returns
    404, so a reviewer's first click would look like a dead link.
+
+### 11.1 Discovery from brand + part number — the one real gap
+
+The organizers' stated **core** problem (§1.5): take a manufacturer name and
+part number and *search* manufacturer sites, catalogues, PDFs and manuals.
+Today the user must hand us the document or URL; we enrich from the MPN via ISO
+decoding, which is on-target but is not web discovery.
+
+**Held deliberately** until their sample data lands, on the user's call.
+Findings that will shape it:
+
+- **The SKF product page returned HTTP 200 with zero specs — it is
+  JavaScript-rendered.** Naive fetch-and-parse will not work on modern
+  manufacturer sites. Expect to need a search API with content extraction, or
+  Claude's own web-search tool (whose citations map neatly onto the source-URL
+  requirement).
+- Either option **costs money per SKU** and changes §7.05's arithmetic, so
+  confirm the approach *and* the spend with the user before any live run.
+- The no-e-commerce constraint means domain blocking is part of the design.
 
 ### Deliberately not done
 
 - **Live taxonomy proposer.** See §3.1 — recommendation is don't.
+- **Video / tech-talk extraction.** Organizers flagged it as innovative;
+  expensive and slow. Roadmap slide, not a build.
+- **Batch API path.** §7.05 costs it but does not implement it. It is a
+  *catalog*-path feature, not the interactive one, and cannot be validated
+  without spending.
 
 ### Gotchas already paid for
 
