@@ -238,14 +238,22 @@ def title_case(text: str) -> str:
     """
     words = []
     for word in (text or "").split():
-        stripped = word.strip(".,;:")
+        # Brackets are stripped alongside punctuation, or '(Rubber' reads as
+        # neither title case nor mixed case and gets flattened to '(rubber'.
+        stripped = word.strip(".,;:()[]")
         folded = stripped.lower()
         if folded in _ALWAYS_UPPER:
             words.append(word.replace(stripped, stripped.upper()))
         elif approved_unit(stripped):
             words.append(word.replace(stripped, approved_unit(stripped).abbreviation))
-        elif any(c.isdigit() for c in stripped) or _is_mixed_case(stripped):
-            # MPNs, sizes and deliberately-cased brand marks: never rewrite.
+        elif (
+            any(c.isdigit() for c in stripped)
+            or _is_mixed_case(stripped)
+            or stripped.istitle()
+        ):
+            # MPNs, sizes, deliberately-cased brand marks, and anything already
+            # correctly capitalised: never rewrite. Only lower-case input needs
+            # casing applied, and re-casing what is already right can only break it.
             words.append(word)
         else:
             words.append(word[:1].upper() + word[1:].lower())

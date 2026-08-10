@@ -1,6 +1,6 @@
 # Benchmark Results
 
-Engine: **hybrid (gated)** · 102 cases · 0.38 s · 271.4 products/s
+Engine: **hybrid (gated)** · 102 cases · 0.4 s · 257.1 products/s
 
 ## Headline
 
@@ -57,7 +57,7 @@ Modelled on a **100,000 SKU** catalog.
 | Hours saved | **9,150** |
 | Cost saved | **$320,261** |
 | FTE-years saved | 5.1 |
-| Machine processing time | 0.1 hours |
+| Machine processing time | 0.11 hours |
 
 Assumptions: 10.0 min/SKU manual enrichment, $35.0/hour analyst cost, records needing review credited at 50% of the manual time saving.
 

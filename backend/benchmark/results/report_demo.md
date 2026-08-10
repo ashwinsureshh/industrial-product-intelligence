@@ -1,6 +1,6 @@
 # Benchmark Results
 
-Engine: **demo (deterministic)** · 102 cases · 0.33 s · 305.6 products/s
+Engine: **demo (deterministic)** · 102 cases · 0.34 s · 299.4 products/s
 
 ## Headline
 

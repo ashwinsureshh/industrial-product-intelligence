@@ -104,6 +104,12 @@ def test_units() -> None:
         "the invoice line drops trademark symbols rather than uppercasing them",
         HS.upper_case("FRIGIDAIRE®") == "FRIGIDAIRE",
     )
+    # Regression: a bracketed word read as neither title nor mixed case and was
+    # flattened, publishing '2RS (rubber Sealed)' as a live product title.
+    check(
+        "casing survives inside brackets",
+        HS.title_case("2RS (Rubber Sealed) seal type") == "2RS (Rubber Sealed) Seal Type",
+    )
 
 
 # ------------------------------------------------------------ content formats
