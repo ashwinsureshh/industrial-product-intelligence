@@ -26,6 +26,10 @@ _REGISTRY: dict[str, CrossCheck] = {}
 # Everything else is advisory: worth showing a merchandiser, not worth blocking.
 INTEGRITY_CODES = frozenset({
     "VOCABULARY_VIOLATION",
+    # A value outside the customer's approved list of values is not publishable
+    # even when it is factually correct, because the catalog is validated
+    # against the list rather than against reality.
+    "LOV_VIOLATION",
     "INVALID_IP_CODE",
     "SAFETY_FACTOR_LOW",
     "MATERIAL_TEMP_CONFLICT",

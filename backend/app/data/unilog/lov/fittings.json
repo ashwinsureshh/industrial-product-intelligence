@@ -1,0 +1,112 @@
+{
+  "source": "provisional",
+  "replaces_with": "Fittings_LOV.xlsx",
+  "note": "A cut-down stand-in for the real spec (390 fitting types, 1,472 connection-type variants mapped to 515 canonical values, 464 materials mapped to 113). Shape matches what the real file describes: per-classpath attributes carrying sequence, a filtering flag, permitted values and a many-to-one synonym map. Loading their sheet means writing this file, not changing code.",
+  "classpaths": {
+    "Plumbing > Pipe, Tube & Fittings > Pipe Fittings": {
+      "unspsc": "40141600",
+      "applies_to": [],
+      "applies_to_note": "Local taxonomy codes or paths this vocabulary governs. Deliberately empty: binding a provisional stub onto 'Industrial Components > Fluid Handling > Hose & Fittings' (40142000) would move the published benchmark figures on the strength of hand-written values. Bind it — and re-measure — when the real Fittings_LOV.xlsx lands.",
+      "attributes": [
+        {
+          "key": "fitting_type",
+          "label": "Fitting Type",
+          "sequence": 1,
+          "filterable": true,
+          "values": ["Adapter", "Bushing", "Cap", "Coupling", "Cross", "Elbow", "Flange", "Nipple", "Plug", "Reducer", "Tee", "Union"],
+          "synonyms": {
+            "cplg": "Coupling",
+            "coup": "Coupling",
+            "coupler": "Coupling",
+            "ell": "Elbow",
+            "90 ell": "Elbow",
+            "90 degree elbow": "Elbow",
+            "45 ell": "Elbow",
+            "adptr": "Adapter",
+            "adpt": "Adapter",
+            "nip": "Nipple",
+            "red": "Reducer",
+            "reducing coupling": "Reducer",
+            "flg": "Flange",
+            "bush": "Bushing"
+          }
+        },
+        {
+          "key": "material",
+          "label": "Material Construction",
+          "sequence": 2,
+          "filterable": true,
+          "values": ["Brass", "Bronze", "Carbon Steel", "Cast Iron", "Copper", "CPVC", "Ductile Iron", "Malleable Iron", "PEX", "Polypropylene", "PVC", "Stainless Steel"],
+          "synonyms": {
+            "brs": "Brass",
+            "bra": "Brass",
+            "yellow brass": "Brass",
+            "red brass": "Brass",
+            "brz": "Bronze",
+            "ss": "Stainless Steel",
+            "sst": "Stainless Steel",
+            "stainless": "Stainless Steel",
+            "304 ss": "Stainless Steel",
+            "316 ss": "Stainless Steel",
+            "cs": "Carbon Steel",
+            "black steel": "Carbon Steel",
+            "ci": "Cast Iron",
+            "mi": "Malleable Iron",
+            "malleable": "Malleable Iron",
+            "di": "Ductile Iron",
+            "poly": "Polypropylene",
+            "pp": "Polypropylene",
+            "c-pvc": "CPVC",
+            "cu": "Copper"
+          }
+        },
+        {
+          "key": "connection_type",
+          "label": "Connection Type",
+          "sequence": 3,
+          "filterable": true,
+          "values": ["Barbed", "Compression", "Flanged", "Grooved", "Push-Fit", "Socket Weld", "Soldered", "Threaded", "Welded"],
+          "synonyms": {
+            "npt": "Threaded",
+            "fnpt": "Threaded",
+            "mnpt": "Threaded",
+            "thrd": "Threaded",
+            "threaded fnpt": "Threaded",
+            "female threaded": "Threaded",
+            "male threaded": "Threaded",
+            "bspp": "Threaded",
+            "bspt": "Threaded",
+            "sweat": "Soldered",
+            "solder": "Soldered",
+            "c x c": "Soldered",
+            "slip": "Socket Weld",
+            "socket": "Socket Weld",
+            "push fit": "Push-Fit",
+            "pushfit": "Push-Fit",
+            "quick connect": "Push-Fit",
+            "comp": "Compression",
+            "grvd": "Grooved",
+            "barb": "Barbed"
+          }
+        },
+        {
+          "key": "pressure_class",
+          "label": "Pressure Class",
+          "sequence": 4,
+          "filterable": true,
+          "values": ["125#", "150#", "200#", "250#", "300#", "600#", "3000#", "6000#"],
+          "synonyms": {
+            "class 150": "150#",
+            "150 lb": "150#",
+            "150lb": "150#",
+            "cl150": "150#",
+            "class 300": "300#",
+            "300 lb": "300#",
+            "cl300": "300#",
+            "class 125": "125#"
+          }
+        }
+      ]
+    }
+  }
+}

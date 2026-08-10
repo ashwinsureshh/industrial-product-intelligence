@@ -1,0 +1,77 @@
+{
+  "source": "provisional",
+  "replaces_with": "UNILOG_INTERNAL_CONTENT_GUIDELINES.docx",
+  "note": "Field formulas reverse-engineered from the organizers' worked example (row 1 of the 200-item file) and the stated formula 'Product Title = Brand + Series + MPN + Item Type + key attributes'. Token order, limits and casing are data so the guidelines document replaces this file rather than the code.",
+  "terminal_attributes": ["material", "material_construction", "color", "colour", "finish"],
+  "terminal_note": "Attributes that read as a complete descriptor on their own, so the label is not appended: 'Stainless Steel', not 'Stainless Steel Material'. Their worked example writes exactly these bare.",
+  "formats": [
+    {
+      "id": "invoice_desc",
+      "label": "Invoice Description",
+      "max_length": 40,
+      "case": "upper",
+      "separator": " ",
+      "compact_units": true,
+      "abbreviate": true,
+      "exclude_provenance": ["defaulted", "inferred"],
+      "tokens": [
+        {"source": "item_type", "priority": 1, "required": true},
+        {"source": "attr:mounting", "priority": 2},
+        {"source": "attr:wash_cycles", "priority": 3},
+        {"source": "attr:material", "priority": 4},
+        {"source": "attr:voltage", "priority": 5},
+        {"source": "attr:current", "priority": 6},
+        {"source": "attr:*", "priority": 9}
+      ]
+    },
+    {
+      "id": "mobile_desc",
+      "label": "Mobile Description",
+      "min_length": 60,
+      "max_length": 80,
+      "case": "preserve",
+      "separator": ", ",
+      "exclude_provenance": ["defaulted"],
+      "tokens": [
+        {"source": "manufacturer", "priority": 4},
+        {"source": "brand", "priority": 1, "strip_symbols": true},
+        {"source": "item_type", "priority": 2, "required": true},
+        {"source": "attr:series", "priority": 5},
+        {"source": "mpn", "priority": 3}
+      ]
+    },
+    {
+      "id": "product_title",
+      "label": "Product Title / Short Description",
+      "max_length": 200,
+      "case": "title",
+      "separator": " ",
+      "tail_separator": ", ",
+      "exclude_provenance": ["defaulted"],
+      "tokens": [
+        {"source": "brand", "priority": 1, "required": true},
+        {"source": "attr:series", "priority": 2},
+        {"source": "mpn", "priority": 1, "required": true},
+        {"source": "item_type", "priority": 1, "required": true},
+        {"source": "attr:feature", "priority": 3, "prefix": "With"},
+        {"source": "attr:*", "priority": 6, "tail": true, "with_label": true, "limit": 4}
+      ]
+    },
+    {
+      "id": "long_description",
+      "label": "Long Description",
+      "max_length": 1000,
+      "case": "preserve",
+      "separator": " ",
+      "tail_separator": ", ",
+      "exclude_provenance": ["defaulted"],
+      "tokens": [
+        {"source": "brand", "priority": 1, "required": true},
+        {"source": "item_type", "priority": 1, "required": true},
+        {"source": "attr:feature", "priority": 2, "prefix": "With"},
+        {"source": "attr:series", "priority": 3, "tail": true},
+        {"source": "attr:*", "priority": 5, "tail": true, "with_label": true}
+      ]
+    }
+  ]
+}

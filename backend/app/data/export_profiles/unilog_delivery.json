@@ -1,0 +1,41 @@
+{
+  "id": "unilog_delivery",
+  "label": "Unilog Delivery Format (provisional)",
+  "format": "csv",
+  "description": "Maps the engine's output onto Unilog's delivery sheet. Column names and order follow the worked example in their solution guide; the real file is 252 columns, and adding the rest is editing this profile, not the exporter. Every attribute ships with the source URL their brief requires three times over.",
+  "fields": [
+    { "target": "SKU", "from": "input.sku" },
+    { "target": "Mfg_Part_Num", "from": "identity.mpn" },
+    { "target": "Brand", "from": "identity.brand" },
+    { "target": "Manufacturer", "from": "identity.manufacturer" },
+    { "target": "Classpath", "from": "category.path" },
+    { "target": "UNSPSC", "from": "compliance.lov.unspsc" },
+    { "target": "Invoice Desc", "from": "field:invoice_desc" },
+    { "target": "Invoice Desc Length", "from": "field:invoice_desc.length" },
+    { "target": "Mobile Desc", "from": "field:mobile_desc" },
+    { "target": "Mobile Desc Length", "from": "field:mobile_desc.length" },
+    { "target": "Product Title", "from": "field:product_title" },
+    { "target": "Short Desc", "from": "field:product_title" },
+    { "target": "Long Description", "from": "field:long_description" },
+    { "target": "Marketing Copy", "from": "content.long_description" },
+    { "target": "Feature Bullets", "from": "content.bullets" },
+    { "target": "Keywords", "from": "content.keywords" },
+    { "target": "Values In LOV %", "from": "compliance.lov.percent_in_lov" },
+    { "target": "Vocabulary Mappings", "from": "compliance.lov.mapped" },
+    { "target": "Content Compliant", "from": "compliance.verdict" },
+    { "target": "UOM Standard", "from": "compliance.standards.uom" },
+    { "target": "Readiness", "from": "readiness.overall" },
+    { "target": "Verdict", "from": "readiness.verdict" },
+    { "target": "Needs Human Review", "from": "readiness.verdict" },
+    { "target": "Errors", "from": "issues.errors" },
+    { "target": "Warnings", "from": "issues.warnings" }
+  ],
+  "attributes": {
+    "columns": [
+      { "suffix": "", "from": "attr:{key}" },
+      { "suffix": " Source URL", "from": "attr:{key}.source_url" },
+      { "suffix": " Source Locator", "from": "attr:{key}.source_locator" },
+      { "suffix": " Provenance", "from": "attr:{key}.provenance" }
+    ]
+  }
+}

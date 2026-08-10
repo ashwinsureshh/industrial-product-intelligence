@@ -71,6 +71,69 @@ web. Held deliberately until their sample data arrives — see §11.
 
 ---
 
+## 1.6 The Solution Guide (10 Aug) — this reframes §1.5
+
+The organizers published a **Unihack Solution Guide** to the portal Resources
+tab. Read it before §1.5; where they conflict, this wins. Local copy:
+`C:\Users\Gaming PC\Downloads\Unihack Solution Guide.html`.
+
+**The problem restated, in their words:** "Given a messy row, produce a
+complete, standardised, search-ready product record." The pipeline they name is
+**input analysis → de-duplication → taxonomy & classification → attribute
+extraction → enrichment from manufacturer sources → cleansing and normalisation
+→ description building → digital assets**, and they add: "You are not expected
+to automate all of it. Picking two or three steps and doing them convincingly,
+with evidence, beats a shallow attempt at everything."
+
+**Consequence: web discovery is demoted.** It is one of eight steps and
+explicitly optional. §11.1 called it "the one real gap" and treated it as the
+critical path; that judgement predates this guide. Do not build it unless the
+user asks.
+
+**Nine data files, in four groups.** Only two carry items to process; the rest
+are the rule book.
+
+| File | Role |
+| --- | --- |
+| `Unilog-Sample_200_Items-Input-vs-Output.xlsx` | **The important one.** Input sheet + Delivery Format sheet, 252 columns. The only labelled ground truth |
+| `Sample-1000_Items.xlsx` | 1,000 raw rows, 6 columns. Volume testing |
+| `UNILOG_INTERNAL_CONTENT_GUIDELINES.docx` | Field formulas, character limits, casing, sourcing rules |
+| `Unilog_Master_UOM_Standards_Abbreviations_and_Terms.xlsx` | ~500 approved abbreviations / 89 measurement types + 22 house-style rules |
+| `Decimal_Fraction.xlsx` | 63 exact inch conversions, 1/64 → 63/64 |
+| `UniCat_Manufacturer_and_Brand_List.xlsx` | 27,000+ approved manufacturer/brand rows with exact casing and ® / ™ |
+| `Unicat_Lov_v1_0_Updated_With_Remarks.xlsx` | ~161,000-row cross-category List of Values |
+| `FAUCETS_LOV.xlsx` / `Fittings_LOV.xlsx` | Two categories specified end-to-end |
+| `Reference_Documents_Summary.xlsx` | Their own index of the pack — read first |
+
+**Status as of 10 Aug: the guide is up, the nine files are not.** Only the
+HTML guide is in Resources. Chase the organizers for an ETA; if it slips past
+~17 Aug, decide whether to demo against a hand-built stand-in.
+
+**What the guide validates, unprompted:** "a confidence score or a 'needs human
+review' flag is a genuinely valuable feature"; "Real data is imperfect — say
+so"; sourcing from manufacturer sites with marketplaces excluded; and "Show
+your evaluation" naming field-level accuracy, character-limit compliance and
+percentage of values found in the LOV as the metrics judges will look for.
+
+**Two things it changes about our claims:**
+
+1. **"Getting these formats right is most of the task."** The same product is
+   written five times at five lengths and casings — invoice ≤40 CAPS, mobile
+   60–80, title/short, long, attributes. §5.7 is the answer.
+2. **Our §7 ground truth is no longer the primary one.** Judges will want
+   field-level accuracy against their 200 known-good rows. The ISO 15 /
+   ISO 898-1 methodology stays as a rigor argument, but it becomes the
+   *second* metric. Add a benchmark; **do not edit the frozen corpus** — see
+   the gotcha in §11.
+
+**Their scope advice is "depth beats breadth":** one category classified,
+attributed, described and validated end-to-end beats a thin pass over 1,000
+rows. Recommendation on record: **Fittings**, because 1,472 supplier connection
+types collapsing onto 515 approved values is many-to-one normalisation, which
+is what this engine is already best at. Faucets is the narrower fallback.
+
+---
+
 ## 2. Submission requirements (from the portal)
 
 **Deadline: Sun 23 Aug 2026, 10:31 IST.** Five deliverables, all mandatory:
@@ -139,7 +202,8 @@ auto-deploys on push to `main`, built from the root `Dockerfile`.
 | — | Live ablation (Claude vs deterministic) | **Done, 102/102, $1.62. Negative result — see §7.1.** |
 | — | Hybrid gate (bounded Claude) | **Done, $0 — see §7.2. Best result in the project, and now a selectable engine in the product with a refusal ledger.** |
 | 4 | Public deployment | **Done — live and monitored** |
-| 5 | Deck + demo video | **Blocked: need the portal's mandatory template** |
+| 5 | Deck + demo video | Template is in Downloads (`[EXT] UniHack-Protoype Template .pptx`); not started |
+| 6 | Unilog compliance layer (§5.7) | **Done, $0** — built against the solution guide (§1.6) |
 
 **Everything above is complete, committed, pushed and deployed.** Seven test
 suites pass, benchmark reproduces, live site verified on desktop and phone.
@@ -250,8 +314,13 @@ score as a CSV row. Do not add a parallel path for a new input type.
 | `benchmark/hybrid.py` | Thin re-export of `pipeline/gate.py` in the shape the scorer wants |
 | `benchmark/records.py` | Loader/exporter for the committed live records |
 | `benchmark/records/` | 102 committed live records, 0.88 MB — makes §7.2 reproducible |
+| `unilog/house_style.py` | Approved UOM lookup + exact-64th decimal↔fraction + casing |
+| `unilog/content_formats.py` | The five commerce descriptions, built by token formula to character limits |
+| `unilog/lov.py` | Controlled vocabulary: accept / map / **refuse**, plus attribute sequence |
+| `ingest/unilog_rows.py` | Their 6- and 10-column catalogue rows → `RawProduct` |
+| `data/unilog/` | `uom_standards`, `abbreviations`, `content_formats`, `lov/` — **all provisional stubs; their spreadsheets replace these files, not the code** |
 | `export/profiles.py` | Profile-driven output rendering; target schema is data |
-| `data/export_profiles/` | `catalog_csv`, `schema_org` — **add a customer schema here, not in code** |
+| `data/export_profiles/` | `catalog_csv`, `schema_org`, `unilog_delivery` — **add a customer schema here, not in code** |
 | `data/taxonomy.json` | 10 curated categories — **edit data, not code, to add one** |
 
 ### Frontend (`frontend/src/`)
@@ -290,6 +359,59 @@ key and silently orphaned all 20 precomputed live results — hybrid mode would
 have quietly stopped working for keyless reviewers. Any future field describing
 the *fetch* rather than the *product* belongs in that exclusion. Caught only
 because `test_hybrid.py` asserts the precomputed path still runs.
+
+---
+
+## 5.7 The compliance layer — house style, vocabularies, formats
+
+Built 10 Aug against §1.6, all $0. Proven by `test_unilog.py` (100 checks).
+
+Pipeline is now
+`normalize → classify → extract → infer → reconcile → **vocabulary** → content
+→ **compliance** → validate → score`.
+
+**Compliance is scored separately from readiness, on purpose.** Readiness asks
+whether the data is *right*; compliance asks whether it is *written the way the
+customer's standard requires*. `ComplianceReport.verdict` is its own verdict.
+Collapsing them would hide which one needs fixing — and, concretely, a mobile
+description three characters short would have dragged down a data-quality score
+and silently moved §7's `auto-publishable` figure.
+
+**Every rule refuses rather than guesses**, matching the gate:
+
+| Rule | Accepts | Refuses |
+| --- | --- | --- |
+| Fractions | exact 64ths only (`50.25 → 50-1/4`) | `0.3` stays `0.3 in`; it is not 19/64 |
+| Units | any spelling in the approved table (`inches → in`, always number-space-unit) | an unapproved unit is **withheld from the copy**, not printed |
+| List of values | exact, case, and explicit synonym (`CPLG → Coupling`, `BRS → Brass`) | an unlisted value keeps its original, raises `LOV_VIOLATION`, and a near miss is **suggested, never applied** |
+| Character limits | drops whole low-priority tokens to fit | clipping only when *required* tokens overflow, and it is reported as a breach |
+
+That last row is the one to demo. A 40-character invoice line built by cutting
+at 40 gives `...PDSH4816AF DISHWA` — a truncated MPN is unsearchable. Dropping
+tokens gives `DISHWASHER LEG 5 SST 120V 15A CLEANBOOST` and names what it
+dropped.
+
+Against their worked example the title comes out
+`FRIGIDAIRE® Professional Series PDSH4816AF Dishwasher With CleanBoost™, Leg
+Mounting, 5 Wash Cycles, Stainless Steel, 120 V` — structurally theirs, modulo
+the `5-Wash Cycle` hyphenation rule that lives in the guidelines .docx we do not
+have.
+
+**Two design seams that matter when their files land:**
+
+- `lov.json` entries carry `applies_to`, mapping *their* classpath onto our
+  taxonomy codes. It is **deliberately empty**: binding a hand-written stub onto
+  `Hose & Fittings` (40142000) would move published benchmark figures on the
+  strength of invented values. Bind it and re-measure when the real
+  `Fittings_LOV.xlsx` arrives.
+- Every stub reports `source: "provisional"`, and that string travels into
+  `ComplianceReport.standards` and the export. Nothing can claim verified
+  compliance against a table we wrote ourselves.
+
+**Verified non-regression:** all seven pre-existing suites pass, the benchmark
+reproduces 2.75× / 0.0% / 100% / 31.4%, and the hybrid reproduces
+99.5 / 41.7 / 57-10-28 unchanged. The vocabulary stage is inert on every
+curated category, which is what keeps that true.
 
 ---
 
@@ -505,6 +627,7 @@ python test_cost_guards.py         # lock, ceiling, cache guarantees
 python test_taxonomy_learning.py   # learn → approve → classify → revoke
 python test_hybrid.py              # hybrid gate: adds, never overrules
 python test_export.py              # output profiles, incl. a schema added at runtime
+python test_unilog.py              # house style, LOV refusals, char limits, row ingest
 python run_cost_model.py           # cost per SKU under deterministic-first triage
 python run_benchmark.py            # 102-case benchmark
 python run_hybrid.py               # hybrid vs demo vs live, $0 from committed records
@@ -542,7 +665,10 @@ python run_benchmark.py --live --budget 5
   16. `36263b9` **per-attribute source URLs** (§5.5) + first cost model
   17. `e54c7f4` **export profiles** — output schema is data (§5 `export/`)
   18. `f26aae4` cost model at standard rates + batch/scalability (§7.05)
-- Local `main` and `origin/main` are level at `f26aae4`; working tree clean.
+  19. **Unilog compliance layer** (§5.7) — house style, LOV refusals, formula
+      -built descriptions, catalogue-row ingest, delivery profile, 100 tests
+- Local `main` and `origin/main` were level at `f26aae4` before the compliance
+  layer landed.
 - Decision: stay private until submission, then either flip to public or add
   judges as collaborators — check the rules for which is required.
 - No LICENSE yet, deliberately: organizers may have IP terms. Check before adding.
@@ -566,14 +692,23 @@ python run_benchmark.py --live --budget 5
 
 ## 11. Immediate next steps
 
-**One engineering item is outstanding — discovery (§11.1).** Everything else is
-a deliverable or a user action.
+**Everything now waits on the nine data files (§1.6), which are not uploaded
+yet.** The compliance layer (§5.7) was built against the guide so that landing
+them is a data drop.
 
-1. **When Unilog's input/output sample data arrives** (expected mid-Aug), in
-   this order: (a) map their schema to a JSON profile in
-   `app/data/export_profiles/` — should be a file, not code, and
-   `test_export.py` proves it; (b) re-run the benchmark against their ground
-   truth; (c) decide on discovery with real examples in hand.
+0. **Chase the organizers for a dataset ETA.** As of 10 Aug only the HTML guide
+   is in Resources. This is the critical path.
+1. **When the pack lands**, in this order:
+   (a) regenerate the four `data/unilog/` stubs from their UOM sheet,
+   guidelines .docx, and LOV files — no code change, and `source` flips from
+   `provisional` to `unilog`;
+   (b) fill in `unilog_delivery.json` from the 252-column Delivery Format sheet;
+   (c) set `applies_to` on the LOV entries to bind them to our taxonomy, then
+   **re-measure** — that binding is what makes the vocabulary live;
+   (d) add a *second* benchmark scoring field-level accuracy against their 200
+   known-good rows. **Do not touch `build_corpus()`** — it invalidates all 102
+   paid records (§11 gotchas);
+   (e) then, and only then, decide on discovery with real examples in hand.
 2. **The deck.** The user has the portal template and will supply it once
    engineering settles. `docs/Project_Understanding.pdf`, §7.1/§7.2 and §7.05
    carry the narrative; the hybrid gate is the strongest slide.
@@ -585,9 +720,13 @@ a deliverable or a user action.
 6. **Leave the UptimeRobot monitor running.** A sleeping free instance returns
    404, so a reviewer's first click would look like a dead link.
 
-### 11.1 Discovery from brand + part number — the one real gap
+### 11.1 Discovery from brand + part number — demoted by §1.6
 
-The organizers' stated **core** problem (§1.5): take a manufacturer name and
+**Read §1.6 first.** The solution guide makes discovery one of eight pipeline
+steps and says outright that two or three done convincingly beat a shallow pass
+at everything. This section's framing as "the one real gap" predates it.
+
+The organizers' 6 Aug briefing (§1.5): take a manufacturer name and
 part number and *search* manufacturer sites, catalogues, PDFs and manuals.
 Today the user must hand us the document or URL; we enrich from the MPN via ISO
 decoding, which is on-target but is not web discovery.

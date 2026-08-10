@@ -130,6 +130,54 @@ class CommerceContent(BaseModel):
     search_terms: list[str] = Field(default_factory=list)
 
 
+class ComplianceReport(BaseModel):
+    """Whether the record obeys the customer's content standard, and on what basis.
+
+    Kept separate from validation because these are different questions. A
+    validation issue says the data may be wrong; a compliance finding says the
+    data may be right but written in a form the catalog will not accept — an
+    unapproved unit, a value outside the list, a description over its character
+    limit. Both block publication, for different reasons.
+    """
+
+    fields: list[dict[str, Any]] = Field(
+        default_factory=list,
+        description="Per-format rendering with its length window and any breaches.",
+    )
+    lov: dict[str, Any] = Field(
+        default_factory=dict,
+        description="Vocabulary coverage: how many values were found in the approved list.",
+    )
+    vocabulary_mappings: list[dict[str, str]] = Field(
+        default_factory=list,
+        description="Every many-to-one normalization applied, so a rewrite is auditable.",
+    )
+    standards: dict[str, str] = Field(
+        default_factory=dict,
+        description=(
+            "Which table backed each rule. 'provisional' means a stand-in was "
+            "used, so nothing here claims verified compliance on a stub."
+        ),
+    )
+    compliant: bool = True
+    breaches: list[str] = Field(
+        default_factory=list,
+        description="Fields that could not be written inside their limits.",
+    )
+
+    @property
+    def verdict(self) -> str:
+        """Deliberately separate from ReadinessScore.verdict.
+
+        Readiness asks whether the data is *right*; compliance asks whether it
+        is *written the way the customer's standard requires*. A record can pass
+        one and fail the other, and collapsing them would hide which needs
+        fixing — so a character-limit breach never silently drags down a data
+        quality score, and clean prose never covers for a bad value.
+        """
+        return "compliant" if self.compliant else "non_compliant"
+
+
 class ReadinessScore(BaseModel):
     """Is this record good enough to publish? Broken into defensible parts."""
 
@@ -192,6 +240,7 @@ class EnrichedProduct(BaseModel):
     category: CategoryAssignment | None = None
     attributes: list[Attribute] = Field(default_factory=list)
     content: CommerceContent | None = None
+    compliance: ComplianceReport | None = None
     issues: list[ValidationIssue] = Field(default_factory=list)
     readiness: ReadinessScore | None = None
     trace: list[StageTrace] = Field(default_factory=list)

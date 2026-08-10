@@ -106,6 +106,21 @@ def resolve(record: EnrichedProduct, path: str) -> Any:
             return attribute.provenance.value
         return getattr(attribute, field, None)
 
+    # `field:<id>` addresses one of the house-style commerce descriptions. A
+    # customer schema names these by their own column titles, so the mapping
+    # from "Invoice Desc" to our `invoice_desc` belongs in the profile.
+    if path.startswith("field:"):
+        rest = path[6:]
+        identifier, _, part = rest.partition(".")
+        rendered = next(
+            (f for f in (record.compliance.fields if record.compliance else [])
+             if f.get("id") == identifier),
+            None,
+        )
+        if rendered is None:
+            return None
+        return rendered.get(part or "text")
+
     # A handful of shapes a flat target schema always wants but the record
     # stores structurally.
     if path == "category.path":

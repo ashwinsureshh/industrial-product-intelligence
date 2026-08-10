@@ -19,6 +19,7 @@ from typing import Any
 from ..models import (
     Attribute,
     CategoryAssignment,
+    ComplianceReport,
     EnrichedProduct,
     Provenance,
     RawProduct,
@@ -27,6 +28,9 @@ from ..models import (
     StageTrace,
 )
 from ..providers.base import Provider
+from ..unilog import content_formats as CF
+from ..unilog import house_style as HS
+from ..unilog import lov
 from . import extract, taxonomy, validate
 from . import units as U
 
@@ -71,6 +75,17 @@ def _normalize_input(raw: RawProduct) -> tuple[RawProduct, dict[str, Any], list[
             notes.append(f"Brand '{cleaned.brand}' normalized to '{canonical}'.")
         if entry:
             identity["brand_country"] = entry.get("country")
+
+    # Manufacturer and brand are separate columns in a distributor feed and are
+    # routinely different — a house brand sold under the maker's own name. The
+    # content standard uses both, so neither is allowed to overwrite the other.
+    manufacturer = next(
+        (str(v) for k, v in cleaned.raw_specs.items()
+         if k.strip().lower() in {"manufacturer", "part manuf", "mfr"} and v),
+        None,
+    )
+    if manufacturer:
+        identity["manufacturer"] = " ".join(manufacturer.split())
 
     if cleaned.price is not None and not cleaned.currency:
         notes.append("Price supplied without a currency; assumed to need confirmation.")
@@ -307,6 +322,32 @@ def enrich(raw: RawProduct, provider: Provider) -> EnrichedProduct:
         details={"conflicts": conflicts},
     ))
 
+    # --------------------------------------------------------------- vocabulary
+    # Runs before content so copy is written from approved values. Inert when no
+    # list of values covers the classpath: "no vocabulary applies" and "the value
+    # is approved" must not look the same downstream.
+    with _Timer() as t:
+        classpath = assignment.path if assignment else None
+        attributes, lov_issues, mappings = lov.apply(attributes, classpath)
+        order = lov.sequence(classpath)
+        if order:
+            # The list of values owns display order; extraction order is an accident.
+            attributes.sort(key=lambda a: (order.index(a.key) if a.key in order else len(order),
+                                           a.group, a.label))
+        lov_coverage = lov.coverage(attributes, classpath)
+    trace.append(StageTrace(
+        stage="vocabulary",
+        summary=(
+            f"Normalized {len(mappings)} value(s) to the approved list; "
+            f"{len(lov_issues)} value(s) refused as outside it."
+            if lov_coverage.get("applicable")
+            else "No list of values covers this category; skipped."
+        ),
+        duration_ms=t.ms,
+        changed=[m["key"] for m in mappings],
+        details={"mappings": mappings, "coverage": lov_coverage},
+    ))
+
     # ------------------------------------------------------------------ content
     with _Timer() as t:
         content_result = provider.generate_content(cleaned, category, attributes, identity)
@@ -320,11 +361,50 @@ def enrich(raw: RawProduct, provider: Provider) -> EnrichedProduct:
         details={"notes": content_result.notes},
     ))
 
+    # --------------------------------------------------------------- compliance
+    # The five commerce descriptions are rebuilt by formula against their
+    # character limits, independently of whatever prose the provider produced.
+    # A limit breach is reported, never absorbed by cutting the string.
+    with _Timer() as t:
+        fields = CF.build_all(CF.ContentContext(
+            brand=identity.get("brand") or cleaned.brand or "",
+            manufacturer=identity.get("manufacturer") or "",
+            mpn=identity.get("mpn") or cleaned.mpn or "",
+            item_type=CF._singular(category["path"][-1]) if category else "",
+            attributes=attributes,
+        ))
+        breaches = [f for f in fields if not f.compliant]
+        compliance = ComplianceReport(
+            fields=[f.as_dict() for f in fields],
+            lov=lov_coverage,
+            vocabulary_mappings=mappings,
+            standards={
+                "uom": HS.source(),
+                "content_formats": CF.source(),
+                "lov": str(lov_coverage.get("source") or "not applicable"),
+            },
+            compliant=not breaches and not lov_issues,
+            breaches=[f.label for f in breaches],
+        )
+    trace.append(StageTrace(
+        stage="compliance",
+        summary=(
+            f"Built {len(fields)} commerce field(s) to house style; "
+            + (f"{len(breaches)} breached its limit or dropped a value."
+               if breaches else "all within their character limits.")
+        ),
+        duration_ms=t.ms,
+        details={"fields": compliance.fields, "standards": compliance.standards},
+    ))
+
     # ----------------------------------------------------------------- validate
     with _Timer() as t:
         issues, missing = validate.run_all(
             attributes, category, identity, content_result.content
         )
+        issues += lov_issues
+        order_by = {Severity.ERROR: 0, Severity.WARNING: 1, Severity.INFO: 2}
+        issues.sort(key=lambda i: order_by[i.severity])
     errors = sum(1 for i in issues if i.severity == Severity.ERROR)
     warnings = sum(1 for i in issues if i.severity == Severity.WARNING)
     trace.append(StageTrace(
@@ -350,6 +430,7 @@ def enrich(raw: RawProduct, provider: Provider) -> EnrichedProduct:
         category=assignment,
         attributes=attributes,
         content=content_result.content,
+        compliance=compliance,
         issues=issues,
         readiness=readiness,
         trace=trace,
