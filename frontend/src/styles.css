@@ -548,6 +548,10 @@ input, textarea, select { font-family: inherit; font-size: inherit; }
   border: 1px solid var(--border);
   background: var(--surface-2); font-size: var(--fs-label); color: var(--text-2);
   white-space: nowrap;
+  /* nowrap keeps a pill on one line, but a pill built from supplier text can be
+     longer than the screen. Cap it and ellipsize rather than let it set the
+     page width. */
+  max-width: 100%; overflow: hidden; text-overflow: ellipsis;
 }
 
 /* ------------------------------------------------------------------- score */
@@ -682,6 +686,15 @@ input, textarea, select { font-family: inherit; font-size: inherit; }
 .content-text { font-size: 13px; color: var(--text-2); line-height: 1.6; }
 .bullets { margin: 0; padding-left: 17px; font-size: 13px; color: var(--text-2); }
 .bullets li { margin-bottom: 3px; }
+
+/* Supplier data contains unbroken tokens no space will ever break: a 60-char
+   MPN, a scraped URL, a concatenated spec string. Without this they set their
+   own container width and push the whole card off screen. */
+.content-title,
+.content-text,
+.bullets li,
+.gate-attr,
+.attr-evidence { overflow-wrap: anywhere; }
 .tag-row { display: flex; flex-wrap: wrap; gap: 5px; }
 
 /* ------------------------------------------------------------------- batch */

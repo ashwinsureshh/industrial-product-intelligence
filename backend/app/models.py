@@ -10,7 +10,7 @@ from __future__ import annotations
 from enum import Enum
 from typing import Any, Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 
 class Provenance(str, Enum):
@@ -136,6 +136,34 @@ class CommerceContent(BaseModel):
     meta_description: str = ""
     keywords: list[str] = Field(default_factory=list)
     search_terms: list[str] = Field(default_factory=list)
+
+    @field_validator("bullets", "keywords", "search_terms", mode="before")
+    @classmethod
+    def _repair_list(cls, value: Any) -> Any:
+        """Undo two ways a model response turns a list field into rubbish.
+
+        A tool call that answers `"bullets": "Standard"` instead of
+        `["Standard"]` gets iterated character by character, and the record
+        stores `['S','t','a','n','d','a','r','d']`. One of the twenty
+        precomputed demo records shipped exactly that, so it rendered as eight
+        one-letter bullets to any reviewer who opened that bearing.
+
+        Repairing here rather than in the provider fixes every path at once —
+        including the paid records already on disk, which are the model's real
+        output and are not going to be re-bought to correct a formatting slip.
+        """
+        if isinstance(value, str):
+            return [value] if value.strip() else []
+        if not isinstance(value, list):
+            return value
+
+        items = [str(v) for v in value]
+        # Every element a single character is not a list anyone wrote.
+        if len(items) > 2 and all(len(i) == 1 for i in items):
+            rejoined = "".join(items).strip()
+            return [rejoined] if rejoined else []
+        # Raw tool-call markup that escaped the response parser.
+        return [i for i in items if "<parameter" not in i and "</" not in i]
 
 
 class ComplianceReport(BaseModel):

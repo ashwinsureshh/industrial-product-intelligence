@@ -809,6 +809,56 @@ rather than as ISO 15 decoding doing its job.
 
 ---
 
+## 7.6 Pre-deck audit (11 Aug) — what independent checking found
+
+Everything below was verified rather than assumed, because most of these claims
+were written by the same process that produced the code.
+
+**What held up:**
+
+- **The ISO ground truth is real.** Spot-checked against published ISO 15
+  values: 6200 = 10/30/9, 6203 = 17/40/12, 6205 = 25/52/15, 6305 = 25/62/17,
+  and the whole 62xx/63xx progression. These are externally fixed — the engine
+  cannot be tuned to them without also being right in reality, which is the
+  whole point of §7's methodology note.
+- **16 cross-field rules registered, 16 referenced from taxonomy.json, zero
+  orphans.** The count in §1 is accurate and nothing is dead.
+- **All 13 documented commands run.** No stale instructions.
+- **The SSRF guard works against the real target.** `169.254.169.254` (the AWS
+  metadata endpoint) is refused, verified through the UI, error rendered.
+
+**Four defects found and fixed:**
+
+1. **Corrupted bullets in a record served to reviewers.** `[str(b) for b in ...]`
+   iterates a bare string character by character, so a tool call answering
+   `"bullets": "Standard"` stored `['S','t','a','n','d','a','r','d']`. **One of
+   the twenty precomputed demo records shipped this** — the Koyo 6301-2RS
+   bearing — and four benchmark records held leaked `<parameter` markup.
+   Repaired by a validator on `CommerceContent` so the already-paid records
+   render correctly without re-buying them, plus a type guard in the provider.
+2. **Empty fields reported as compliant.** A format whose required tokens all
+   resolved to nothing produced `""` and scored `compliant: true`, so an
+   unclassified product passed the content standard on seven blank fields.
+3. **Long unbroken tokens broke the layout.** A 200-character MPN set its own
+   container width — `.content-title` at 1356px inside a 317px card, a `.pill`
+   reaching x=1408 on a 375px screen. Fixed with `overflow-wrap: anywhere` and
+   a capped, ellipsized pill.
+4. Discovery's "1 used" badge for a page that yielded nothing (§7.5).
+
+**One honest caveat for the deck.** The corpus uses *nominal* ISO 898-1 tensile
+values (10.9 = 1000 MPa) where the standard's stated minimum is 1040 MPa. In the
+live ablation Claude answered 1040 and 1220 and was scored as contradicting.
+That is **2 of 46** contradictions where the model was arguably more precise than
+the ground truth. It does not change §7.1's conclusion, but do not claim the 46
+are all model error.
+
+**UI verified, not assumed:** five tabs x two breakpoints x light and dark, with
+records loaded and with pathological input. No overflow, no console errors, no
+clipped text. Wide tables scroll inside their own containers rather than pushing
+the page. Production bundle builds.
+
+---
+
 ## 8. Commands
 
 ```bash

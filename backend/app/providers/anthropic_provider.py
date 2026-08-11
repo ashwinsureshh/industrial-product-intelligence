@@ -103,6 +103,17 @@ _BASIS_TO_PROVENANCE = {
 }
 
 
+def _string_list(value: Any) -> list[str]:
+    """Coerce a model's answer for a list field into an actual list of strings."""
+    if value is None:
+        return []
+    if isinstance(value, str):
+        return [value] if value.strip() else []
+    if not isinstance(value, (list, tuple)):
+        return [str(value)]
+    return [str(v) for v in value if str(v).strip()]
+
+
 class AnthropicProvider(Provider):
     name = "live"
 
@@ -298,9 +309,12 @@ class AnthropicProvider(Provider):
             title=str(data.get("title", ""))[:150],
             short_description=str(data.get("short_description", ""))[:300],
             long_description=str(data.get("long_description", "")),
-            bullets=[str(b) for b in data.get("bullets", [])][:8],
+            # Not `[str(b) for b in ...]`: when the tool call answers with a
+            # bare string instead of an array, that iterates it letter by letter
+            # and stores ['S','t','a','n','d','a','r','d'].
+            bullets=_string_list(data.get("bullets"))[:8],
             meta_description=str(data.get("meta_description", ""))[:158],
-            keywords=[str(k) for k in data.get("keywords", [])][:12],
-            search_terms=[str(s) for s in data.get("search_terms", [])][:10],
+            keywords=_string_list(data.get("keywords"))[:12],
+            search_terms=_string_list(data.get("search_terms"))[:10],
         )
         return InferenceResult(content=content, usage=dict(self._usage))

@@ -510,6 +510,19 @@ def build(spec: dict[str, Any], ctx: ContentContext) -> FieldResult:
             f"No further backed values were available to extend it."
         )
 
+    if not text and any(p.required for p in pieces) is False and spec.get("tokens"):
+        # A format whose required tokens all resolved to nothing produces an
+        # empty string. Reporting that as compliant would mean an unclassified
+        # product silently passes the content standard on seven blank fields.
+        required_sources = [t["source"] for t in spec["tokens"] if t.get("required")]
+        if required_sources:
+            compliant = False
+            notes.append(
+                "Field is empty: none of its required inputs ("
+                + ", ".join(required_sources)
+                + ") could be resolved, so there is nothing to write."
+            )
+
     if dropped:
         notes.append(
             f"Dropped to fit the {maximum}-character limit: {', '.join(dropped)}."
