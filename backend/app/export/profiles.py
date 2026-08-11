@@ -86,7 +86,13 @@ def _walk(obj: Any, parts: list[str]) -> Any:
     for part in parts:
         if obj is None:
             return None
-        obj = obj.get(part) if isinstance(obj, dict) else getattr(obj, part, None)
+        if isinstance(obj, (list, tuple)) and part.isdigit():
+            index = int(part)
+            obj = obj[index] if index < len(obj) else None
+        elif isinstance(obj, dict):
+            obj = obj.get(part)
+        else:
+            obj = getattr(obj, part, None)
     return obj
 
 
@@ -125,6 +131,15 @@ def resolve(record: EnrichedProduct, path: str) -> Any:
     # stores structurally.
     if path == "category.path":
         return " > ".join(record.category.path) if record.category else None
+    # Their sheet writes the classpath without spaces around the separator, and
+    # a classpath that does not match theirs character-for-character fails a
+    # field-level accuracy check even when the classification is right.
+    if path == "category.classpath":
+        if not record.category:
+            return None
+        # The customer's own wording wins where the taxonomy declares it;
+        # otherwise our path is the honest answer, written their way.
+        return record.category.customer.get("classpath") or ">".join(record.category.path)
     if path == "issues.errors":
         return sum(1 for i in record.issues if i.severity.value == "error")
     if path == "issues.warnings":
@@ -153,10 +168,71 @@ def _named_keys(profile: dict[str, Any]) -> set[str]:
     return keys
 
 
+def _slot_values(record: EnrichedProduct, slots: dict[str, Any]) -> list[dict[str, Any]]:
+    """The items a numbered slot block draws from, in order."""
+    source = slots.get("source", "")
+    if source == "attributes":
+        from ..unilog import house_style as HS
+
+        return [
+            {
+                "label": a.label,
+                # House style, and the unit deliberately left off: their sheet
+                # carries it in its own column.
+                "value": HS.value_only(a.value, a.unit),
+                "unit": a.unit or "",
+                "source_url": a.source_url or "",
+                "provenance": a.provenance.value,
+            }
+            for a in record.attributes
+        ]
+    value = resolve(record, source)
+    if value is None:
+        return []
+    if isinstance(value, str):
+        # A path that already joined a list (content.bullets) is split back out.
+        value = [v.strip() for v in value.split("|") if v.strip()]
+    return [{".": item} for item in value]
+
+
+def _expand_slots(slots: dict[str, Any]) -> list[str]:
+    """Header names for one slot block, e.g. ATTRIBUTE_LABEL 1..50."""
+    count = int(slots.get("count", 0))
+    columns = slots.get("columns") or [{"target": slots["target"], "from": "."}]
+    names: list[str] = []
+    for index in range(1, count + 1):
+        names += [c["target"].format(n=index) for c in columns]
+    return names
+
+
+def _slot_row(record: EnrichedProduct, slots: dict[str, Any]) -> list[Any]:
+    """One record's cells for a slot block, padded to the fixed slot count.
+
+    Empty slots are emitted, not skipped. Their delivery sheet is positional —
+    every row carries all 50 attribute triplets whether or not the category
+    fills them — so a short row would silently shift every later column.
+    """
+    count = int(slots.get("count", 0))
+    columns = slots.get("columns") or [{"target": slots["target"], "from": "."}]
+    items = _slot_values(record, slots)[:count]
+
+    cells: list[Any] = []
+    for index in range(count):
+        item = items[index] if index < len(items) else {}
+        for column in columns:
+            cells.append(item.get(column["from"], ""))
+    return cells
+
+
 def to_rows(profile: dict[str, Any], records: list[EnrichedProduct]) -> tuple[list[str], list[list[Any]]]:
     """Flatten records into header + rows for a tabular profile."""
     fields = profile.get("fields", [])
-    header = [f["target"] for f in fields]
+    header: list[str] = []
+    for field in fields:
+        if "slots" in field:
+            header += _expand_slots(field["slots"])
+        else:
+            header.append(field["target"])
 
     attr_block = profile.get("attributes") or {}
     columns: list[dict[str, str]] = attr_block.get("columns", [])
@@ -175,7 +251,14 @@ def to_rows(profile: dict[str, Any], records: list[EnrichedProduct]) -> tuple[li
 
     rows: list[list[Any]] = []
     for record in records:
-        row = [resolve(record, f["from"]) if "from" in f else f.get("const", "") for f in fields]
+        row: list[Any] = []
+        for field in fields:
+            if "slots" in field:
+                row += _slot_row(record, field["slots"])
+            elif "from" in field:
+                row.append(resolve(record, field["from"]))
+            else:
+                row.append(field.get("const", ""))
         row = ["" if v is None else v for v in row]
 
         for key in attribute_keys:

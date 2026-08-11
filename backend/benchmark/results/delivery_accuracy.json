@@ -1,0 +1,1025 @@
+{
+  "precision_pct": 61.5,
+  "attempted": 26,
+  "cases": [
+    {
+      "mpn": "PDSH4816AF",
+      "scored": 52,
+      "exact": 8,
+      "close": 0,
+      "missing": 39,
+      "wrong": 5,
+      "extra": 1,
+      "accuracy_pct": 15.4,
+      "precision_pct": 61.5,
+      "content_compliant": false,
+      "misses": [
+        {
+          "field": "E1_Brand",
+          "want": "-- Unbranded --",
+          "got": "",
+          "kind": "missing"
+        },
+        {
+          "field": "Unilog_Brand",
+          "want": "-- No Unilog Brand --",
+          "got": "",
+          "kind": "missing"
+        },
+        {
+          "field": "DIB_Brand",
+          "want": "-- No DIB Brand --",
+          "got": "",
+          "kind": "missing"
+        },
+        {
+          "field": "Part_Manuf",
+          "want": "Appliance Dealers Cooperative (APPDE)",
+          "got": "",
+          "kind": "missing"
+        },
+        {
+          "field": "MANUFACTURER_NAME",
+          "want": "Rheem Manufacturing",
+          "got": "",
+          "kind": "missing"
+        },
+        {
+          "field": "BRAND_NAME",
+          "want": "FRIGIDAIRE\u00ae",
+          "got": "",
+          "kind": "missing"
+        },
+        {
+          "field": "MOBILE_DESC",
+          "want": "Rheem Manufacturing FRIGIDAIRE, Dishwasher, Professional Series, PDSH4816AF",
+          "got": "Dishwasher, PDSH4816AF",
+          "kind": "wrong"
+        },
+        {
+          "field": "INVOICE_DESC",
+          "want": "DISHWASHER LEG 5 SST 120V 15A 50-1/4IN",
+          "got": "DISHWASHER",
+          "kind": "wrong"
+        },
+        {
+          "field": "SHORT_DESC",
+          "want": "FRIGIDAIRE\u00ae Professional Series PDSH4816AF Dishwasher With CleanBoost\u2122, Leg Mounting, 5-Wash Cycle, Stainless Steel",
+          "got": "PDSH4816AF Dishwasher",
+          "kind": "wrong"
+        },
+        {
+          "field": "LONG_DESC1",
+          "want": "FRIGIDAIRE\u00ae Dishwasher With CleanBoost\u2122, Professional Series, 5 Wash Cycles, 120 V, 15 A, Leg Mounting, 24 in W x 24-1/4 in D, 50-1/4 in Depth With Door Open, 8-1/2 in Upper Rack, 11-1/4 in Lower Rack Minimum Height, 10-3/8 in Upper Rack, 13-1/4 in Lower Rack Maximum Height, 47 dBA Sound Level, Stainless Steel, Additional Information: 240 kW-hr Annual Energy, 1 to 12 hr Delay Start Hours",
+          "got": "Dishwasher",
+          "kind": "wrong"
+        },
+        {
+          "field": "RETAIL_DESC",
+          "want": "Professional Series Dishwasher, Leg Mounting, 5-Wash Cycle, Stainless Steel",
+          "got": "Dishwasher",
+          "kind": "wrong"
+        },
+        {
+          "field": "With",
+          "want": "With CleanBoost\u2122",
+          "got": "",
+          "kind": "missing"
+        },
+        {
+          "field": "Standard/Approvals",
+          "want": "ASSE 1006|CEE Tier 2 Qualified|cUL Listed|ENERGY STAR Certified|NSF Certified|UL Listed",
+          "got": "",
+          "kind": "missing"
+        },
+        {
+          "field": "ATTRIBUTE_LABEL 1",
+          "want": "Series",
+          "got": "",
+          "kind": "missing"
+        },
+        {
+          "field": "ATTRIBUTE_VALUE 1",
+          "want": "Professional Series",
+          "got": "",
+          "kind": "missing"
+        },
+        {
+          "field": "ATTRIBUTE_LABEL 2",
+          "want": "Model",
+          "got": "",
+          "kind": "missing"
+        },
+        {
+          "field": "ATTRIBUTE_LABEL 3",
+          "want": "Number of Wash Cycles",
+          "got": "",
+          "kind": "missing"
+        },
+        {
+          "field": "ATTRIBUTE_VALUE 3",
+          "want": "5",
+          "got": "",
+          "kind": "missing"
+        },
+        {
+          "field": "ATTRIBUTE_LABEL 4",
+          "want": "Voltage Rating",
+          "got": "",
+          "kind": "missing"
+        },
+        {
+          "field": "ATTRIBUTE_VALUE 4",
+          "want": "120",
+          "got": "",
+          "kind": "missing"
+        },
+        {
+          "field": "ATTRIBUTE_UOM 4",
+          "want": "V",
+          "got": "",
+          "kind": "missing"
+        },
+        {
+          "field": "ATTRIBUTE_LABEL 5",
+          "want": "Amperage Rating",
+          "got": "",
+          "kind": "missing"
+        },
+        {
+          "field": "ATTRIBUTE_VALUE 5",
+          "want": "15",
+          "got": "",
+          "kind": "missing"
+        },
+        {
+          "field": "ATTRIBUTE_UOM 5",
+          "want": "A",
+          "got": "",
+          "kind": "missing"
+        },
+        {
+          "field": "ATTRIBUTE_LABEL 6",
+          "want": "Mounting Type",
+          "got": "",
+          "kind": "missing"
+        },
+        {
+          "field": "ATTRIBUTE_VALUE 6",
+          "want": "Leg",
+          "got": "",
+          "kind": "missing"
+        },
+        {
+          "field": "ATTRIBUTE_LABEL 7",
+          "want": "Plug Type",
+          "got": "",
+          "kind": "missing"
+        },
+        {
+          "field": "ATTRIBUTE_LABEL 8",
+          "want": "Size",
+          "got": "",
+          "kind": "missing"
+        },
+        {
+          "field": "ATTRIBUTE_VALUE 8",
+          "want": "24 in W x 24-1/4 in D",
+          "got": "",
+          "kind": "missing"
+        },
+        {
+          "field": "ATTRIBUTE_LABEL 9",
+          "want": "Depth With Door Open",
+          "got": "",
+          "kind": "missing"
+        },
+        {
+          "field": "ATTRIBUTE_VALUE 9",
+          "want": "50-1/4",
+          "got": "",
+          "kind": "missing"
+        },
+        {
+          "field": "ATTRIBUTE_UOM 9",
+          "want": "in",
+          "got": "",
+          "kind": "missing"
+        },
+        {
+          "field": "ATTRIBUTE_LABEL 10",
+          "want": "Minimum Height",
+          "got": "",
+          "kind": "missing"
+        },
+        {
+          "field": "ATTRIBUTE_VALUE 10",
+          "want": "8-1/2 in Upper Rack, 11-1/4 in Lower Rack",
+          "got": "",
+          "kind": "missing"
+        },
+        {
+          "field": "ATTRIBUTE_LABEL 11",
+          "want": "Maximum Height",
+          "got": "",
+          "kind": "missing"
+        },
+        {
+          "field": "ATTRIBUTE_VALUE 11",
+          "want": "10-3/8 in Upper Rack, 13-1/4 in Lower Rack",
+          "got": "",
+          "kind": "missing"
+        },
+        {
+          "field": "ATTRIBUTE_LABEL 12",
+          "want": "Sound Level",
+          "got": "",
+          "kind": "missing"
+        },
+        {
+          "field": "ATTRIBUTE_VALUE 12",
+          "want": "47",
+          "got": "",
+          "kind": "missing"
+        },
+        {
+          "field": "ATTRIBUTE_UOM 12",
+          "want": "dBA",
+          "got": "",
+          "kind": "missing"
+        },
+        {
+          "field": "ATTRIBUTE_LABEL 13",
+          "want": "Material",
+          "got": "",
+          "kind": "missing"
+        },
+        {
+          "field": "ATTRIBUTE_VALUE 13",
+          "want": "Stainless Steel",
+          "got": "",
+          "kind": "missing"
+        },
+        {
+          "field": "ATTRIBUTE_LABEL 14",
+          "want": "Color",
+          "got": "",
+          "kind": "missing"
+        },
+        {
+          "field": "ATTRIBUTE_LABEL 15",
+          "want": "Additional Information",
+          "got": "",
+          "kind": "missing"
+        },
+        {
+          "field": "ATTRIBUTE_VALUE 15",
+          "want": "240 kW-hr Annual Energy, 1 to 12 hr Delay Start Hours",
+          "got": "",
+          "kind": "missing"
+        }
+      ]
+    },
+    {
+      "mpn": "WDTS7024RZ",
+      "scored": 62,
+      "exact": 8,
+      "close": 0,
+      "missing": 49,
+      "wrong": 5,
+      "extra": 1,
+      "accuracy_pct": 12.9,
+      "precision_pct": 61.5,
+      "content_compliant": false,
+      "misses": [
+        {
+          "field": "E1_Brand",
+          "want": "-- Unbranded --",
+          "got": "",
+          "kind": "missing"
+        },
+        {
+          "field": "Unilog_Brand",
+          "want": "-- No Unilog Brand --",
+          "got": "",
+          "kind": "missing"
+        },
+        {
+          "field": "DIB_Brand",
+          "want": "-- No DIB Brand --",
+          "got": "",
+          "kind": "missing"
+        },
+        {
+          "field": "Part_Manuf",
+          "want": "Appliance Dealers Cooperative (APPDE)",
+          "got": "",
+          "kind": "missing"
+        },
+        {
+          "field": "MANUFACTURER_NAME",
+          "want": "Whirlpool Corporation",
+          "got": "",
+          "kind": "missing"
+        },
+        {
+          "field": "BRAND_NAME",
+          "want": "Whirlpool\u00ae",
+          "got": "",
+          "kind": "missing"
+        },
+        {
+          "field": "MOBILE_DESC",
+          "want": "Whirlpool, Dishwasher, Eco Series, WDTS7024RZ, Built-in Mounting",
+          "got": "Dishwasher, WDTS7024RZ",
+          "kind": "wrong"
+        },
+        {
+          "field": "INVOICE_DESC",
+          "want": "DISHWASHER BLTLN SST SST 120V 10A 41DBA",
+          "got": "DISHWASHER",
+          "kind": "wrong"
+        },
+        {
+          "field": "SHORT_DESC",
+          "want": "Whirlpool\u00ae Eco Series WDTS7024RZ Dishwasher, Built-in Mounting, Stainless Steel, Stainless Steel",
+          "got": "WDTS7024RZ Dishwasher",
+          "kind": "wrong"
+        },
+        {
+          "field": "LONG_DESC1",
+          "want": "Whirlpool\u00ae Dishwasher, Eco Series, 120 V, 10 A, Built-in Mounting, 33-7/16 in H x 23-7/8 in W x 22-5/8 in D, 50-3/16 in Depth With Door Open, 33-7/16 in Minimum Height, 41 dBA Sound Level, Stainless Steel, Stainless Steel, Additional Information: Folding Tines, Leak Detection System, Moisture Repellent Silverware Basket, Normal Cycle, Quick Wash Cycle, Sani Rinse Option, Sensor Cycle, Triple Wash Spray",
+          "got": "Dishwasher",
+          "kind": "wrong"
+        },
+        {
+          "field": "RETAIL_DESC",
+          "want": "Eco Series Dishwasher, Built-in Mounting, Stainless Steel, Stainless Steel",
+          "got": "Dishwasher",
+          "kind": "wrong"
+        },
+        {
+          "field": "ITEM_FEATURES_1",
+          "want": "3rd rack with extra wash action",
+          "got": "",
+          "kind": "missing"
+        },
+        {
+          "field": "ITEM_FEATURES_2",
+          "want": "Adjustable 2nd Rack",
+          "got": "",
+          "kind": "missing"
+        },
+        {
+          "field": "ITEM_FEATURES_3",
+          "want": "41 dBA",
+          "got": "",
+          "kind": "missing"
+        },
+        {
+          "field": "ITEM_FEATURES_4",
+          "want": "Moisture Repellent Silverware Basket",
+          "got": "",
+          "kind": "missing"
+        },
+        {
+          "field": "ITEM_FEATURES_5",
+          "want": "Sensor cycle",
+          "got": "",
+          "kind": "missing"
+        },
+        {
+          "field": "ITEM_FEATURES_6",
+          "want": "Sani Rinse Option",
+          "got": "",
+          "kind": "missing"
+        },
+        {
+          "field": "ITEM_FEATURES_7",
+          "want": "Leak Detection System",
+          "got": "",
+          "kind": "missing"
+        },
+        {
+          "field": "ITEM_FEATURES_8",
+          "want": "Folding Tines",
+          "got": "",
+          "kind": "missing"
+        },
+        {
+          "field": "ITEM_FEATURES_9",
+          "want": "Normal cycle",
+          "got": "",
+          "kind": "missing"
+        },
+        {
+          "field": "ITEM_FEATURES_10",
+          "want": "Triple Wash Spray",
+          "got": "",
+          "kind": "missing"
+        },
+        {
+          "field": "ITEM_FEATURES_11",
+          "want": "Quick Wash Cycle",
+          "got": "",
+          "kind": "missing"
+        },
+        {
+          "field": "With",
+          "want": "With Washing 3rd Rack, Water Repellent Silverware Basket",
+          "got": "",
+          "kind": "missing"
+        },
+        {
+          "field": "ATTRIBUTE_LABEL 1",
+          "want": "Series",
+          "got": "",
+          "kind": "missing"
+        },
+        {
+          "field": "ATTRIBUTE_VALUE 1",
+          "want": "Eco Series",
+          "got": "",
+          "kind": "missing"
+        },
+        {
+          "field": "ATTRIBUTE_LABEL 2",
+          "want": "Model",
+          "got": "",
+          "kind": "missing"
+        },
+        {
+          "field": "ATTRIBUTE_LABEL 3",
+          "want": "Number of Wash Cycles",
+          "got": "",
+          "kind": "missing"
+        },
+        {
+          "field": "ATTRIBUTE_LABEL 4",
+          "want": "Voltage Rating",
+          "got": "",
+          "kind": "missing"
+        },
+        {
+          "field": "ATTRIBUTE_VALUE 4",
+          "want": "120",
+          "got": "",
+          "kind": "missing"
+        },
+        {
+          "field": "ATTRIBUTE_UOM 4",
+          "want": "V",
+          "got": "",
+          "kind": "missing"
+        },
+        {
+          "field": "ATTRIBUTE_LABEL 5",
+          "want": "Amperage Rating",
+          "got": "",
+          "kind": "missing"
+        },
+        {
+          "field": "ATTRIBUTE_VALUE 5",
+          "want": "10",
+          "got": "",
+          "kind": "missing"
+        },
+        {
+          "field": "ATTRIBUTE_UOM 5",
+          "want": "A",
+          "got": "",
+          "kind": "missing"
+        },
+        {
+          "field": "ATTRIBUTE_LABEL 6",
+          "want": "Mounting Type",
+          "got": "",
+          "kind": "missing"
+        },
+        {
+          "field": "ATTRIBUTE_VALUE 6",
+          "want": "Built-in",
+          "got": "",
+          "kind": "missing"
+        },
+        {
+          "field": "ATTRIBUTE_LABEL 7",
+          "want": "Plug Type",
+          "got": "",
+          "kind": "missing"
+        },
+        {
+          "field": "ATTRIBUTE_LABEL 8",
+          "want": "Size",
+          "got": "",
+          "kind": "missing"
+        },
+        {
+          "field": "ATTRIBUTE_VALUE 8",
+          "want": "33-7/16 in H x 23-7/8 in W x 22-5/8 in D",
+          "got": "",
+          "kind": "missing"
+        },
+        {
+          "field": "ATTRIBUTE_LABEL 9",
+          "want": "Depth With Door Open",
+          "got": "",
+          "kind": "missing"
+        },
+        {
+          "field": "ATTRIBUTE_VALUE 9",
+          "want": "50-3/16",
+          "got": "",
+          "kind": "missing"
+        },
+        {
+          "field": "ATTRIBUTE_UOM 9",
+          "want": "in",
+          "got": "",
+          "kind": "missing"
+        },
+        {
+          "field": "ATTRIBUTE_LABEL 10",
+          "want": "Minimum Height",
+          "got": "",
+          "kind": "missing"
+        },
+        {
+          "field": "ATTRIBUTE_VALUE 10",
+          "want": "33-7/16",
+          "got": "",
+          "kind": "missing"
+        },
+        {
+          "field": "ATTRIBUTE_UOM 10",
+          "want": "in",
+          "got": "",
+          "kind": "missing"
+        },
+        {
+          "field": "ATTRIBUTE_LABEL 11",
+          "want": "Maximum Height",
+          "got": "",
+          "kind": "missing"
+        },
+        {
+          "field": "ATTRIBUTE_LABEL 12",
+          "want": "Sound Level",
+          "got": "",
+          "kind": "missing"
+        },
+        {
+          "field": "ATTRIBUTE_VALUE 12",
+          "want": "41",
+          "got": "",
+          "kind": "missing"
+        },
+        {
+          "field": "ATTRIBUTE_UOM 12",
+          "want": "dBA",
+          "got": "",
+          "kind": "missing"
+        },
+        {
+          "field": "ATTRIBUTE_LABEL 13",
+          "want": "Material",
+          "got": "",
+          "kind": "missing"
+        },
+        {
+          "field": "ATTRIBUTE_VALUE 13",
+          "want": "Stainless Steel",
+          "got": "",
+          "kind": "missing"
+        },
+        {
+          "field": "ATTRIBUTE_LABEL 14",
+          "want": "Color",
+          "got": "",
+          "kind": "missing"
+        },
+        {
+          "field": "ATTRIBUTE_VALUE 14",
+          "want": "Stainless Steel",
+          "got": "",
+          "kind": "missing"
+        },
+        {
+          "field": "ATTRIBUTE_LABEL 15",
+          "want": "Additional Information",
+          "got": "",
+          "kind": "missing"
+        },
+        {
+          "field": "ATTRIBUTE_VALUE 15",
+          "want": "Folding Tines, Leak Detection System, Moisture Repellent Silverware Basket, Normal Cycle, Quick Wash Cycle, Sani Rinse Option, Sensor Cycle, Triple Wash Spray",
+          "got": "",
+          "kind": "missing"
+        }
+      ]
+    }
+  ],
+  "totals": {
+    "scored": 114,
+    "exact": 16,
+    "close": 0,
+    "missing": 88,
+    "wrong": 10,
+    "extra": 2
+  },
+  "accuracy_pct": 14.0,
+  "accuracy_loose_pct": 14.0,
+  "recall_pct": 22.8,
+  "per_field": {
+    "Dept": {
+      "exact": 2,
+      "close": 0,
+      "missing": 0,
+      "wrong": 0
+    },
+    "Class": {
+      "exact": 2,
+      "close": 0,
+      "missing": 0,
+      "wrong": 0
+    },
+    "Fine": {
+      "exact": 2,
+      "close": 0,
+      "missing": 0,
+      "wrong": 0
+    },
+    "Mfg_Part_Num": {
+      "exact": 2,
+      "close": 0,
+      "missing": 0,
+      "wrong": 0
+    },
+    "Part_Desc": {
+      "exact": 2,
+      "close": 0,
+      "missing": 0,
+      "wrong": 0
+    },
+    "E1_Brand": {
+      "exact": 0,
+      "close": 0,
+      "missing": 2,
+      "wrong": 0
+    },
+    "Unilog_Brand": {
+      "exact": 0,
+      "close": 0,
+      "missing": 2,
+      "wrong": 0
+    },
+    "DIB_Brand": {
+      "exact": 0,
+      "close": 0,
+      "missing": 2,
+      "wrong": 0
+    },
+    "Part_Manuf": {
+      "exact": 0,
+      "close": 0,
+      "missing": 2,
+      "wrong": 0
+    },
+    "MANUFACTURER_NAME": {
+      "exact": 0,
+      "close": 0,
+      "missing": 2,
+      "wrong": 0
+    },
+    "BRAND_NAME": {
+      "exact": 0,
+      "close": 0,
+      "missing": 2,
+      "wrong": 0
+    },
+    "MANUFACTURER_PART_NUMBER": {
+      "exact": 2,
+      "close": 0,
+      "missing": 0,
+      "wrong": 0
+    },
+    "Classpath": {
+      "exact": 2,
+      "close": 0,
+      "missing": 0,
+      "wrong": 0
+    },
+    "MOBILE_DESC": {
+      "exact": 0,
+      "close": 0,
+      "missing": 0,
+      "wrong": 2
+    },
+    "INVOICE_DESC": {
+      "exact": 0,
+      "close": 0,
+      "missing": 0,
+      "wrong": 2
+    },
+    "SHORT_DESC": {
+      "exact": 0,
+      "close": 0,
+      "missing": 0,
+      "wrong": 2
+    },
+    "LONG_DESC1": {
+      "exact": 0,
+      "close": 0,
+      "missing": 0,
+      "wrong": 2
+    },
+    "RETAIL_DESC": {
+      "exact": 0,
+      "close": 0,
+      "missing": 0,
+      "wrong": 2
+    },
+    "With": {
+      "exact": 0,
+      "close": 0,
+      "missing": 2,
+      "wrong": 0
+    },
+    "Standard/Approvals": {
+      "exact": 0,
+      "close": 0,
+      "missing": 1,
+      "wrong": 0
+    },
+    "Product Name": {
+      "exact": 2,
+      "close": 0,
+      "missing": 0,
+      "wrong": 0
+    },
+    "ATTRIBUTE_LABEL 1": {
+      "exact": 0,
+      "close": 0,
+      "missing": 2,
+      "wrong": 0
+    },
+    "ATTRIBUTE_VALUE 1": {
+      "exact": 0,
+      "close": 0,
+      "missing": 2,
+      "wrong": 0
+    },
+    "ATTRIBUTE_LABEL 2": {
+      "exact": 0,
+      "close": 0,
+      "missing": 2,
+      "wrong": 0
+    },
+    "ATTRIBUTE_LABEL 3": {
+      "exact": 0,
+      "close": 0,
+      "missing": 2,
+      "wrong": 0
+    },
+    "ATTRIBUTE_VALUE 3": {
+      "exact": 0,
+      "close": 0,
+      "missing": 1,
+      "wrong": 0
+    },
+    "ATTRIBUTE_LABEL 4": {
+      "exact": 0,
+      "close": 0,
+      "missing": 2,
+      "wrong": 0
+    },
+    "ATTRIBUTE_VALUE 4": {
+      "exact": 0,
+      "close": 0,
+      "missing": 2,
+      "wrong": 0
+    },
+    "ATTRIBUTE_UOM 4": {
+      "exact": 0,
+      "close": 0,
+      "missing": 2,
+      "wrong": 0
+    },
+    "ATTRIBUTE_LABEL 5": {
+      "exact": 0,
+      "close": 0,
+      "missing": 2,
+      "wrong": 0
+    },
+    "ATTRIBUTE_VALUE 5": {
+      "exact": 0,
+      "close": 0,
+      "missing": 2,
+      "wrong": 0
+    },
+    "ATTRIBUTE_UOM 5": {
+      "exact": 0,
+      "close": 0,
+      "missing": 2,
+      "wrong": 0
+    },
+    "ATTRIBUTE_LABEL 6": {
+      "exact": 0,
+      "close": 0,
+      "missing": 2,
+      "wrong": 0
+    },
+    "ATTRIBUTE_VALUE 6": {
+      "exact": 0,
+      "close": 0,
+      "missing": 2,
+      "wrong": 0
+    },
+    "ATTRIBUTE_LABEL 7": {
+      "exact": 0,
+      "close": 0,
+      "missing": 2,
+      "wrong": 0
+    },
+    "ATTRIBUTE_LABEL 8": {
+      "exact": 0,
+      "close": 0,
+      "missing": 2,
+      "wrong": 0
+    },
+    "ATTRIBUTE_VALUE 8": {
+      "exact": 0,
+      "close": 0,
+      "missing": 2,
+      "wrong": 0
+    },
+    "ATTRIBUTE_LABEL 9": {
+      "exact": 0,
+      "close": 0,
+      "missing": 2,
+      "wrong": 0
+    },
+    "ATTRIBUTE_VALUE 9": {
+      "exact": 0,
+      "close": 0,
+      "missing": 2,
+      "wrong": 0
+    },
+    "ATTRIBUTE_UOM 9": {
+      "exact": 0,
+      "close": 0,
+      "missing": 2,
+      "wrong": 0
+    },
+    "ATTRIBUTE_LABEL 10": {
+      "exact": 0,
+      "close": 0,
+      "missing": 2,
+      "wrong": 0
+    },
+    "ATTRIBUTE_VALUE 10": {
+      "exact": 0,
+      "close": 0,
+      "missing": 2,
+      "wrong": 0
+    },
+    "ATTRIBUTE_LABEL 11": {
+      "exact": 0,
+      "close": 0,
+      "missing": 2,
+      "wrong": 0
+    },
+    "ATTRIBUTE_VALUE 11": {
+      "exact": 0,
+      "close": 0,
+      "missing": 1,
+      "wrong": 0
+    },
+    "ATTRIBUTE_LABEL 12": {
+      "exact": 0,
+      "close": 0,
+      "missing": 2,
+      "wrong": 0
+    },
+    "ATTRIBUTE_VALUE 12": {
+      "exact": 0,
+      "close": 0,
+      "missing": 2,
+      "wrong": 0
+    },
+    "ATTRIBUTE_UOM 12": {
+      "exact": 0,
+      "close": 0,
+      "missing": 2,
+      "wrong": 0
+    },
+    "ATTRIBUTE_LABEL 13": {
+      "exact": 0,
+      "close": 0,
+      "missing": 2,
+      "wrong": 0
+    },
+    "ATTRIBUTE_VALUE 13": {
+      "exact": 0,
+      "close": 0,
+      "missing": 2,
+      "wrong": 0
+    },
+    "ATTRIBUTE_LABEL 14": {
+      "exact": 0,
+      "close": 0,
+      "missing": 2,
+      "wrong": 0
+    },
+    "ATTRIBUTE_LABEL 15": {
+      "exact": 0,
+      "close": 0,
+      "missing": 2,
+      "wrong": 0
+    },
+    "ATTRIBUTE_VALUE 15": {
+      "exact": 0,
+      "close": 0,
+      "missing": 2,
+      "wrong": 0
+    },
+    "ITEM_FEATURES_1": {
+      "exact": 0,
+      "close": 0,
+      "missing": 1,
+      "wrong": 0
+    },
+    "ITEM_FEATURES_2": {
+      "exact": 0,
+      "close": 0,
+      "missing": 1,
+      "wrong": 0
+    },
+    "ITEM_FEATURES_3": {
+      "exact": 0,
+      "close": 0,
+      "missing": 1,
+      "wrong": 0
+    },
+    "ITEM_FEATURES_4": {
+      "exact": 0,
+      "close": 0,
+      "missing": 1,
+      "wrong": 0
+    },
+    "ITEM_FEATURES_5": {
+      "exact": 0,
+      "close": 0,
+      "missing": 1,
+      "wrong": 0
+    },
+    "ITEM_FEATURES_6": {
+      "exact": 0,
+      "close": 0,
+      "missing": 1,
+      "wrong": 0
+    },
+    "ITEM_FEATURES_7": {
+      "exact": 0,
+      "close": 0,
+      "missing": 1,
+      "wrong": 0
+    },
+    "ITEM_FEATURES_8": {
+      "exact": 0,
+      "close": 0,
+      "missing": 1,
+      "wrong": 0
+    },
+    "ITEM_FEATURES_9": {
+      "exact": 0,
+      "close": 0,
+      "missing": 1,
+      "wrong": 0
+    },
+    "ITEM_FEATURES_10": {
+      "exact": 0,
+      "close": 0,
+      "missing": 1,
+      "wrong": 0
+    },
+    "ITEM_FEATURES_11": {
+      "exact": 0,
+      "close": 0,
+      "missing": 1,
+      "wrong": 0
+    },
+    "ATTRIBUTE_UOM 10": {
+      "exact": 0,
+      "close": 0,
+      "missing": 1,
+      "wrong": 0
+    },
+    "ATTRIBUTE_VALUE 14": {
+      "exact": 0,
+      "close": 0,
+      "missing": 1,
+      "wrong": 0
+    }
+  }
+}

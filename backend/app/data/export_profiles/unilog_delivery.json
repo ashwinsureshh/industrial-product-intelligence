@@ -1,41 +1,364 @@
 {
   "id": "unilog_delivery",
-  "label": "Unilog Delivery Format (provisional)",
+  "label": "Unilog Delivery Format",
   "format": "csv",
-  "description": "Maps the engine's output onto Unilog's delivery sheet. Column names and order follow the worked example in their solution guide; the real file is 252 columns, and adding the rest is editing this profile, not the exporter. Every attribute ships with the source URL their brief requires three times over.",
+  "description": "Their 252-column delivery sheet, generated from the header they supplied so column names and order cannot drift. Unsourced columns are emitted empty rather than dropped, because their importer is positional and a short row misaligns every later value.",
+  "generated_from": "delivery_expected.csv",
   "fields": [
-    { "target": "SKU", "from": "input.sku" },
-    { "target": "Mfg_Part_Num", "from": "identity.mpn" },
-    { "target": "Brand", "from": "identity.brand" },
-    { "target": "Manufacturer", "from": "identity.manufacturer" },
-    { "target": "Classpath", "from": "category.path" },
-    { "target": "UNSPSC", "from": "compliance.lov.unspsc" },
-    { "target": "Invoice Desc", "from": "field:invoice_desc" },
-    { "target": "Invoice Desc Length", "from": "field:invoice_desc.length" },
-    { "target": "Mobile Desc", "from": "field:mobile_desc" },
-    { "target": "Mobile Desc Length", "from": "field:mobile_desc.length" },
-    { "target": "Product Title", "from": "field:product_title" },
-    { "target": "Short Desc", "from": "field:product_title" },
-    { "target": "Long Description", "from": "field:long_description" },
-    { "target": "Marketing Copy", "from": "content.long_description" },
-    { "target": "Feature Bullets", "from": "content.bullets" },
-    { "target": "Keywords", "from": "content.keywords" },
-    { "target": "Values In LOV %", "from": "compliance.lov.percent_in_lov" },
-    { "target": "Vocabulary Mappings", "from": "compliance.lov.mapped" },
-    { "target": "Content Compliant", "from": "compliance.verdict" },
-    { "target": "UOM Standard", "from": "compliance.standards.uom" },
-    { "target": "Readiness", "from": "readiness.overall" },
-    { "target": "Verdict", "from": "readiness.verdict" },
-    { "target": "Needs Human Review", "from": "readiness.verdict" },
-    { "target": "Errors", "from": "issues.errors" },
-    { "target": "Warnings", "from": "issues.warnings" }
-  ],
-  "attributes": {
-    "columns": [
-      { "suffix": "", "from": "attr:{key}" },
-      { "suffix": " Source URL", "from": "attr:{key}.source_url" },
-      { "suffix": " Source Locator", "from": "attr:{key}.source_locator" },
-      { "suffix": " Provenance", "from": "attr:{key}.provenance" }
-    ]
-  }
+    {
+      "target": "MFR URL",
+      "const": ""
+    },
+    {
+      "target": "Ref URL 1",
+      "from": "input.source_url"
+    },
+    {
+      "target": "Ref URL 2",
+      "const": ""
+    },
+    {
+      "target": "Ref URL 3",
+      "const": ""
+    },
+    {
+      "target": "Ref URL 4",
+      "const": ""
+    },
+    {
+      "target": "Ref URL 5",
+      "const": ""
+    },
+    {
+      "target": "PART_NUMBER",
+      "const": ""
+    },
+    {
+      "target": "Dept",
+      "from": "category.customer.dept"
+    },
+    {
+      "target": "Class",
+      "from": "category.customer.class"
+    },
+    {
+      "target": "Fine",
+      "from": "category.customer.fine"
+    },
+    {
+      "target": "SKU - MY_PART_NUMBER",
+      "const": ""
+    },
+    {
+      "target": "Mfg_Part_Num",
+      "from": "identity.mpn"
+    },
+    {
+      "target": "Part_Desc",
+      "from": "input.description"
+    },
+    {
+      "target": "E1_Brand",
+      "from": "attr:_e1_brand"
+    },
+    {
+      "target": "Unilog_Brand",
+      "from": "attr:_unilog_brand"
+    },
+    {
+      "target": "DIB_Brand",
+      "from": "attr:_dib_brand"
+    },
+    {
+      "target": "Part_Manuf",
+      "from": "attr:_part_manuf"
+    },
+    {
+      "target": "MANUFACTURER_NAME",
+      "from": "identity.manufacturer"
+    },
+    {
+      "target": "BRAND_NAME",
+      "from": "identity.brand"
+    },
+    {
+      "target": "TRADE_NAME",
+      "const": ""
+    },
+    {
+      "target": "MANUFACTURER_PART_NUMBER",
+      "from": "identity.mpn"
+    },
+    {
+      "target": "ALTERNATE_PART_NUMBER",
+      "const": ""
+    },
+    {
+      "target": "Classpath",
+      "from": "category.classpath"
+    },
+    {
+      "target": "MOBILE_DESC",
+      "from": "field:mobile_desc"
+    },
+    {
+      "target": "INVOICE_DESC",
+      "from": "field:invoice_desc"
+    },
+    {
+      "target": "SHORT_DESC",
+      "from": "field:product_title"
+    },
+    {
+      "target": "LONG_DESC1",
+      "from": "field:long_description"
+    },
+    {
+      "target": "RETAIL_DESC",
+      "from": "field:retail_desc"
+    },
+    {
+      "target": "MARKETING_DESCRIPTION",
+      "from": "content.long_description"
+    },
+    {
+      "slots": {
+        "source": "content.bullets",
+        "count": 20,
+        "target": "ITEM_FEATURES_{n}"
+      }
+    },
+    {
+      "target": "With",
+      "from": "field:with_clause"
+    },
+    {
+      "target": "Standard/Approvals",
+      "const": ""
+    },
+    {
+      "target": "Prop 65",
+      "const": ""
+    },
+    {
+      "target": "Application",
+      "const": ""
+    },
+    {
+      "target": "Includes",
+      "const": ""
+    },
+    {
+      "target": "Product Name",
+      "from": "field:product_name"
+    },
+    {
+      "slots": {
+        "source": "attributes",
+        "count": 50,
+        "columns": [
+          {
+            "target": "ATTRIBUTE_LABEL {n}",
+            "from": "label"
+          },
+          {
+            "target": "ATTRIBUTE_VALUE {n}",
+            "from": "value"
+          },
+          {
+            "target": "ATTRIBUTE_UOM {n}",
+            "from": "unit"
+          }
+        ]
+      }
+    },
+    {
+      "target": "UPC",
+      "const": ""
+    },
+    {
+      "target": "EAN",
+      "const": ""
+    },
+    {
+      "target": "GTIN",
+      "const": ""
+    },
+    {
+      "target": "UNSPSC",
+      "from": "category.code"
+    },
+    {
+      "target": "Warranty",
+      "const": ""
+    },
+    {
+      "target": "List Price",
+      "from": "input.price"
+    },
+    {
+      "target": "Selling Qty",
+      "const": ""
+    },
+    {
+      "target": "Selling UOM",
+      "const": ""
+    },
+    {
+      "target": "Standard Packaging Information",
+      "const": ""
+    },
+    {
+      "target": "LENGTH",
+      "const": ""
+    },
+    {
+      "target": "LENGTH_UOM",
+      "const": ""
+    },
+    {
+      "target": "HEIGHT",
+      "const": ""
+    },
+    {
+      "target": "HEIGHT_UOM",
+      "const": ""
+    },
+    {
+      "target": "WIDTH",
+      "const": ""
+    },
+    {
+      "target": "WIDTH_UOM",
+      "const": ""
+    },
+    {
+      "target": "WEIGHT",
+      "const": ""
+    },
+    {
+      "target": "WEIGHT_UOM",
+      "const": ""
+    },
+    {
+      "target": "VOLUME",
+      "const": ""
+    },
+    {
+      "target": "VOLUME_UOM",
+      "const": ""
+    },
+    {
+      "target": "Product Image",
+      "const": ""
+    },
+    {
+      "target": "Alternate Image 1",
+      "const": ""
+    },
+    {
+      "target": "Alternate Image 2",
+      "const": ""
+    },
+    {
+      "target": "Alternate Image 3",
+      "const": ""
+    },
+    {
+      "target": "Alternate Image 4",
+      "const": ""
+    },
+    {
+      "target": "SDS",
+      "const": ""
+    },
+    {
+      "target": "SDS_1",
+      "const": ""
+    },
+    {
+      "target": "Warranty Information",
+      "const": ""
+    },
+    {
+      "target": "Catalog",
+      "const": ""
+    },
+    {
+      "target": "Specification Sheet",
+      "const": ""
+    },
+    {
+      "target": "Instruction/Installation Manual",
+      "const": ""
+    },
+    {
+      "target": "Service Manual",
+      "const": ""
+    },
+    {
+      "target": "Owners/User Manual",
+      "const": ""
+    },
+    {
+      "target": "Line Drawing",
+      "const": ""
+    },
+    {
+      "target": "MTR",
+      "const": ""
+    },
+    {
+      "target": "RoHS",
+      "const": ""
+    },
+    {
+      "target": "Full Engineering Drawing",
+      "const": ""
+    },
+    {
+      "target": "Energy Star Guide",
+      "const": ""
+    },
+    {
+      "target": "Technical Bulletin",
+      "const": ""
+    },
+    {
+      "target": "Submittal",
+      "const": ""
+    },
+    {
+      "target": "Compatibility Chart",
+      "const": ""
+    },
+    {
+      "target": "Size Chart",
+      "const": ""
+    },
+    {
+      "target": "Product Label/Insert",
+      "const": ""
+    },
+    {
+      "target": "Video Link",
+      "const": ""
+    },
+    {
+      "target": "Video Link 1",
+      "const": ""
+    },
+    {
+      "target": "Country Of Origin",
+      "from": "identity.brand_country"
+    },
+    {
+      "target": "Discontinued",
+      "const": ""
+    },
+    {
+      "target": "Actual Image (Yes/No)",
+      "const": ""
+    }
+  ]
 }

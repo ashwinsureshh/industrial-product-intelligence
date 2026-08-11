@@ -116,6 +116,14 @@ class CategoryAssignment(BaseModel):
     confidence: float = Field(ge=0.0, le=1.0)
     rationale: str
     alternatives: list[dict[str, Any]] = Field(default_factory=list)
+    customer: dict[str, Any] = Field(
+        default_factory=dict,
+        description=(
+            "The customer's own names for this shelf. Unilog classify twice — "
+            "Dept/Class/Fine on the way in, Classpath on the way out — and the "
+            "two are different trees, so a single path cannot serve both."
+        ),
+    )
 
 
 class CommerceContent(BaseModel):

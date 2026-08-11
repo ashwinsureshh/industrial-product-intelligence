@@ -1772,6 +1772,195 @@
       "defaults": {
         "reinforcement": "2-Wire Braid"
       }
+    },
+    {
+      "code": "52141505",
+      "path": [
+        "Appliances & Consumer Electronics",
+        "Kitchen Appliances",
+        "Built-In Dishwashers"
+      ],
+      "customer": {
+        "classpath": "Appliances & Consumer Electronics>Kitchen Appliances>Built-In Dishwashers",
+        "dept": "Appliances",
+        "class": "Large Appliances",
+        "fine": "Dishwashers",
+        "note": "Their input hierarchy (Dept/Class/Fine) and their output hierarchy (Classpath) are different trees, so both are carried. Taken from the labelled delivery rows."
+      },
+      "noun": "Dishwasher",
+      "keywords": [
+        "dishwasher",
+        "dish washer",
+        "built-in dishwasher"
+      ],
+      "required": [
+        "brand",
+        "mpn"
+      ],
+      "attributes": {
+        "series": {
+          "label": "Series",
+          "type": "text",
+          "group": "Identity",
+          "sequence": 1
+        },
+        "model": {
+          "label": "Model",
+          "type": "text",
+          "group": "Identity",
+          "sequence": 2
+        },
+        "wash_cycles": {
+          "label": "Number of Wash Cycles",
+          "type": "number",
+          "group": "Performance",
+          "range": [
+            1,
+            20
+          ],
+          "sequence": 3,
+          "aliases": [
+            "wash cycles",
+            "cycles"
+          ]
+        },
+        "voltage": {
+          "label": "Voltage Rating",
+          "type": "number",
+          "unit": "V",
+          "group": "Electrical",
+          "range": [
+            100,
+            600
+          ],
+          "sequence": 4,
+          "aliases": [
+            "voltage",
+            "volts"
+          ]
+        },
+        "current": {
+          "label": "Amperage Rating",
+          "type": "number",
+          "unit": "A",
+          "group": "Electrical",
+          "range": [
+            0.1,
+            60
+          ],
+          "sequence": 5,
+          "aliases": [
+            "amperage",
+            "amps",
+            "current"
+          ]
+        },
+        "mounting": {
+          "label": "Mounting Type",
+          "type": "enum",
+          "group": "Installation",
+          "values": [
+            "Built-in",
+            "Leg",
+            "Freestanding",
+            "Drawer",
+            "Portable"
+          ],
+          "sequence": 6,
+          "aliases": [
+            "mounting"
+          ]
+        },
+        "plug_type": {
+          "label": "Plug Type",
+          "type": "text",
+          "group": "Electrical",
+          "sequence": 7
+        },
+        "size": {
+          "label": "Size",
+          "type": "text",
+          "group": "Dimensions",
+          "sequence": 8
+        },
+        "depth_with_door_open": {
+          "label": "Depth With Door Open",
+          "type": "number",
+          "unit": "in",
+          "group": "Dimensions",
+          "range": [
+            20,
+            80
+          ],
+          "sequence": 9
+        },
+        "minimum_height": {
+          "label": "Minimum Height",
+          "type": "text",
+          "group": "Dimensions",
+          "sequence": 10
+        },
+        "maximum_height": {
+          "label": "Maximum Height",
+          "type": "text",
+          "group": "Dimensions",
+          "sequence": 11
+        },
+        "sound_level": {
+          "label": "Sound Level",
+          "type": "number",
+          "unit": "dBA",
+          "group": "Performance",
+          "range": [
+            30,
+            80
+          ],
+          "sequence": 12,
+          "aliases": [
+            "sound",
+            "noise"
+          ]
+        },
+        "material": {
+          "label": "Material",
+          "type": "enum",
+          "group": "Construction",
+          "values": [
+            "Stainless Steel",
+            "Plastic",
+            "Painted Steel"
+          ],
+          "sequence": 13,
+          "aliases": [
+            "material",
+            "ss",
+            "sst"
+          ]
+        },
+        "color": {
+          "label": "Color",
+          "type": "text",
+          "group": "Construction",
+          "sequence": 14,
+          "aliases": [
+            "colour",
+            "finish"
+          ]
+        },
+        "additional_information": {
+          "label": "Additional Information",
+          "type": "text",
+          "group": "General",
+          "sequence": 15
+        },
+        "feature": {
+          "label": "Feature",
+          "type": "text",
+          "group": "General",
+          "sequence": 16
+        }
+      },
+      "cross_checks": []
     }
   ],
   "brands": {

@@ -105,9 +105,18 @@ are the rule book.
 | `FAUCETS_LOV.xlsx` / `Fittings_LOV.xlsx` | Two categories specified end-to-end |
 | `Reference_Documents_Summary.xlsx` | Their own index of the pack — read first |
 
-**Status as of 10 Aug: the guide is up, the nine files are not.** Only the
-HTML guide is in Resources. Chase the organizers for an ETA; if it slips past
-~17 Aug, decide whether to demo against a hand-built stand-in.
+**Status as of 11 Aug: partially delivered.** Two CSVs arrived, now committed
+under `backend/data/unilog_samples/`:
+
+- `input_1000.csv` — the 1,000-row, 6-column sample. Matches the guide.
+- `delivery_expected.csv` — **the delivery format at exactly 252 columns, with
+  two fully worked rows.** This is the labelled ground truth, and two rows of it
+  turned out to be enough to derive every content formula (§7.3).
+
+The other seven reference files — content guidelines, UOM standards,
+manufacturer/brand list, the 161k-row LOV, Faucets/Fittings — are **still not
+uploaded**. The stubs in `data/unilog/` stand in for them and still report
+`source: provisional`.
 
 **What the guide validates, unprompted:** "a confidence score or a 'needs human
 review' flag is a genuinely valuable feature"; "Real data is imperfect — say
@@ -317,7 +326,8 @@ score as a CSV row. Do not add a parallel path for a new input type.
 | `unilog/house_style.py` | Approved UOM lookup + exact-64th decimal↔fraction + casing |
 | `unilog/content_formats.py` | The five commerce descriptions, built by token formula to character limits |
 | `unilog/lov.py` | Controlled vocabulary: accept / map / **refuse**, plus attribute sequence |
-| `ingest/unilog_rows.py` | Their 6- and 10-column catalogue rows → `RawProduct` |
+| `ingest/unilog_rows.py` | Their catalogue rows → `RawProduct`; vendor ≠ manufacturer, placeholder filtering |
+| `data/unilog_samples/` | Their 1,000-row input and 252-column labelled delivery rows |
 | `data/unilog/` | `uom_standards`, `abbreviations`, `content_formats`, `lov/` — **all provisional stubs; their spreadsheets replace these files, not the code** |
 | `export/profiles.py` | Profile-driven output rendering; target schema is data |
 | `data/export_profiles/` | `catalog_csv`, `schema_org`, `unilog_delivery` — **add a customer schema here, not in code** |
@@ -608,6 +618,64 @@ reads.
 
 ---
 
+## 7.3 Delivery-format accuracy — the metric judges asked for
+
+Run: `cd backend && python run_delivery_accuracy.py` ($0).
+
+Scored against Unilog's two labelled 252-column rows. This is a **second**
+benchmark, not a replacement for §7: that one asks whether the engineering is
+right against ISO ground truth, this asks whether the output is written the way
+the customer requires. They fail independently.
+
+**The prose formats reproduce their rows exactly — 14/14 fields, both rows,
+character for character.** MOBILE_DESC, INVOICE_DESC, SHORT_DESC, RETAIL_DESC,
+LONG_DESC1, With and Product Name. Every rule was derived from those two rows
+and lives in `data/unilog/content_formats.json`:
+
+- Greedy priority fitting reproduces both invoice lines: row 1 keeps the depth
+  and drops the sound level at 38 chars, row 2 drops the depth and keeps the
+  sound level at 39. Same algorithm, no per-row tuning.
+- The mobile line **stops growing once it clears 60**, which is why their padded
+  row carries one extra attribute rather than every attribute that fits.
+- Brand outranks manufacturer on a containment clash: "Whirlpool Corporation"
+  yields to "Whirlpool", while "Rheem Manufacturing FRIGIDAIRE" keeps both.
+- `5-Wash Cycle` hyphenates because the value is numeric; `Leg Mounting` does
+  not, because it is an enum.
+- A multi-value feature list fills the `With` column but never goes inline.
+
+**On the full 252 columns the honest number is 14.0%,** and the split is the
+point:
+
+| | |
+| --- | --- |
+| Field-level accuracy | **14.0%** (16/114) |
+| Coverage — fields attempted | 22.8% |
+| **Precision when we answer** | **61.5%** (16/26) |
+| Contradicted | 10 |
+| Sourced beyond the label | 2 (their cell blank, ours populated) |
+
+**88 of 114 fields are blank because the data is not in the input row.** Voltage,
+amperage, sound level, rack heights and cabinet dimensions exist only on
+frigidaire.com — which their own delivery row cites as `MFR URL`. A 6-column
+catalogue row cannot yield them, and the engine leaves them empty rather than
+inventing them.
+
+**This is the measured case for discovery, and it supersedes the reasoning in
+§1.6/§11.1.** Web discovery was demoted on the guide's "two or three steps done
+well" advice; this benchmark now quantifies the ceiling without it. Roughly
+three quarters of the delivery format is unreachable from the input alone. That
+is an argument from evidence rather than from the brief — see §11.1.
+
+**Volume, their 1,000-row file:** 1,000 rows in 1.64 s (**611 products/s**),
+2,599 placeholders dropped, 959 vendor strings split from their account codes,
+448 brands recovered (442 from the brand columns, 6 from descriptions — all
+correct, no false positives). **Only 8.9% classify**, because our 11-category
+industrial taxonomy does not cover their lighting, lumber, decking and window
+SKUs. That is what the auto-taxonomy learner is for, and it is the other
+measured gap.
+
+---
+
 ## 8. Commands
 
 ```bash
@@ -665,8 +733,12 @@ python run_benchmark.py --live --budget 5
   16. `36263b9` **per-attribute source URLs** (§5.5) + first cost model
   17. `e54c7f4` **export profiles** — output schema is data (§5 `export/`)
   18. `f26aae4` cost model at standard rates + batch/scalability (§7.05)
-  19. **Unilog compliance layer** (§5.7) — house style, LOV refusals, formula
-      -built descriptions, catalogue-row ingest, delivery profile, 100 tests
+  19. `26a71b2` **Unilog compliance layer** (§5.7) — house style, LOV refusals,
+      formula-built descriptions, catalogue-row ingest, 100 tests
+  20. `3b19213` casing fix: title case no longer flattens bracketed words
+  21. **Real delivery format** (§7.3) — 252-column profile generated from their
+      header, content formulas derived from their two labelled rows (14/14
+      exact), field-level accuracy benchmark, vendor≠manufacturer ingest
 - Local `main` and `origin/main` were level at `f26aae4` before the compliance
   layer landed.
 - Decision: stay private until submission, then either flip to public or add
@@ -708,7 +780,7 @@ them is a data drop.
    (d) add a *second* benchmark scoring field-level accuracy against their 200
    known-good rows. **Do not touch `build_corpus()`** — it invalidates all 102
    paid records (§11 gotchas);
-   (e) then, and only then, decide on discovery with real examples in hand.
+   (e) discovery — now backed by the §7.3 measurement rather than the brief.
 2. **The deck.** The user has the portal template and will supply it once
    engineering settles. `docs/Project_Understanding.pdf`, §7.1/§7.2 and §7.05
    carry the narrative; the hybrid gate is the strongest slide.
@@ -720,11 +792,19 @@ them is a data drop.
 6. **Leave the UptimeRobot monitor running.** A sleeping free instance returns
    404, so a reviewer's first click would look like a dead link.
 
-### 11.1 Discovery from brand + part number — demoted by §1.6
+### 11.1 Discovery from brand + part number — now measured, not argued
 
-**Read §1.6 first.** The solution guide makes discovery one of eight pipeline
-steps and says outright that two or three done convincingly beat a shallow pass
-at everything. This section's framing as "the one real gap" predates it.
+**Read §7.3 first.** The position has moved twice. §1.5 called discovery "the
+one real gap"; §1.6 demoted it on the guide's "two or three steps done well"
+advice; §7.3 now **measures** what it costs to skip: 88 of 114 scored delivery
+fields are blank purely because the values live on the manufacturer's site,
+which their own row cites as `MFR URL`. Precision on what we do fill is 61.5%,
+so the ceiling is set by sourcing, not by the engine.
+
+That reframes the decision. Discovery is no longer "nice to have per the brief"
+— it is the single change that moves delivery-format accuracy, and the number
+to quote when justifying it. Still not built, still the user's call, and the
+cost caveats below stand.
 
 The organizers' 6 Aug briefing (§1.5): take a manufacturer name and
 part number and *search* manufacturer sites, catalogues, PDFs and manuals.

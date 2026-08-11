@@ -56,6 +56,8 @@ def invalidate() -> None:
     _config.cache_clear()
     _abbreviations.cache_clear()
     _terminal.cache_clear()
+    _self_describing.cache_clear()
+    _prefix_labels.cache_clear()
 
 
 def source() -> str:
@@ -85,7 +87,9 @@ class ContentContext:
         category = getattr(record, "category", None)
         noun = ""
         if category and getattr(category, "path", None):
-            noun = _singular(category.path[-1])
+            # The shelf is "Built-In Dishwashers"; the product is a "Dishwasher".
+            # The taxonomy declares the noun for exactly this reason.
+            noun = getattr(category, "noun", "") or _singular(category.path[-1])
         return cls(
             brand=identity.get("brand") or (record.input.brand or ""),
             manufacturer=identity.get("manufacturer") or "",
@@ -96,9 +100,14 @@ class ContentContext:
 
 
 def _singular(noun: str) -> str:
+    """Singularize a category noun or an attribute label's last word.
+
+    The sibilant endings are listed explicitly rather than stripping every
+    trailing "es": that rule turns "Hoses" into "Hos" and "Cycles" into "Cycl".
+    """
     if noun.endswith("ies"):
         return noun[:-3] + "y"
-    if noun.endswith("ses") or noun.endswith("xes"):
+    if noun.endswith(("sses", "shes", "ches", "xes", "zes")):
         return noun[:-2]
     if noun.endswith("s") and not noun.endswith("ss"):
         return noun[:-1]
@@ -164,8 +173,36 @@ def _visible(attributes: Iterable[Attribute], excluded: set[str]) -> list[Attrib
     return [a for a in attributes if a.provenance.value not in excluded]
 
 
+def _display_label(attribute: Attribute) -> str:
+    """The label as it appears in copy, not as it appears in the schema.
+
+    Their attribute is called "Number of Wash Cycles" but the prose reads
+    "5 Wash Cycles" — the counting prefix belongs in the spec table, not the
+    sentence.
+    """
+    label = (attribute.label or "").strip()
+    for prefix in _config().get("label_prefixes_to_drop", []):
+        if label.lower().startswith(prefix.lower()):
+            label = label[len(prefix):]
+            break
+    for suffix in _config().get("label_suffixes_to_drop", []):
+        if label.lower().endswith(suffix.lower()):
+            label = label[: -len(suffix)]
+            break
+    return label.strip()
+
+
+def _label_singular(label: str) -> str:
+    """'Wash Cycles' -> 'Wash Cycle'. Only the last word is a plural."""
+    words = label.split()
+    if not words:
+        return label
+    return " ".join(words[:-1] + [_singular(words[-1])])
+
+
 def _attribute_text(
-    attribute: Attribute, *, compact: bool, abbreviate: bool, with_label: bool
+    attribute: Attribute, *, compact: bool, abbreviate: bool, with_label: bool,
+    label_style: str = "space",
 ) -> tuple[str | None, str | None, str | None]:
     """Render one attribute, or explain why it cannot be written.
 
@@ -198,7 +235,17 @@ def _attribute_text(
 
     bare = written
     if with_label and not compact and _wants_label(attribute):
-        written = f"{written} {attribute.label}"
+        label = _display_label(attribute)
+        numeric = isinstance(value, (int, float)) and not isinstance(value, bool)
+        if attribute.key.lower() in _prefix_labels():
+            # "Additional Information: 240 kW-hr Annual Energy"
+            written = f"{label}: {written}"
+        elif label_style == "hyphen_singular" and numeric:
+            # A count binds to its noun: "5-Wash Cycle". An enum does not —
+            # the same row writes "Leg Mounting", not "Leg-Mounting".
+            written = f"{written}-{_label_singular(label)}"
+        else:
+            written = f"{written} {label}"
 
     return written, bare, None
 
@@ -222,6 +269,8 @@ def _wants_label(attribute: Attribute) -> bool:
     if attribute.key.lower() in _terminal() or label in _terminal():
         return False
     unit = HS.approved_unit(attribute.unit) if attribute.unit else None
+    if unit and unit.abbreviation in _self_describing():
+        return False
     if unit and unit.measurement.strip().lower() == label:
         return False
     return True
@@ -234,13 +283,30 @@ def _terminal() -> frozenset[str]:
     )
 
 
+@lru_cache(maxsize=1)
+def _self_describing() -> frozenset[str]:
+    """Units that name their own quantity, so a label would only repeat them."""
+    return frozenset(str(u) for u in _config().get("self_describing_units", []))
+
+
+@lru_cache(maxsize=1)
+def _prefix_labels() -> frozenset[str]:
+    return frozenset(
+        str(k).strip().lower() for k in _config().get("prefix_label_attributes", [])
+    )
+
+
 def _render_tokens(
     spec: dict[str, Any], ctx: ContentContext
 ) -> tuple[list[_Piece], list[str]]:
     compact = bool(spec.get("compact_units"))
     abbreviate = bool(spec.get("abbreviate"))
+    label_style = spec.get("label_style", "space")
     excluded = set(spec.get("exclude_provenance", []))
-    attributes = _visible(ctx.attributes, excluded)
+    skipped = {str(k).lower() for k in spec.get("exclude_keys", [])}
+    attributes = [
+        a for a in _visible(ctx.attributes, excluded) if a.key.lower() not in skipped
+    ]
     by_key = {a.key: a for a in attributes}
 
     named = {
@@ -264,6 +330,11 @@ def _render_tokens(
             nonlocal order
             if not text:
                 return
+            # A multi-value list is a column of its own, not a clause inside a
+            # sentence: their row 3 keeps its two-item feature list out of both
+            # the short and the long description while still filling "With".
+            if token.get("single_value_only") and "," in text:
+                return
             if prefix := token.get("prefix"):
                 text = f"{prefix} {text}"
             pieces.append(_Piece(key, label, text, priority, required, tail, order,
@@ -279,6 +350,7 @@ def _render_tokens(
                     compact=compact,
                     abbreviate=abbreviate,
                     with_label=bool(token.get("with_label")),
+                    label_style=label_style,
                 )
                 if refusal:
                     refusals.append(refusal)
@@ -294,6 +366,7 @@ def _render_tokens(
                 compact=compact,
                 abbreviate=abbreviate,
                 with_label=bool(token.get("with_label")),
+                label_style=label_style,
             )
             if refusal:
                 refusals.append(refusal)
@@ -310,26 +383,56 @@ def _render_tokens(
     return pieces, refusals
 
 
+# Tokens that name the product itself rather than one of its specifications.
+_IDENTITY = frozenset({"brand", "manufacturer", "mpn", "item_type"})
+
+
 def _drop_repeats(pieces: list[_Piece]) -> list[_Piece]:
-    """Say each fact once.
+    """Say each identifying fact once.
 
-    Real catalogue rows repeat themselves constantly — a coupling whose item
-    type is "Coupling" and whose Fitting Type is also "Coupling", a house brand
-    whose manufacturer is the same string as its brand. Left alone that yields
-    "Coupling, Coupling Fitting Type" and burns characters inside a 40-character
-    limit that could have carried the size instead.
+    Their own rows show both halves of this rule. Row 2 writes "Rheem
+    Manufacturing FRIGIDAIRE" because the two names are unrelated; row 3 writes
+    only "Whirlpool" because the brand is contained in "Whirlpool Corporation"
+    and printing both would stutter. Equally, a coupling whose item type is
+    "Coupling" and whose Fitting Type is also "Coupling" should say it once.
 
-    The first occurrence wins, since token order encodes importance, and a
-    required token can never be the one dropped.
+    But two *specifications* may legitimately share a value, and their rows rely
+    on it: a dishwasher with Material "Stainless Steel" and Color "Stainless
+    Steel" is written out twice in both the short and long descriptions. So
+    de-duplication applies to identity tokens only, and an attribute is dropped
+    solely when it merely repeats one of them.
     """
-    seen: set[str] = set()
+    seen: list[tuple[str, bool]] = []
     kept: list[_Piece] = []
-    for piece in sorted(pieces, key=lambda p: (not p.required, p.order)):
+
+    # Priority decides which of two clashing names survives, not declaration
+    # order: the brand outranks the manufacturer, so "Whirlpool Corporation"
+    # yields to "Whirlpool" rather than the other way round.
+    for piece in sorted(pieces, key=lambda p: (not p.required, p.priority, p.order)):
         signature = " ".join((piece.bare or piece.text).lower().split())
-        if signature in seen:
+        is_identity = piece.key in _IDENTITY
+
+        duplicate = False
+        for earlier, earlier_identity in seen:
+            # Two specifications may share a value and both still belong: their
+            # rows write "Stainless Steel, Stainless Steel" for Material and
+            # Color. Only a clash involving an identity name is a real repeat.
+            if signature == earlier and (is_identity or earlier_identity):
+                duplicate = True
+                break
+            # Containment only collapses one identity name into another; a spec
+            # value that happens to be a substring of a name is still a spec.
+            if is_identity and earlier_identity and (
+                signature in earlier or earlier in signature
+            ):
+                duplicate = True
+                break
+        if duplicate:
             continue
-        seen.add(signature)
+
+        seen.append((signature, is_identity))
         kept.append(piece)
+
     return sorted(kept, key=lambda p: p.order)
 
 
@@ -376,6 +479,11 @@ def build(spec: dict[str, Any], ctx: ContentContext) -> FieldResult:
     dropped: list[str] = []
 
     for piece in optional:
+        # A length window is a target, not an appetite. Once the minimum is met
+        # the line stops growing, which is why their padded mobile description
+        # carries one extra attribute rather than every attribute that fits.
+        if minimum is not None and len(_cased(_assemble(kept, spec), case)) >= minimum:
+            break
         candidate = kept + [piece]
         if maximum is not None and len(_cased(_assemble(candidate, spec), case)) > maximum:
             dropped.append(piece.label)

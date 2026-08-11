@@ -33,6 +33,9 @@
     "assembly": "ASSY",
     "mounting": "MTG",
     "with": "W/",
-    "without": "W/O"
+    "without": "W/O",
+    "built-in": "BLTLN",
+    "built in": "BLTLN",
+    "leg": "LEG"
   }
 }

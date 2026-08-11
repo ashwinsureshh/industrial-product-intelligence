@@ -212,6 +212,36 @@ def format_measure(
     return f"{shown} {resolved.abbreviation}"
 
 
+def value_only(value: float | int | str, unit: str | None = None) -> str:
+    """The number as house style writes it, with no unit attached.
+
+    Their delivery sheet splits every measurement into a value column and a UOM
+    column — `50-1/4` next to `in` — so the value has to be house-styled
+    (fractions for inches, no trailing zeros) *without* the unit being appended.
+    Unlike `format_measure` this never refuses: an unapproved unit is a problem
+    for the UOM column and the compliance report, not a reason to drop the
+    number out of the sheet.
+    """
+    if value is None:
+        return ""
+    resolved = approved_unit(unit) if unit else None
+
+    if isinstance(value, str):
+        number = from_fraction(value)
+        if number is None:
+            number = _as_number(value)
+        if number is None:
+            return value.strip()
+    elif isinstance(value, bool):
+        return str(value)
+    else:
+        number = float(value)
+
+    if resolved and resolved.abbreviation == "in":
+        return to_fraction(number) or _trim(number)
+    return _trim(number)
+
+
 def _as_number(text: str) -> float | None:
     try:
         return float(str(text).strip().replace(",", ""))

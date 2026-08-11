@@ -15,10 +15,13 @@ rule out.
 
 from __future__ import annotations
 
+import csv
 import json
 import sys
 import tempfile
 from pathlib import Path
+
+SAMPLES = Path(__file__).resolve().parent / "data" / "unilog_samples"
 
 from app.ingest.unilog_rows import from_row, is_placeholder
 from app.models import Attribute, Provenance, RawProduct
@@ -322,7 +325,7 @@ def test_row_ingest() -> None:
         "E1_Brand": "-- Unbranded --",
         "Unilog_Brand": "FRIGIDAIRE",
         "DIB_Brand": "-- No DIB Brand --",
-        "Part_Manuf": "Rheem Manufacturing",
+        "Part_Manuf": "Appliance Dealers Cooperative (APPDE)",
         "SKU": "12345",
         "Dept": "Appliances & Consumer Electronics",
         "Class": "Kitchen Appliances",
@@ -337,19 +340,48 @@ def test_row_ingest() -> None:
             "Appliances & Consumer Electronics > Kitchen Appliances > Built-In Dishwashers"
         ),
     )
+
+    # The trap in their file: Part_Manuf reads like a manufacturer but their own
+    # delivery row pairs "Appliance Dealers Cooperative (APPDE)" with
+    # MANUFACTURER_NAME "Rheem Manufacturing".
+    check("the vendor code is split off", report.vendor == "Appliance Dealers Cooperative")
+    check("and kept", report.vendor_code == "APPDE")
     check(
-        "the brand/manufacturer mismatch their guide warns about is flagged",
-        any("differ" in n for n in report.notes),
+        "the vendor is never promoted to manufacturer",
+        product.raw_specs.get("Manufacturer") is None,
+    )
+    check(
+        "and the empty manufacturer is explained, not silently blank",
+        any("supplying vendor" in n for n in report.notes),
     )
 
-    # Their stated rule for a row with no brand at all.
-    fallback, report2 = from_row({
-        "Mfg_Part_Num": "C1234", "Part_Desc": "3/8 CPLG BRS 150#",
-        "E1_Brand": "-- Unbranded --", "Unilog_Brand": "-- No Unilog Brand --",
-        "Part_Manuf": "Anvil International",
+    # Placeholders that do not follow the '-- text --' shape.
+    _, report2 = from_row({
+        "Mfg_Part_Num": "X1", "Part_Desc": "Widget",
+        "E1_Brand": "-", "DIB_Brand": "COMMODITY - UNBRANDED",
+        "Part_Manuf": "U S Lumber (3073)",
     })
-    check("with no brand, the manufacturer is used", fallback.brand == "Anvil International")
-    check("and that substitution is stated", any("manufacturer name" in n for n in report2.notes))
+    check("a bare hyphen is a placeholder", is_placeholder("-"))
+    check("'COMMODITY - UNBRANDED' is a placeholder", is_placeholder("COMMODITY - UNBRANDED"))
+    check("both were dropped", len(report2.placeholders_dropped) == 2)
+
+    # Brand recovery from the description, since four rows in five have no
+    # brand column. Only an approved name counts.
+    known, report3 = from_row({
+        "Mfg_Part_Num": "6205-2RS", "Part_Desc": "SKF 6205-2RS deep groove ball bearing",
+        "E1_Brand": "-- Unbranded --",
+    })
+    check("an approved brand is recovered from the description", known.brand == "SKF")
+    check("and the recovery is stated", any("description" in n for n in report3.notes))
+
+    unknown, _ = from_row({
+        "Mfg_Part_Num": "Z9", "Part_Desc": "Wumpus 12 in flange widget",
+        "E1_Brand": "-- Unbranded --",
+    })
+    check(
+        "an unrecognised leading word is not promoted to a brand",
+        unknown.brand is None,
+    )
 
     conflict, report3 = from_row({
         "Mfg_Part_Num": "X9", "Part_Desc": "Widget",
@@ -367,8 +399,8 @@ def test_pipeline_integration() -> None:
 
     product, _ = from_row({
         "Mfg_Part_Num": "6205-2RS", "Part_Desc": "6205-2RS deep groove ball bearing 25mm bore",
-        "Unilog_Brand": "SKF", "E1_Brand": "-- Unbranded --", "Part_Manuf": "SKF Group",
-        "SKU": "BRG-1",
+        "Unilog_Brand": "SKF", "E1_Brand": "-- Unbranded --",
+        "MANUFACTURER_NAME": "SKF Group", "SKU": "BRG-1",
     })
     record = pipeline.enrich(product, MockProvider())
 
@@ -423,19 +455,47 @@ def test_profile_is_data() -> None:
 
     product, _ = from_row({
         "Mfg_Part_Num": "6205-2RS", "Part_Desc": "6205-2RS deep groove ball bearing 25mm bore",
-        "Unilog_Brand": "SKF", "Part_Manuf": "SKF Group", "SKU": "BRG-1",
+        "Unilog_Brand": "SKF", "MANUFACTURER_NAME": "SKF Group", "SKU": "BRG-1",
     })
     record = pipeline.enrich(product, MockProvider())
 
     header, rows = profiles.to_rows(profiles.get("unilog_delivery"), [record])
     row = dict(zip(header, rows[0]))
-    check("the delivery profile renders", "Invoice Desc" in row)
-    check("the SKU comes through", row["SKU"] == "BRG-1")
-    check("the manufacturer column is populated", row["Manufacturer"] == "SKF Group")
-    check("a house-style field is addressable by id", row["Product Title"] != "")
-    check("its measured length ships alongside it", isinstance(row["Invoice Desc Length"], int))
-    check("every attribute carries a source URL column",
-          any(h.endswith(" Source URL") for h in header))
+
+    # The decisive check: byte-identical column names, in their order. Their
+    # importer is positional, so a profile that is merely close is broken.
+    with open(SAMPLES / "delivery_expected.csv", encoding="utf-8-sig", newline="") as fh:
+        theirs = next(csv.reader(fh))
+    check("the header matches their sheet exactly", header == theirs)
+    check("252 columns", len(header) == 252)
+    check("every row is the same width as the header", len(rows[0]) == len(header))
+
+    check("the MPN comes through", row["Mfg_Part_Num"] == "6205-2RS")
+    check("the manufacturer column is populated", row["MANUFACTURER_NAME"] == "SKF Group")
+    check("a house-style field is addressable by id", row["SHORT_DESC"] != "")
+    check(
+        "the classpath uses their separator, with no spaces",
+        ">" in row["Classpath"] and " > " not in row["Classpath"],
+    )
+    check(
+        "attributes fill numbered triplet slots",
+        row["ATTRIBUTE_LABEL 1"] != "" and row["ATTRIBUTE_VALUE 1"] != "",
+    )
+    measured = next(
+        (i for i in range(1, 51) if row[f"ATTRIBUTE_UOM {i}"]), None
+    )
+    check("at least one attribute carries a unit", measured is not None)
+    check(
+        "value and unit stay in separate columns",
+        measured is not None
+        and row[f"ATTRIBUTE_UOM {measured}"] not in str(row[f"ATTRIBUTE_VALUE {measured}"]),
+    )
+    check(
+        "the value column is house-styled, not a raw float",
+        measured is not None and str(row[f"ATTRIBUTE_VALUE {measured}"]) == "25",
+    )
+    # Their sheet is positional: unfilled slots must still be present.
+    check("empty slots are emitted, not skipped", row["ATTRIBUTE_LABEL 50"] == "")
 
     # The claim: a new customer column is a JSON edit. Prove it at runtime.
     with tempfile.TemporaryDirectory() as tmp:

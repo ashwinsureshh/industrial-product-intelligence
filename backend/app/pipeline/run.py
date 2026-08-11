@@ -262,6 +262,7 @@ def enrich(raw: RawProduct, provider: Provider) -> EnrichedProduct:
             confidence=cat_conf,
             rationale="; ".join(reasons) if reasons else "Matched on general product signals.",
             alternatives=alternatives,
+            customer=category.get("customer", {}),
         )
     trace.append(StageTrace(
         stage="classify",
@@ -370,7 +371,9 @@ def enrich(raw: RawProduct, provider: Provider) -> EnrichedProduct:
             brand=identity.get("brand") or cleaned.brand or "",
             manufacturer=identity.get("manufacturer") or "",
             mpn=identity.get("mpn") or cleaned.mpn or "",
-            item_type=CF._singular(category["path"][-1]) if category else "",
+            item_type=(
+                category.get("noun") or CF._singular(category["path"][-1])
+            ) if category else "",
             attributes=attributes,
         ))
         breaches = [f for f in fields if not f.compliant]

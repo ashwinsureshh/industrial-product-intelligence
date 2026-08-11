@@ -35,8 +35,8 @@
     "label": "demo (deterministic)",
     "cases": 102,
     "cached_hits": 0,
-    "elapsed_s": 0.34,
-    "throughput_per_s": 299.4,
+    "elapsed_s": 0.37,
+    "throughput_per_s": 272.7,
     "coverage": {
       "attributes_in": 129,
       "attributes_out": 355,
@@ -398,7 +398,7 @@
     "hours_saved": 5556,
     "cost_saved_usd": 194444,
     "fte_years_saved": 3.1,
-    "processing_hours": 0.09,
+    "processing_hours": 0.1,
     "defects_caught_per_10k": 500
   }
 }
