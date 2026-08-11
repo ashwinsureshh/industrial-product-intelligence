@@ -108,6 +108,16 @@ with sync_playwright() as p:
     shoot(page, OUT / "4_catalog.png",
           ['.col .card:has(.summary-grid)', '.col .card:has(table)'])
 
+    # ---------------------------------------------------------------- shot 5
+    # Accuracy: their labelled row scored against ours, both states.
+    print("5. accuracy against their ground truth")
+    tab(page, "Accuracy")
+    page.wait_for_selector('.col .card:has(h3:text-is("Accuracy against their ground truth"))',
+                           timeout=60000)
+    page.wait_for_timeout(1200)
+    shoot(page, OUT / "5_accuracy.png",
+          [card_with(page, "Accuracy against their ground truth")])
+
     browser.close()
 
 print("\ndone:", sorted(f.name for f in OUT.glob("*.png")))
