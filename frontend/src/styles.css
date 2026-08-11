@@ -282,8 +282,33 @@ input, textarea, select { font-family: inherit; font-size: inherit; }
    document: on a 375px screen every page scrolled sideways by 366px, even
    though .layout below collapses correctly. Wrapping the header is what keeps
    the page within the viewport, not anything in the content columns. */
-.main-nav { width: 380px; }
-.engine-toggle { width: 150px; }
+/* Sized by their labels, not pinned. These were fixed at 380px and 150px when
+   there were four tabs and two engines; adding "Discover" and "Live AI" left
+   the toggle 150px for three labels. Because a .tab is `flex: 1 1 0` with
+   `min-width: auto`, each one may shrink to its *min-content* width — and
+   min-content for a two-word label is its longest word, so "Live AI" collapsed
+   to the width of "Live" and wrapped onto two lines while single-word "Hybrid"
+   held its ground. Content-sized containers plus nowrap labels (below) mean a
+   new tab widens the bar instead of breaking the narrowest neighbour. */
+.main-nav, .engine-toggle { width: auto; flex: 0 0 auto; }
+
+/* Between 900px and 1300px everything still fits *somewhere*, but not on
+   one line: the header is nowrap, so instead of wrapping it crushed the brand to
+   128px — stacking the product name over four lines and making the bar 138px
+   tall — and squeezed the status pill until "11 categories" was ellipsized.
+   Giving the brand its own row costs one shorter row and keeps every group at
+   its natural size. The tagline goes: it is scene-setting, and this is the
+   width where the screen stops having room for scene-setting. */
+@media (min-width: 901px) and (max-width: 1300px) {
+  .topbar { flex-wrap: wrap; row-gap: var(--s2); }
+  .topbar-spacer { display: none; }
+  .brand { flex: 1 1 100%; }
+  .brand-text p { display: none; }
+  .main-nav { order: 2; margin-left: auto; }
+  .engine-toggle { order: 3; }
+  .topbar .pill { order: 4; flex: 0 0 auto; }
+  .theme-toggle { order: 5; }
+}
 
 /* Below 900px the header cannot hold five control groups on one line. Rather
    than wrap them into a stack that ate a third of the screen, the primary
@@ -315,6 +340,11 @@ input, textarea, select { font-family: inherit; font-size: inherit; }
     font-size: var(--fs-label);
     border-radius: var(--radius-sm);
     padding: var(--s1) var(--s1);
+    /* The desktop rule forbids wrapping so a label cannot be broken by a
+       neighbour. In the bottom bar the opposite is true: five equal cells in
+       375px, where "Single Product" is meant to sit over two lines. */
+    white-space: normal;
+    line-height: 1.15;
   }
   /* The active pill would look heavy in a bottom bar; a colour change plus a
      top marker reads more like native navigation. */
@@ -510,6 +540,9 @@ input, textarea, select { font-family: inherit; font-size: inherit; }
   flex: 1; padding: 6px 12px; border: none; background: transparent;
   border-radius: 6px; color: var(--text-2); font-weight: 550;
   font-size: var(--fs-sm);
+  /* A label is one line. Without this, flex shrinking breaks any tab whose
+     name contains a space before it touches the single-word ones. */
+  white-space: nowrap;
   transition: background 0.14s ease, color 0.14s ease;
 }
 .tab:hover:not(.active) { color: var(--text); background: var(--surface-2); }

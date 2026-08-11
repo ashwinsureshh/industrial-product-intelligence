@@ -345,6 +345,27 @@ that the manufacturer-only rule is enforced rather than asserted. Verified in
 the browser on all four demo parts; five tabs still fit the mobile bottom bar
 (5 x 70px in 373px, no overflow).
 
+**Header sizing is content-driven, and that was a bug fix.** `.main-nav` and
+`.engine-toggle` were pinned at 380px and 150px from when there were four tabs
+and two engines. A `.tab` is `flex: 1 1 0` with `min-width: auto`, so it may
+shrink to its *min-content* width — and min-content for a two-word label is its
+longest word. "Live AI" collapsed to the width of "Live" and wrapped onto two
+lines while single-word "Hybrid" held its ground. Both containers are now
+`width: auto; flex: 0 0 auto` and `.tab` is `white-space: nowrap`, re-enabled to
+`normal` only in the mobile bottom bar where "Single Product" is *meant* to sit
+over two lines. A new tab now widens the bar instead of breaking its narrowest
+neighbour. Between 901px and 1300px the brand takes its own row: the header is
+`nowrap`, so before that rule it crushed the brand to 128px and ellipsized the
+status pill rather than wrapping.
+
+**The audit that missed it, and why.** The first UI sweep checked
+`scrollWidth > clientWidth`. Wrapped text does not trigger that — it overflows
+*vertically*, and a flex item that shrinks to min-content reports no horizontal
+overflow at all. Any future check must count rendered line boxes
+(`Range.getClientRects().length`) for controls whose labels must stay on one
+line, and must sweep the widths where media queries flip (1301 / 1300 / 901 /
+900 / 375 / 320), not just one desktop and one phone size.
+
 Design tokens in `styles.css` (`--s1..--s6` spacing, `--fs-*` type, three
 elevation steps) and a dark theme driven by `prefers-color-scheme` plus a
 `data-theme` override, so an explicit light choice beats an OS set to dark.
