@@ -53,6 +53,15 @@ export const ingestUrl = (url, mode, apiKey) =>
     body: JSON.stringify({ url, mode, api_key: apiKey || null }),
   }).then(json)
 
+export const discover = (brand, mpn, mode, apiKey) =>
+  fetch('/api/discover', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ brand, mpn, mode, api_key: apiKey || null }),
+  }).then(json)
+
+export const getDiscoverySources = () => fetch('/api/discover/sources').then(json)
+
 export const proposeCategories = (products, mode, apiKey) =>
   fetch('/api/taxonomy/propose', {
     method: 'POST',

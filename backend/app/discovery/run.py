@@ -177,6 +177,11 @@ def discover(
             # An HTTP 200 with nothing in it is the JavaScript-rendered case. It
             # is not the same as "this product does not exist", and conflating
             # them would turn a tooling gap into a false claim about the part.
+            #
+            # It counts as refused, not used: the page passed policy but
+            # contributed nothing, and a ledger that called it a source would
+            # overstate what the record actually rests on.
+            record.accepted = False
             record.reason = (
                 f"Fetched successfully but nothing usable was parsed. The page is "
                 f"likely rendered client-side, which this fetcher cannot read."

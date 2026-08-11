@@ -335,9 +335,15 @@ score as a CSV row. Do not add a parallel path for a new input type.
 
 ### Frontend (`frontend/src/`)
 
-React 19 + Vite, no runtime UI dependencies. Four tabs: **Single Product**,
-**Document**, **Catalog**, **Learning**. Three engines: **Demo**, **Hybrid**,
-**Live AI**. Vite proxies `/api` to port 8000.
+React 19 + Vite, no runtime UI dependencies. Five tabs: **Single Product**,
+**Document**, **Discover**, **Catalog**, **Learning**. Three engines: **Demo**,
+**Hybrid**, **Live AI**. Vite proxies `/api` to port 8000.
+
+`DiscoveryPanel.jsx` carries the source ledger, built to mirror `GateLedger`:
+refusals sort first, because what the crawler declined to read is the evidence
+that the manufacturer-only rule is enforced rather than asserted. Verified in
+the browser on all four demo parts; five tabs still fit the mobile bottom bar
+(5 x 70px in 373px, no overflow).
 
 Design tokens in `styles.css` (`--s1..--s6` spacing, `--fs-*` type, three
 elevation steps) and a dark theme driven by `prefers-color-scheme` plus a
@@ -778,6 +784,15 @@ false claim about the part.
 rendering or paid search with content extraction — not more parsing. Do not
 claim discovery as a solved step; claim that the sourcing rule is enforced and
 the ceiling is now known.
+
+**A third bug, found only by looking at the UI:** an empty page was recorded as
+an *accepted* source, so the ledger read "1 used" for a page that contributed
+nothing. It is now recorded as refused — it passed policy but gave nothing, and
+a ledger that calls it a source overstates what the record rests on. The panel
+also states, when discovery finds nothing, that any record shown was built from
+the part number alone; without that the SKF case shows "nothing was written"
+directly above a 94/100 publishable record, which reads as a contradiction
+rather than as ISO 15 decoding doing its job.
 
 **Two bugs it exposed, both fixed:**
 

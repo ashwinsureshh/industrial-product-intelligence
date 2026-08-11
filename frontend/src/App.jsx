@@ -3,6 +3,7 @@ import * as api from './api.js'
 import AttributeTable from './components/AttributeTable.jsx'
 import BatchInput, { BatchEmpty, BatchSummary, BatchTable } from './components/BatchView.jsx'
 import ContentPanel from './components/ContentPanel.jsx'
+import DiscoveryInput, { DiscoveryEmpty, SourceLedger } from './components/DiscoveryPanel.jsx'
 import GateLedger from './components/GateLedger.jsx'
 import DocumentInput, { IngestReport } from './components/DocumentPanel.jsx'
 import InputPanel, { emptyProduct, fromProduct, toProduct } from './components/InputPanel.jsx'
@@ -47,6 +48,8 @@ export default function App() {
   const [batch, setBatch] = useState(null)
   const [selectedRow, setSelectedRow] = useState(0)
   const [ingest, setIngest] = useState(null)
+  const [discovery, setDiscovery] = useState(null)
+  const [discoverySources, setDiscoverySources] = useState(null)
   const [proposals, setProposals] = useState(null)
   const [proposalSummary, setProposalSummary] = useState(null)
   const [proposalCounts, setProposalCounts] = useState(null)
@@ -191,6 +194,25 @@ export default function App() {
   const runPdf = (file) => runDocument(() => api.ingestPdf(file, mode, apiKey))
   const runUrl = (url) => runDocument(() => api.ingestUrl(url, mode, apiKey))
 
+  // Discovery returns a record either way. Finding nothing is a legitimate,
+  // informative outcome — the source ledger explains which pages were refused
+  // and why — so an empty result is not treated as an error.
+  const runDiscover = async (brand, mpn) => {
+    setLoading(true)
+    setError(null)
+    setDiscovery(null)
+    setResult(null)
+    try {
+      const response = await api.discover(brand, mpn, mode, apiKey)
+      setDiscovery(response.discovery)
+      setResult(response.result)
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const refreshProposals = async () => {
     try {
       const response = await api.listProposals()
@@ -292,6 +314,19 @@ export default function App() {
             aria-current={tab === 'document' ? 'page' : undefined}
           >
             Document
+          </button>
+          <button
+            className={`tab ${tab === 'discover' ? 'active' : ''}`}
+            onClick={() => {
+              setTab('discover')
+              if (discoverySources === null) {
+                api.getDiscoverySources().then(setDiscoverySources).catch(() => {})
+              }
+            }}
+            title="Find a part on its manufacturer's site from a brand and a part number"
+            aria-current={tab === 'discover' ? 'page' : undefined}
+          >
+            Discover
           </button>
           <button
             className={`tab ${tab === 'batch' ? 'active' : ''}`}
@@ -436,6 +471,12 @@ export default function App() {
               counts={proposalCounts}
               demoSize={samples?.learning_demo?.length}
             />
+          ) : tab === 'discover' ? (
+            <DiscoveryInput
+              onDiscover={runDiscover}
+              loading={loading}
+              sources={discoverySources}
+            />
           ) : tab === 'document' ? (
             <>
               <DocumentInput onPdf={runPdf} onUrl={runUrl} loading={loading} />
@@ -506,6 +547,8 @@ export default function App() {
 
           {tab === 'batch' && !batch && <BatchEmpty />}
 
+          {tab === 'discover' && discovery && <SourceLedger discovery={discovery} />}
+
           {tab !== 'taxonomy' && detail ? (
             <>
               <ScoreCard
@@ -552,6 +595,8 @@ export default function App() {
                 provenance and confidence attached.
               </Empty>
             </div>
+          ) : tab === 'discover' ? (
+            !discovery && <DiscoveryEmpty />
           ) : tab === 'document' ? (
             <div className="card">
               <Empty icon="◫" title="No document read yet">
