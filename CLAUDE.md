@@ -211,7 +211,8 @@ auto-deploys on push to `main`, built from the root `Dockerfile`.
 | — | Live ablation (Claude vs deterministic) | **Done, 102/102, $1.62. Negative result — see §7.1.** |
 | — | Hybrid gate (bounded Claude) | **Done, $0 — see §7.2. Best result in the project, and now a selectable engine in the product with a refusal ledger.** |
 | 4 | Public deployment | **Done — live and monitored** |
-| 5 | Deck + demo video | Template is in Downloads (`[EXT] UniHack-Protoype Template .pptx`); not started |
+| 5 | Deck | **Done** — `docs/UniHack_Prototype_Submission.pptx`, regenerate with `docs/deck/build_deck.py`. Team details, video link outstanding |
+| 5b | Demo video | Not started |
 | 6 | Unilog compliance layer (§5.7) | **Done, $0** — built against the solution guide (§1.6) |
 
 **Everything above is complete, committed, pushed and deployed.** Seven test
@@ -326,6 +327,7 @@ score as a CSV row. Do not add a parallel path for a new input type.
 | `unilog/house_style.py` | Approved UOM lookup + exact-64th decimal↔fraction + casing |
 | `unilog/content_formats.py` | The five commerce descriptions, built by token formula to character limits |
 | `unilog/lov.py` | Controlled vocabulary: accept / map / **refuse**, plus attribute sequence |
+| `unilog/ground_truth.py` | Their labelled rows scored both ways; shared by the API, the CLI and the deck so no two can disagree |
 | `ingest/unilog_rows.py` | Their catalogue rows → `RawProduct`; vendor ≠ manufacturer, placeholder filtering |
 | `data/unilog_samples/` | Their 1,000-row input and 252-column labelled delivery rows |
 | `data/unilog/` | `uom_standards`, `abbreviations`, `content_formats`, `lov/` — **all provisional stubs; their spreadsheets replace these files, not the code** |
@@ -335,9 +337,16 @@ score as a CSV row. Do not add a parallel path for a new input type.
 
 ### Frontend (`frontend/src/`)
 
-React 19 + Vite, no runtime UI dependencies. Five tabs: **Single Product**,
-**Document**, **Discover**, **Catalog**, **Learning**. Three engines: **Demo**,
-**Hybrid**, **Live AI**. Vite proxies `/api` to port 8000.
+React 19 + Vite, no runtime UI dependencies. Six tabs: **Single Product**,
+**Document**, **Discover**, **Catalog**, **Learning**, **Accuracy**. Three
+engines: **Demo**, **Hybrid**, **Live AI**. Vite proxies `/api` to port 8000.
+
+`GroundTruthPanel.jsx` is the Accuracy tab — their labelled delivery rows scored
+against our output, served live from `/api/ground-truth`. It exists because
+"show your evaluation" is one of their stated judging criteria and a reviewer
+should not have to clone the repo to see it. It always renders **both** states
+(§7.3); the component cannot show one without the other, and `test_unilog.py`
+asserts that.
 
 `DiscoveryPanel.jsx` carries the source ledger, built to mirror `GateLedger`:
 refusals sort first, because what the crawler declined to read is the evidence
@@ -1009,8 +1018,9 @@ them is a data drop.
    engineering settles. `docs/Project_Understanding.pdf`, §7.1/§7.2 and §7.05
    carry the narrative; the hybrid gate is the strongest slide.
 3. **Demo video — 3 minutes** (organizer-specified). Best 20 seconds: switch to
-   the Hybrid engine on the sparse bearing and point at the two refusals.
-4. **Flip the repo public** at submission. Mandatory.
+   the Hybrid engine on the sparse bearing and point at the two refusals. Then
+   the Accuracy tab, which shows their own expected row beside ours.
+4. ~~Flip the repo public~~ — **done 11 Aug**, after scanning all 37 commits.
 5. **Rotate the API key** (it passed through a conversation transcript) and
    **delete `backend/.env`** once local live testing is finished.
 6. **Leave the UptimeRobot monitor running.** A sleeping free instance returns

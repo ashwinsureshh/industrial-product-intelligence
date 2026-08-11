@@ -312,6 +312,20 @@ def build():
     a(P("Section 4 &mdash; Learning", "h2"))
     a(P("This is the most unusual part, and it gets its own section later."))
 
+    a(P("Section 5 &mdash; Discover", "h2"))
+    a(P("Type only a brand and a part number &mdash; the least a distributor "
+        "ever has &mdash; and the tool looks for the manufacturer's own page "
+        "for that part. What it will not do is more interesting than what it "
+        "will: marketplaces, retailers and distributors are refused outright, "
+        "and every address it considered is listed with the reason it was used "
+        "or rejected."))
+
+    a(P("Section 6 &mdash; Accuracy", "h2"))
+    a(P("The customer supplied two completed rows of the format they want back "
+        "&mdash; the only worked examples in existence. This screen puts their "
+        "value next to ours for every field, and reports two numbers rather "
+        "than one. Section 7 explains why both are needed."))
+
     a(Spacer(1, 6))
 
     # ------------------------------------------------- 4. how it works
@@ -645,8 +659,67 @@ def build():
 
     a(Spacer(1, 6))
 
-    # ------------------------------------------------- 8. status
-    a(P("8. What exists right now", "h1"))
+    a(PageBreak())
+
+    # ------------------------------- 8. writing it the customer's way
+    a(P("8. Writing it the way the customer asks", "h1"))
+
+    a(P("Getting the facts right is only half the job. The same product has to "
+        "be written out five separate times, at five different lengths, for the "
+        "five different places it will appear.", "lead"))
+
+    a(table([
+        ["Where it appears", "The rule", "What it produces"],
+        ["Till receipt", "40 characters, capitals",
+         "DISHWASHER LEG 5 SST 120V 15A 50-1/4IN"],
+        ["Phone app", "60 to 80 characters",
+         "Rheem Manufacturing FRIGIDAIRE, Dishwasher, Professional Series, "
+         "PDSH4816AF"],
+        ["Search results", "Brand, series, part number, type",
+         "FRIGIDAIRE&reg; Professional Series PDSH4816AF Dishwasher&hellip;"],
+        ["Product page", "Every confirmed fact, in order",
+         "&hellip;5 Wash Cycles, 120 V, 15 A, Leg Mounting&hellip;"],
+    ], [30 * mm, 42 * mm, 93 * mm]))
+
+    a(P("The 40-character line is the one worth dwelling on. The obvious way to "
+        "meet the limit is to cut the sentence at 40 letters, which gives "
+        "&ldquo;&hellip;PDSH4816AF DISHWA&rdquo; &mdash; a chopped part number "
+        "nobody can search for. Instead whole facts are dropped, least "
+        "important first, until the line fits, and the tool reports which ones "
+        "it dropped. Same limit, usable result."))
+
+    a(P("Two numbers, and why both are published", "h2"))
+
+    a(P("The customer supplied two completed rows. Measured against them there "
+        "are two honest answers, depending on what the tool is given to work "
+        "with, and they are far apart:"))
+
+    a(table([
+        ["What it is given", "Fields written exactly right"],
+        ["The confirmed facts about the product", "14 out of 14"],
+        ["Only the six-column catalogue row", "2 out of 14"],
+    ], [95 * mm, 70 * mm]))
+
+    a(callout(
+        "The gap is missing facts, not bad writing",
+        "A catalogue row does not contain the series, the mounting type, the "
+        "number of wash cycles or the voltage. Those live on the "
+        "manufacturer's own website &mdash; the one the customer's completed "
+        "row points at. Given the facts, the writing is exact; without them "
+        "there is nothing to write. Quoting only the first number would be "
+        "precisely the kind of confident overstatement this project exists to "
+        "avoid, so the website shows both side by side on the Accuracy screen.",
+        tint=BLUE_SOFT, bar=ACCENT))
+
+    a(P("This is also the clearest argument for the unfinished work listed "
+        "later. Roughly three quarters of the customer's format cannot be "
+        "reached from a catalogue row at all, however good the writing is. "
+        "That is a sourcing problem, and it is measured rather than assumed."))
+
+    a(PageBreak())
+
+    # ------------------------------------------------- 9. status
+    a(P("9. What exists right now", "h1"))
 
     a(table([
         ["Item", "Status"],
@@ -717,32 +790,43 @@ def build():
     a(Spacer(1, 6))
 
     # ------------------------------------------------- 9. remaining
-    a(P("9. What is left", "h1"))
+    a(P("10. What is left", "h1"))
 
     a(P("The building is finished. Nothing on this list is engineering.",
         "small"))
 
     a(table([
         ["Task", "Notes"],
-        ["Presentation deck", "Blocked until the required template is "
-         "downloaded from the submission portal"],
+        ["Presentation deck", "Built on the customer's template; team names, "
+         "and the video link still to be filled in"],
         ["Demo video", "A short walkthrough of the live site"],
-        ["Make the code repository public", "Required at submission; it is "
-         "private while under development"],
+        ["Make the code repository public", "Done. Every commit was scanned "
+         "for passwords and keys before it was opened up"],
         ["Replace the access key",
          "Routine housekeeping &mdash; the key used during development is "
          "retired and a fresh one issued"],
     ], [45 * mm, 120 * mm]))
 
-    a(P("One thing deliberately not built", "h2"))
-    a(P("The restricted AI configuration described in section 6 &mdash; the "
-        "best-performing one &mdash; exists as a measured result, but is not "
-        "offered as a choice on the live website. A visitor sees two options: "
-        "the rules engine and the unrestricted AI, the latter being the weaker "
-        "of the two. Adding the third option is genuine work rather than a "
-        "quick change, and with the deck and video still outstanding it was "
-        "judged the wrong place to spend the remaining time. It is called out "
-        "here so it reads as a decision rather than an oversight."))
+    a(P("What is genuinely unfinished", "h2"))
+    a(P("The restricted AI configuration is now the third option on the live "
+        "site, so that gap is closed. Two remain, and both are stated here so "
+        "they read as known limits rather than as things nobody checked."))
+
+    a(bullets([
+        "<b>Reading modern manufacturer websites.</b> Four real sites were "
+        "tried. None gave up a specification table: three build their pages in "
+        "the browser rather than sending them as text, which this kind of "
+        "reader cannot follow, and one address was simply wrong. The tool says "
+        "so on screen rather than treating an empty page as a product with no "
+        "specifications. Fixing it means running a full browser behind the "
+        "scenes &mdash; a different piece of machinery, not a better guess.",
+        "<b>Seven of the customer's nine rule books have not arrived.</b> The "
+        "approved units, the house style guide, the 161,000-row list of "
+        "permitted values and the 27,000-row brand list are all still to come. "
+        "Stand-ins are used meanwhile, and every one of them reports itself as "
+        "provisional wherever it is shown, so nothing can claim to comply with "
+        "a rule book nobody has read yet.",
+    ]))
 
     a(P("Honest assessment", "h2"))
     a(P("The engineering is complete and comfortably ahead of schedule. The "

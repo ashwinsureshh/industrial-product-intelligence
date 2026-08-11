@@ -5,6 +5,7 @@ import BatchInput, { BatchEmpty, BatchSummary, BatchTable } from './components/B
 import ContentPanel from './components/ContentPanel.jsx'
 import DiscoveryInput, { DiscoveryEmpty, SourceLedger } from './components/DiscoveryPanel.jsx'
 import GateLedger from './components/GateLedger.jsx'
+import GroundTruthPanel, { GroundTruthEmpty } from './components/GroundTruthPanel.jsx'
 import DocumentInput, { IngestReport } from './components/DocumentPanel.jsx'
 import InputPanel, { emptyProduct, fromProduct, toProduct } from './components/InputPanel.jsx'
 import IssueList from './components/IssueList.jsx'
@@ -14,6 +15,38 @@ import TraceTimeline from './components/TraceTimeline.jsx'
 import { Empty } from './components/shared.jsx'
 
 const BLANK_SPECS = [{ key: '', value: '' }]
+
+/** What the Accuracy tab is measuring, and against what. */
+function GroundTruthBrief({ summary }) {
+  return (
+    <div className="card">
+      <div className="card-head">
+        <h3>The only ground truth there is</h3>
+      </div>
+      <div className="card-body">
+        <p style={{ fontSize: 13, color: 'var(--text-2)', lineHeight: 1.55, margin: 0 }}>
+          Unilog supplied two fully worked rows of their 252-column delivery
+          format. Everything on the right compares their value with ours, field
+          by field, character for character.
+        </p>
+        <p style={{ fontSize: 13, color: 'var(--text-2)', lineHeight: 1.55, marginBottom: 0 }}>
+          Both states are shown on purpose. The formatter is exact once it has
+          the attribute values; the pipeline reaches far less from a six-column
+          catalogue row, because those values are not in the row. Reporting only
+          the first would be the kind of confident overstatement this engine
+          refuses to make about a product.
+        </p>
+        {summary && (
+          <div className="tag-row" style={{ marginTop: 12 }}>
+            <span className="pill">{summary.rows} labelled rows</span>
+            <span className="pill">{summary.fields_scored} prose fields</span>
+            <span className="pill">source: {summary.source}</span>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
 
 // Inline so the icons cannot fail to load; the project ships no icon library.
 const SUN_ICON = (
@@ -50,6 +83,7 @@ export default function App() {
   const [ingest, setIngest] = useState(null)
   const [discovery, setDiscovery] = useState(null)
   const [discoverySources, setDiscoverySources] = useState(null)
+  const [groundTruth, setGroundTruth] = useState(null)
   const [proposals, setProposals] = useState(null)
   const [proposalSummary, setProposalSummary] = useState(null)
   const [proposalCounts, setProposalCounts] = useState(null)
@@ -346,6 +380,23 @@ export default function App() {
           >
             Learning
           </button>
+          <button
+            className={`tab ${tab === 'accuracy' ? 'active' : ''}`}
+            onClick={() => {
+              setTab('accuracy')
+              if (groundTruth === null) {
+                setLoading(true)
+                api.getGroundTruth()
+                  .then(setGroundTruth)
+                  .catch((e) => setError(e.message))
+                  .finally(() => setLoading(false))
+              }
+            }}
+            title="Unilog's labelled delivery rows, scored against our output"
+            aria-current={tab === 'accuracy' ? 'page' : undefined}
+          >
+            Accuracy
+          </button>
         </nav>
 
         <div className="tabs engine-toggle">
@@ -471,6 +522,8 @@ export default function App() {
               counts={proposalCounts}
               demoSize={samples?.learning_demo?.length}
             />
+          ) : tab === 'accuracy' ? (
+            <GroundTruthBrief summary={groundTruth?.summary} />
           ) : tab === 'discover' ? (
             <DiscoveryInput
               onDiscover={runDiscover}
@@ -547,9 +600,15 @@ export default function App() {
 
           {tab === 'batch' && !batch && <BatchEmpty />}
 
+          {tab === 'accuracy' && (
+            groundTruth
+              ? <GroundTruthPanel data={groundTruth} loading={loading} />
+              : <GroundTruthEmpty />
+          )}
+
           {tab === 'discover' && discovery && <SourceLedger discovery={discovery} />}
 
-          {tab !== 'taxonomy' && detail ? (
+          {tab !== 'taxonomy' && tab !== 'accuracy' && detail ? (
             <>
               <ScoreCard
                 readiness={detail.readiness}

@@ -524,6 +524,52 @@ def test_profile_is_data() -> None:
             profiles.invalidate()
 
 
+def test_ground_truth_reports_both_states() -> None:
+    section("Ground truth: both numbers, or the claim is an overstatement")
+
+    from app.unilog import ground_truth as gt
+
+    check("their labelled rows are bundled with the app", gt.available())
+    result = gt.compare()
+    s = result["summary"]
+
+    check("both rows are scored", s["rows"] == 2)
+    check("every prose field is scored", s["fields_scored"] == 14)
+
+    # State A: the formatter, handed the attribute values from their own row.
+    check(
+        "given the attribute values, the formatter is exact",
+        s["exact_given_attributes"] == s["fields_scored"],
+    )
+    # State B: the real pipeline, from the six-column catalogue row.
+    check(
+        "from the input row alone it is not, and the number says so",
+        0 < s["exact_from_input_row"] < s["fields_scored"],
+    )
+    # The guard that matters: A can never be published without B beside it.
+    check(
+        "both states are always present in the payload",
+        "exact_given_attributes" in s and "exact_from_input_row" in s,
+    )
+    check(
+        "and every field carries both comparisons",
+        all("from_input_row" in f and "given_attributes" in f
+            for c in result["cases"] for f in c["fields"]),
+    )
+
+    invoice = next(f for f in result["cases"][0]["fields"]
+                   if f["column"] == "INVOICE_DESC")
+    check(
+        "their expected invoice line is carried verbatim for display",
+        invoice["expected"] == "DISHWASHER LEG 5 SST 120V 15A 50-1/4IN",
+    )
+    check("and ours matches it character for character", invoice["match_given"])
+    check(
+        "while the input row alone yields only the item type",
+        invoice["from_input_row"] == "DISHWASHER" and not invoice["match_from_input"],
+    )
+
+
 def main() -> int:
     print("=" * 66)
     print("  UNILOG CONTENT STANDARD TESTS - no API calls, $0.00")
@@ -541,6 +587,7 @@ def main() -> int:
     test_pipeline_integration()
     test_lov_is_inert_without_a_matching_classpath()
     test_profile_is_data()
+    test_ground_truth_reports_both_states()
 
     print()
     print("=" * 66)
