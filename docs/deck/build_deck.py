@@ -556,29 +556,43 @@ note(s, "Right-hand column is monthly cost at 750k SKUs. Triage and token counts
 
 
 # --- 12. MVP SNAPSHOTS -------------------------------------------------------
+# Captured from the deployed prototype by docs/deck/shots.py, cropped to 2.7:1
+# so four fit the slide. Each keeps the top of its card, where the headline
+# badges and numbers are; the detail rows would be unreadable at deck scale.
 s = S[11]
 heading(s)
+# Rides on the heading's own line, right-aligned: stacked underneath it
+# collided with the 19pt descenders, and there is no vertical room to spare.
+b, tf = txbox(s, 5.30, 1.00, 4.25, 0.22)
+para(tf, "Captured from the live prototype — the same link a judge opens.",
+     size=9, color=MUTED, space_after=0, first=True, italic=True,
+     align=PP_ALIGN.RIGHT)
+
 shots = [
-    ("Single product enrichment", "Provenance, confidence and evidence on every value"),
-    ("The AI gate refusing", "Two proposals refused against ISO 15, one default replaced"),
-    ("Discovery source ledger", "Manufacturer page used; marketplace and unknown domains refused"),
-    ("Unilog delivery export", "252 columns, in their order, with per-value source URLs"),
+    ("shots/crop/1_enrichment.png", "Single product enrichment",
+     "Readiness on three axes, category with its reasoning, provenance per value"),
+    ("shots/crop/2_gate.png", "The AI gate refusing",
+     "Two proposals refused against ISO 15; one unbacked default replaced"),
+    ("shots/crop/3_discovery.png", "Discovery source ledger",
+     "Manufacturer page fetched, then refused as unusable — and the record says so"),
+    ("shots/crop/4_catalog.png", "Catalog at volume",
+     "10 products in 757 ms — 7 publishable, 1 review, 2 blocked"),
 ]
-cw, chh = (W - 0.28) / 2, 1.52
-for i, (t, d) in enumerate(shots):
+cw = (W - 0.28) / 2
+ih = cw / 2.70
+for i, (path, title, desc) in enumerate(shots):
     x = X0 + (i % 2) * (cw + 0.28)
-    y = 1.48 + (i // 2) * (chh + 0.42)
-    ph = card(s, x, y, cw, chh, fill=RGBColor(0xE9, 0xEF, 0xF6), edge=EDGE)
-    tfp = ph.text_frame
-    tfp.vertical_anchor = MSO_ANCHOR.MIDDLE
-    para(tfp, "[ screenshot ]", size=10, color=RGBColor(0x9A, 0xAB, 0xBC),
-         space_after=0, first=True, align=PP_ALIGN.CENTER)
-    b, tf = txbox(s, x, y + chh + 0.06, cw, 0.34)
-    para(tf, t, size=9.5, bold=True, color=NAVY, space_after=1, first=True)
-    para(tf, d, size=8, color=MUTED, space_after=0, line=1.1)
-note(s, "REPLACE the four grey boxes with screenshots: (1) Single Product enriched, "
-        "(2) Hybrid engine on the sparse bearing showing the refusal ledger, "
-        "(3) Discover tab on SKF or Frigidaire, (4) the delivery CSV export.")
+    y = 1.42 + (i // 2) * 2.05
+    pic = s.shapes.add_picture(path, Inches(x), Inches(y),
+                               width=Inches(cw), height=Inches(ih))
+    pic.line.color.rgb = EDGE
+    pic.line.width = Pt(0.75)
+    b, tf = txbox(s, x, y + ih + 0.03, cw, 0.33)
+    para(tf, title, size=9.5, bold=True, color=NAVY, space_after=1, first=True)
+    para(tf, desc, size=8, color=MUTED, space_after=0, line=1.1)
+note(s, "All four are the deployed app, not mockups. The gate panel is the one to "
+        "talk to: the model proposed 14.8 kN and 14000 rpm, ISO 15 says 14 kN and "
+        "16000, and both were refused while an unbacked default was replaced.")
 
 
 # --- 13. FUTURE --------------------------------------------------------------
