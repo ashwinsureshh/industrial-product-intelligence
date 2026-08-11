@@ -204,6 +204,53 @@ def main() -> int:
     check(gone is None or gone["code"] != proposal.code,
           "taxonomy returns to its curated state")
 
+    print("\n[8] Bare catalogue rows: regressions found on Unilog's 1,000-row sample")
+
+    # Rows with a description and no spec table at all. Before these fixes,
+    # 872 of 911 such rows landed in a single cluster, "vendor" became a
+    # proposed attribute, and a row carrying no product data published at
+    # 99.7/100.
+    bare = [
+        RawProduct(mpn=f"L{i}", name=f"{w}W Led Par38 Med 50k",
+                   description=f"{w}W Led Par38 Med 50k",
+                   raw_specs={"Vendor": "Phillips Lighting", "Manufacturer": "Phillips"})
+        for i, w in enumerate([60, 75, 90, 100, 120])
+    ] + [
+        RawProduct(mpn=f"D{i}", name=f'Milw {n} in Metal Cut Off Disc',
+                   description=f'Milw {n} in Metal Cut Off Disc',
+                   raw_specs={"Vendor": "Milwaukee Accessory"})
+        for i, n in enumerate(["4-1/2", "5", "6", "7", "9"])
+    ]
+
+    groups = proposer.cluster(bare)
+    check(len(groups) >= 2,
+          f"spec-less rows do not collapse into one cluster ({len(groups)} groups)")
+
+    proposals = proposer.propose(bare)
+    codes = [pr.code for pr in proposals]
+    check(len(codes) == len(set(codes)),
+          "no two proposals share a code (a collision would break revoke)")
+
+    keys = {a.key for pr in proposals for a in pr.attributes}
+    check("vendor" not in keys and "manufacturer" not in keys,
+          "bookkeeping fields never become product attributes")
+
+    schema_only = [pr for pr in proposals if not pr.attributes]
+    check(bool(schema_only), "a description-only cluster still yields a proposal")
+    check(all(pr.confidence <= 0.45 for pr in schema_only),
+          "and is capped below any proposal that inferred a real schema")
+
+    if schema_only:
+        store.save_proposals(schema_only)
+        store.approve(schema_only[0].id)
+        record = pipeline.enrich(bare[0], MockProvider())
+        check(record.category is not None, "the learned category classifies the row")
+        check(record.readiness.verdict == "blocked",
+              "but a category with no attribute schema can never auto-publish")
+        check(any("nothing to validate" in n for n in record.readiness.notes),
+              "and the reason is stated, not implied")
+        store.revoke(schema_only[0].code)
+
     print("\n" + "=" * 66)
     if FAILURES:
         print(f"{len(FAILURES)} CHECK(S) FAILED")

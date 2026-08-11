@@ -59,9 +59,21 @@ def _words(text: str) -> list[str]:
             if w not in _STOPWORDS]
 
 
+# Keys that describe the *row* rather than the product: which vendor supplied
+# it, which brand column it came from. Every row in a feed carries them, so
+# counting them as spec fields makes every product look alike.
+_BOOKKEEPING = frozenset({
+    "vendor", "vendor_code", "manufacturer", "e1_brand", "dib_brand",
+    "unilog_brand", "supplier", "source", "part_manuf",
+})
+
+
 def _signature(product: RawProduct) -> frozenset[str]:
-    """Fields present, used to group products that describe the same kind."""
-    return frozenset(_slug(k) for k in (product.raw_specs or {}) if _slug(k))
+    """Spec fields present, used to group products that describe the same kind."""
+    return frozenset(
+        slug for k in (product.raw_specs or {})
+        if (slug := _slug(k)) and slug not in _BOOKKEEPING
+    )
 
 
 def cluster(products: list[RawProduct]) -> list[list[RawProduct]]:
@@ -82,15 +94,23 @@ def cluster(products: list[RawProduct]) -> list[list[RawProduct]]:
 
         best_index, best_score = None, 0.0
         for index, group in enumerate(clusters):
-            field_overlap = (
-                len(fields & group["fields"]) / len(fields | group["fields"])
-                if (fields or group["fields"]) else 0.0
-            )
+            union = fields | group["fields"]
+            field_overlap = len(fields & group["fields"]) / len(union) if union else 0.0
             name_overlap = (
                 len(name_words & group["words"]) / len(name_words | group["words"])
                 if (name_words or group["words"]) else 0.0
             )
-            score = 0.7 * field_overlap + 0.3 * name_overlap
+            # A spec table is the stronger signal, but only when there is one to
+            # compare. A bare catalogue row has no specs at all, so every pair
+            # scores a perfect field overlap on nothing and the whole feed
+            # collapses into a single cluster — measured on Unilog's own sample,
+            # 872 of 911 rows landed in one group. Where the fields carry no
+            # information, the description has to carry the decision alone.
+            informative = len(union) >= 2
+            score = (
+                0.7 * field_overlap + 0.3 * name_overlap if informative
+                else name_overlap
+            )
             if score > best_score:
                 best_index, best_score = index, score
 
@@ -218,9 +238,20 @@ def _category_name(products: list[RawProduct]) -> tuple[str, list[str]]:
     return noun, sorted(set(keywords))
 
 
-def _code_for(noun: str) -> str:
-    """Stable pseudo-UNSPSC code, marked as learned by its 99 prefix."""
-    digest = hashlib.sha256(noun.lower().encode("utf-8")).hexdigest()
+def _code_for(noun: str, keywords: list[str] | None = None) -> str:
+    """Stable pseudo-UNSPSC code, marked as learned by its 99 prefix.
+
+    The keywords are part of the digest, not just the noun. Hashing the noun
+    alone gave two different clusters the same code whenever they happened to
+    be named alike — on Unilog's 1,000-row sample that produced 11 collisions,
+    and two learned categories sharing a code would make `revoke()` delete the
+    wrong one. The code still has to be *stable* across runs, so it is derived
+    from content rather than from position.
+    """
+    seed = noun.lower()
+    if keywords:
+        seed += "|" + "|".join(sorted(k.lower() for k in keywords))
+    digest = hashlib.sha256(seed.encode("utf-8")).hexdigest()
     return "99" + str(int(digest[:8], 16))[:6].zfill(6)
 
 
@@ -237,7 +268,13 @@ def propose_from_cluster(
     for product in products:
         for raw_key, value in (product.raw_specs or {}).items():
             key = _slug(raw_key)
-            if not key:
+            # Bookkeeping is excluded from the *schema*, not just the clustering
+            # signature. Left in, "vendor" became a proposed attribute, arrived
+            # with `supplied` provenance because the feed really did supply it,
+            # and a category whose one attribute is always present scored 100%
+            # completeness — so a row carrying no product data at all published
+            # at 99.7/100.
+            if not key or key in _BOOKKEEPING:
                 continue
             labels.setdefault(key, raw_key.strip())
             if value not in (None, ""):
@@ -277,14 +314,25 @@ def propose_from_cluster(
             rationale=rationale,
         ))
 
-    if not attributes:
+    # A cluster with no spec fields still earns a proposal. Unilog's rows carry
+    # a description and nothing else, so the schema is genuinely unknowable from
+    # them — but knowing that 82 rows are LED lamps is worth having for routing
+    # and for aiming enrichment, and `score_readiness` already refuses to publish
+    # anything under a category with no attributes. A proposal is a
+    # recommendation to a human either way.
+    schema_only = not attributes
+    if schema_only and total < 3:
+        # One or two descriptions that merely resemble each other is not evidence
+        # of a category.
         return None
 
     attributes.sort(key=lambda a: (-a.observed_in, a.key))
     noun, keywords = _category_name(products)
-    code = _code_for(noun)
+    code = _code_for(noun, keywords)
 
     required = ["brand", "mpn"] + [a.key for a in attributes if a.required][:4]
+    if schema_only:
+        required = []
 
     identifier = hashlib.sha256(
         (code + "|" + "|".join(sorted(a.key for a in attributes))).encode()
@@ -296,6 +344,10 @@ def propose_from_cluster(
     consistency = (sum(a.observed_in for a in attributes)
                    / (len(attributes) * total)) if attributes else 0.0
     confidence = round(min(0.25 + 0.45 * min(total / 6, 1.0) + 0.30 * consistency, 0.95), 3)
+    if schema_only:
+        # Named from wording alone, with no spec evidence behind it. Capped so it
+        # can never outrank a proposal that actually inferred a schema.
+        confidence = round(min(confidence, 0.45), 3)
 
     return CategoryProposal(
         id=identifier,
@@ -310,19 +362,49 @@ def propose_from_cluster(
         confidence=confidence,
         method=method,
         rationale=(
-            f"{total} product(s) shared no existing category but described "
-            f"themselves with a consistent set of {len(attributes)} fields. "
-            f"Proposing '{noun}' so these and future products of this kind can "
-            f"be classified, validated and scored."
+            (
+                f"{total} product(s) shared no existing category and carry no spec "
+                f"fields at all — they are named from their descriptions alone. "
+                f"Proposing '{noun}' for classification and routing only: with no "
+                f"attribute schema there is nothing to validate against, so records "
+                f"under it cannot auto-publish until the schema is filled in."
+            ) if schema_only else (
+                f"{total} product(s) shared no existing category but described "
+                f"themselves with a consistent set of {len(attributes)} fields. "
+                f"Proposing '{noun}' so these and future products of this kind can "
+                f"be classified, validated and scored."
+            )
         ),
         created_at=time.time(),
     )
 
 
+def _merge_alike(groups: list[list[RawProduct]]) -> list[list[RawProduct]]:
+    """Fold together clusters that would describe the same category.
+
+    Clustering is greedy and single-pass, so a large kind can be split across
+    several groups that never got compared to each other — Unilog's sample threw
+    up three separate "Led Med" clusters. If two groups produce the same name
+    *and* the same keywords then by our own definition they are the same
+    category, and shipping them as separate proposals would ask a reviewer to
+    approve the same thing three times.
+    """
+    merged: dict[tuple, list[RawProduct]] = {}
+    order: list[tuple] = []
+    for group in groups:
+        noun, keywords = _category_name(group)
+        signature = (noun.lower(), tuple(sorted(k.lower() for k in keywords)))
+        if signature not in merged:
+            merged[signature] = []
+            order.append(signature)
+        merged[signature].extend(group)
+    return [merged[s] for s in order]
+
+
 def propose(products: list[RawProduct]) -> list[CategoryProposal]:
     """Cluster unclassified products and propose a category for each group."""
     proposals: list[CategoryProposal] = []
-    for group in cluster(products):
+    for group in _merge_alike(cluster(products)):
         proposal = propose_from_cluster(group)
         if proposal is not None:
             proposals.append(proposal)

@@ -169,11 +169,23 @@ def score_readiness(
 
     overall = 0.35 * completeness + 0.30 * confidence + 0.35 * validity
 
+    defined_attributes = (category or {}).get("attributes", {})
+
     if category is None:
         verdict = "blocked"
         notes.append(
             "No category could be resolved, so no attribute schema or validation "
             "rules apply. Supply a product type or a fuller description."
+        )
+    elif not defined_attributes:
+        # Knowing what kind of thing this is does not make it publishable. A
+        # category with no attribute schema has nothing to validate against, so
+        # every record under it would score full marks on an empty exam.
+        verdict = "blocked"
+        notes.append(
+            "The category carries no attribute schema, so there is nothing to "
+            "validate and no specification to publish. Enrich the category "
+            "before releasing products under it."
         )
     elif errors:
         verdict = "blocked"

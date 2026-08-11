@@ -676,6 +676,57 @@ measured gap.
 
 ---
 
+## 7.4 Taxonomy learning on their 1,000 rows — three bugs it exposed
+
+Run: the loop is `propose -> save_proposals -> approve -> reclassify`
+(see `[8]` in `test_taxonomy_learning.py`). $0.
+
+**Result: classification coverage 8.9% -> 81.7%**, from 38 categories learned
+out of 911 unclassified rows. Every record under a learned category is
+**blocked**, by design — see the third bug.
+
+Running at volume broke three things that ten curated categories never could.
+All three are fixed and each has a regression test.
+
+**1. The clusterer collapsed 872 of 911 rows into one group.** Field overlap was
+weighted 0.7 because a spec table is stronger evidence than wording — but these
+rows have no spec table, so every pair scored a *perfect* overlap on nothing.
+Field overlap now only counts when there is something to compare
+(`len(union) >= 2`); otherwise the description decides alone. 306 clusters.
+
+**2. Eleven proposals shared a code with another proposal.** `_code_for` hashed
+the noun alone, so any two clusters named alike collided — and two learned
+categories with one code make `revoke()` delete the wrong one. The code now
+hashes noun + keywords, and clusters that produce the same name *and* keywords
+are merged before proposing, because by our own definition they are the same
+category. Zero collisions.
+
+**3. The bad one: a row with no product data published at 99.7/100.** A 3M
+abrasive disc classified as "Milw Discs", carrying exactly one attribute —
+`vendor` — which arrived with `supplied` provenance because the feed genuinely
+did supply it. Completeness is `filled / defined`, so 1 of 1 scored 100%.
+
+Two fixes, because there were two faults:
+
+- `_BOOKKEEPING` keys were already excluded from the clustering signature but
+  not from the proposed *schema*. Vendor, manufacturer and the brand columns
+  describe the row, not the product, and can never be attributes.
+- **A category with no attribute schema can never auto-publish.** There is
+  nothing to validate against, so every record under it scores full marks on an
+  empty exam. `score_readiness` now blocks with that stated as the reason.
+
+Schema-only categories are still *proposed* — knowing 82 rows are LED lamps is
+worth having for routing and for aiming enrichment — but their confidence is
+capped at 0.45 so they can never outrank a proposal that inferred a real schema.
+
+**Honest caveat, visible in the output:** learned names are brand-led and
+over-match. A Diablo sanding belt lands in "Saw Blades", a 3M disc in "Milw
+Discs". Nothing published because of it, and human approval is the designed
+mitigation, but do not claim clean classification — claim that wrong guesses are
+caught before they reach a storefront.
+
+---
+
 ## 8. Commands
 
 ```bash
