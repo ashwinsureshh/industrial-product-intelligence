@@ -896,7 +896,10 @@ python run_benchmark.py --live --budget 5
 
 ## 9. Repository
 
-- **https://github.com/ashwinsureshh/industrial-product-intelligence** (PRIVATE)
+- **https://github.com/ashwinsureshh/industrial-product-intelligence** — **PUBLIC**
+  since 11 Aug. Flipped after scanning all 37 commits for secrets: no API key,
+  token or credential in any commit, and `.env` was never tracked. Verified
+  reachable by an unauthenticated clone, not just by the visibility flag.
 - Branch `main`. Commits so far:
   1. `0d8fde6` engine + measured accuracy
   2. `b4762e0` spend ceiling + run lock
@@ -925,8 +928,7 @@ python run_benchmark.py --live --budget 5
       exact), field-level accuracy benchmark, vendor≠manufacturer ingest
 - Local `main` and `origin/main` were level at `f26aae4` before the compliance
   layer landed.
-- Decision: stay private until submission, then either flip to public or add
-  judges as collaborators — check the rules for which is required.
+- Public as of 11 Aug (submission requires it). No LICENSE yet — see below.
 - No LICENSE yet, deliberately: organizers may have IP terms. Check before adding.
 
 ---
