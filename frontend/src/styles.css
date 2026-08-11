@@ -776,6 +776,10 @@ table.grid tr.selected td { background: var(--accent-soft); }
 .empty h3 { font-size: var(--fs-lg); color: var(--text); margin-bottom: var(--s2); }
 .empty p { font-size: var(--fs-sm); max-width: 360px; margin: 0 auto; line-height: 1.65; }
 
+/* Flex so an icon can sit beside the message. The consequence, which has bitten
+   once: every element child becomes a flex item, so a banner containing inline
+   markup must wrap its prose in a single element or the sentence is dealt out
+   into columns. */
 .banner {
   display: flex; gap: 10px; padding: 10px 13px;
   border-radius: var(--radius-sm); font-size: 12.5px;

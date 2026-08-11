@@ -59,11 +59,17 @@ export default function GroundTruthPanel({ data, loading }) {
             </div>
           </div>
 
+          {/* One child, deliberately. `.banner` is display:flex, so every
+              element child becomes a flex item — an inline <em> here rendered
+              as its own column and split the sentence down the middle. */}
           <div className="banner banner-warn" style={{ marginTop: 12 }}>
-            The difference is not a formatting failure. Series, Mounting, Wash
-            Cycles and Voltage are not in a catalogue row — they are on the
-            manufacturer's site, which their own row cites as <em>MFR URL</em>.
-            The copy engine is exact; the sourcing is the open problem.
+            <span>
+              The difference is not a formatting failure. Series, Mounting, Wash
+              Cycles and Voltage are not in a catalogue row — they are on the
+              manufacturer's site, which their own row cites as{' '}
+              <em>MFR URL</em>. The copy engine is exact; the sourcing is the
+              open problem.
+            </span>
           </div>
         </div>
       </div>
