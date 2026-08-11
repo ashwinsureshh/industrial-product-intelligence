@@ -654,10 +654,27 @@ benchmark, not a replacement for §7: that one asks whether the engineering is
 right against ISO ground truth, this asks whether the output is written the way
 the customer requires. They fail independently.
 
-**The prose formats reproduce their rows exactly — 14/14 fields, both rows,
-character for character.** MOBILE_DESC, INVOICE_DESC, SHORT_DESC, RETAIL_DESC,
-LONG_DESC1, With and Product Name. Every rule was derived from those two rows
-and lives in `data/unilog/content_formats.json`:
+**Two numbers, and quoting the first without the second is overclaiming.**
+Run `python run_expected_vs_ours.py` — it always prints both:
+
+| | |
+| --- | --- |
+| **A. Formatter given the attribute values** | **14/14 exact**, both rows, character for character |
+| **B. Pipeline from the 6-column input row** | **2/14 exact** |
+
+A measures the content-format layer — character limits, token dropping, casing,
+fractions — and it is genuinely exact. B is the end-to-end reality: Series,
+Mounting, Wash Cycles and Voltage are simply not in a catalogue row, so the
+prose comes out as "Dishwasher". The gap is **sourcing, not formatting**, and it
+is the same gap the 14.0% field-level figure and the 88-blank-fields count
+describe.
+
+An earlier version of this section stated 14/14 alone, which reads as an
+end-to-end claim the pipeline cannot support. Deck slide 8 now shows their
+expected value beside ours with the condition on the slide.
+
+The formatting rules behind A were derived from those two rows and live in
+`data/unilog/content_formats.json`:
 
 - Greedy priority fitting reproduces both invoice lines: row 1 keeps the depth
   and drops the sound level at 38 chars, row 2 drops the depth and keeps the

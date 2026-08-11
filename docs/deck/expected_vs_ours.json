@@ -1,0 +1,131 @@
+{
+ "summary": {
+  "fields_scored": 14,
+  "exact_given_attributes": 14,
+  "exact_from_input_row": 2
+ },
+ "cases": [
+  {
+   "mpn": "PDSH4816AF",
+   "fields": [
+    {
+     "column": "INVOICE_DESC",
+     "expected": "DISHWASHER LEG 5 SST 120V 15A 50-1/4IN",
+     "given_attributes": "DISHWASHER LEG 5 SST 120V 15A 50-1/4IN",
+     "from_input_row": "DISHWASHER",
+     "match_given": true,
+     "match_from_input": false
+    },
+    {
+     "column": "MOBILE_DESC",
+     "expected": "Rheem Manufacturing FRIGIDAIRE, Dishwasher, Professional Series, PDSH4816AF",
+     "given_attributes": "Rheem Manufacturing FRIGIDAIRE, Dishwasher, Professional Series, PDSH4816AF",
+     "from_input_row": "Dishwasher, PDSH4816AF",
+     "match_given": true,
+     "match_from_input": false
+    },
+    {
+     "column": "SHORT_DESC",
+     "expected": "FRIGIDAIRE® Professional Series PDSH4816AF Dishwasher With CleanBoost™, Leg Mounting, 5-Wash Cycle, Stainless Steel",
+     "given_attributes": "FRIGIDAIRE® Professional Series PDSH4816AF Dishwasher With CleanBoost™, Leg Mounting, 5-Wash Cycle, Stainless Steel",
+     "from_input_row": "PDSH4816AF Dishwasher",
+     "match_given": true,
+     "match_from_input": false
+    },
+    {
+     "column": "RETAIL_DESC",
+     "expected": "Professional Series Dishwasher, Leg Mounting, 5-Wash Cycle, Stainless Steel",
+     "given_attributes": "Professional Series Dishwasher, Leg Mounting, 5-Wash Cycle, Stainless Steel",
+     "from_input_row": "Dishwasher",
+     "match_given": true,
+     "match_from_input": false
+    },
+    {
+     "column": "LONG_DESC1",
+     "expected": "FRIGIDAIRE® Dishwasher With CleanBoost™, Professional Series, 5 Wash Cycles, 120 V, 15 A, Leg Mounting, 24 in W x 24-1/4 in D, 50-1/4 in Depth With Door Open, 8-1/2 in Upper Rack, 11-1/4 in Lower Rack Minimum Height, 10-3/8 in Upper Rack, 13-1/4 in Lower Rack Maximum Height, 47 dBA Sound Level, Stainless Steel, Additional Information: 240 kW-hr Annual Energy, 1 to 12 hr Delay Start Hours",
+     "given_attributes": "FRIGIDAIRE® Dishwasher With CleanBoost™, Professional Series, 5 Wash Cycles, 120 V, 15 A, Leg Mounting, 24 in W x 24-1/4 in D, 50-1/4 in Depth With Door Open, 8-1/2 in Upper Rack, 11-1/4 in Lower Rack Minimum Height, 10-3/8 in Upper Rack, 13-1/4 in Lower Rack Maximum Height, 47 dBA Sound Level, Stainless Steel, Additional Information: 240 kW-hr Annual Energy, 1 to 12 hr Delay Start Hours",
+     "from_input_row": "Dishwasher",
+     "match_given": true,
+     "match_from_input": false
+    },
+    {
+     "column": "With",
+     "expected": "With CleanBoost™",
+     "given_attributes": "With CleanBoost™",
+     "from_input_row": "",
+     "match_given": true,
+     "match_from_input": false
+    },
+    {
+     "column": "Product Name",
+     "expected": "Dishwasher",
+     "given_attributes": "Dishwasher",
+     "from_input_row": "Dishwasher",
+     "match_given": true,
+     "match_from_input": true
+    }
+   ]
+  },
+  {
+   "mpn": "WDTS7024RZ",
+   "fields": [
+    {
+     "column": "INVOICE_DESC",
+     "expected": "DISHWASHER BLTLN SST SST 120V 10A 41DBA",
+     "given_attributes": "DISHWASHER BLTLN SST SST 120V 10A 41DBA",
+     "from_input_row": "DISHWASHER",
+     "match_given": true,
+     "match_from_input": false
+    },
+    {
+     "column": "MOBILE_DESC",
+     "expected": "Whirlpool, Dishwasher, Eco Series, WDTS7024RZ, Built-in Mounting",
+     "given_attributes": "Whirlpool, Dishwasher, Eco Series, WDTS7024RZ, Built-in Mounting",
+     "from_input_row": "Dishwasher, WDTS7024RZ",
+     "match_given": true,
+     "match_from_input": false
+    },
+    {
+     "column": "SHORT_DESC",
+     "expected": "Whirlpool® Eco Series WDTS7024RZ Dishwasher, Built-in Mounting, Stainless Steel, Stainless Steel",
+     "given_attributes": "Whirlpool® Eco Series WDTS7024RZ Dishwasher, Built-in Mounting, Stainless Steel, Stainless Steel",
+     "from_input_row": "WDTS7024RZ Dishwasher",
+     "match_given": true,
+     "match_from_input": false
+    },
+    {
+     "column": "RETAIL_DESC",
+     "expected": "Eco Series Dishwasher, Built-in Mounting, Stainless Steel, Stainless Steel",
+     "given_attributes": "Eco Series Dishwasher, Built-in Mounting, Stainless Steel, Stainless Steel",
+     "from_input_row": "Dishwasher",
+     "match_given": true,
+     "match_from_input": false
+    },
+    {
+     "column": "LONG_DESC1",
+     "expected": "Whirlpool® Dishwasher, Eco Series, 120 V, 10 A, Built-in Mounting, 33-7/16 in H x 23-7/8 in W x 22-5/8 in D, 50-3/16 in Depth With Door Open, 33-7/16 in Minimum Height, 41 dBA Sound Level, Stainless Steel, Stainless Steel, Additional Information: Folding Tines, Leak Detection System, Moisture Repellent Silverware Basket, Normal Cycle, Quick Wash Cycle, Sani Rinse Option, Sensor Cycle, Triple Wash Spray",
+     "given_attributes": "Whirlpool® Dishwasher, Eco Series, 120 V, 10 A, Built-in Mounting, 33-7/16 in H x 23-7/8 in W x 22-5/8 in D, 50-3/16 in Depth With Door Open, 33-7/16 in Minimum Height, 41 dBA Sound Level, Stainless Steel, Stainless Steel, Additional Information: Folding Tines, Leak Detection System, Moisture Repellent Silverware Basket, Normal Cycle, Quick Wash Cycle, Sani Rinse Option, Sensor Cycle, Triple Wash Spray",
+     "from_input_row": "Dishwasher",
+     "match_given": true,
+     "match_from_input": false
+    },
+    {
+     "column": "With",
+     "expected": "With Washing 3rd Rack, Water Repellent Silverware Basket",
+     "given_attributes": "With Washing 3rd Rack, Water Repellent Silverware Basket",
+     "from_input_row": "",
+     "match_given": true,
+     "match_from_input": false
+    },
+    {
+     "column": "Product Name",
+     "expected": "Dishwasher",
+     "given_attributes": "Dishwasher",
+     "from_input_row": "Dishwasher",
+     "match_given": true,
+     "match_from_input": true
+    }
+   ]
+  }
+ ]
+}
