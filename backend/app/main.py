@@ -525,6 +525,57 @@ def ingest_url(payload: dict = Body(...)) -> dict[str, Any]:
     }
 
 
+@app.post("/api/discover")
+def discover_product(payload: dict = Body(...)) -> dict[str, Any]:
+    """Find a part on its manufacturer's site from a brand and a part number.
+
+    The free brand-domain backend is the only one reachable from here. The paid
+    web-search backend exists in `discovery/search.py` but is deliberately not
+    wired to an unauthenticated endpoint: a public demo that can spend the
+    owner's money on every request is the failure mode `PI_ALLOW_SERVER_KEY`
+    already exists to prevent.
+    """
+    from .discovery.run import enrich_from_discovery
+
+    brand = (payload.get("brand") or "").strip()
+    mpn = (payload.get("mpn") or "").strip()
+    if not (brand or mpn):
+        raise HTTPException(
+            status_code=400, detail="Supply a brand and a manufacturer part number."
+        )
+
+    base = None
+    if payload.get("product"):
+        base = RawProduct.model_validate(payload["product"])
+
+    provider, _ = _resolve_provider(payload.get("mode", "demo"), payload.get("api_key"))
+    result, discovery = enrich_from_discovery(brand, mpn, provider, base=base)
+
+    return {
+        "result": result,
+        "discovery": discovery.as_dict(),
+        "sourced_input": (
+            discovery.product.model_dump(exclude_none=True) if discovery.product else None
+        ),
+    }
+
+
+@app.get("/api/discover/sources")
+def discovery_sources() -> dict[str, Any]:
+    """What discovery is allowed to read, so the policy is inspectable."""
+    from .discovery import policy
+
+    config = policy._config()
+    return {
+        "source": policy.source(),
+        "brands": policy.known_brands(),
+        "blocked": config.get("blocked", []),
+        "allow_unknown_domains": bool(
+            config.get("policy", {}).get("allow_unknown_domains")
+        ),
+    }
+
+
 @app.post("/api/taxonomy/propose")
 def propose_categories(request: BatchEnrichRequest = Body(...)) -> dict[str, Any]:
     """Find products the taxonomy cannot classify and propose categories for them.

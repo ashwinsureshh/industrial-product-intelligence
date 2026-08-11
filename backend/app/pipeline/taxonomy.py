@@ -112,6 +112,12 @@ def _score_category(cat: dict[str, Any], haystack: str, mpn: str | None) -> tupl
     return score, reasons
 
 
+# Ceiling for a category matched only on description prose, never on the
+# product's own name. Sits below the 0.55 the learned-taxonomy tests treat as
+# "usable", so a circumstantial match reads as a suggestion, not a decision.
+CIRCUMSTANTIAL_CONFIDENCE = 0.5
+
+
 def classify(
     *,
     name: str | None,
@@ -162,6 +168,24 @@ def classify(
     saturation = min(top_score / 9.0, 1.0)
     margin = (top_score - runner_up) / top_score if top_score else 0.0
     confidence = round(min(0.35 + 0.45 * saturation + 0.20 * margin, 0.99), 3)
+
+    # What a product *is* outranks what it is described alongside. A Milwaukee
+    # cut-off wheel scored 0.861 as a fastener because its page explains that it
+    # cuts bolts, nuts and threaded rod — application prose read as identity.
+    # Where none of the winning keywords appear in the name and the part number
+    # did not match either, the evidence is circumstantial, so the confidence is
+    # capped. This deliberately cannot change *which* category wins, only how
+    # certain the claim is: reranking on a hunch would be the larger risk.
+    identified_by_mpn = any("part number matches" in r for r in top_reasons)
+    name_text = " ".join(p for p in (name, category_hint) if p).lower()
+    if name_text and not identified_by_mpn:
+        keywords = [str(k).lower() for k in top_cat.get("keywords", [])]
+        if keywords and not any(kw in name_text for kw in keywords):
+            confidence = min(confidence, CIRCUMSTANTIAL_CONFIDENCE)
+            top_reasons.append(
+                "confidence capped: no category keyword appears in the product "
+                "name, so the match rests on surrounding description text"
+            )
 
     alternatives = [
         {

@@ -97,6 +97,20 @@ def assert_fetchable(url: str) -> None:
             )
 
 
+# schema.org product properties that are really specifications, mapped to the
+# label a spec table would have used.
+_SCHEMA_MEASURES = {
+    "weight": "Weight",
+    "color": "Color",
+    "material": "Material",
+    "width": "Width",
+    "height": "Height",
+    "depth": "Depth",
+    "size": "Size",
+    "pattern": "Pattern",
+}
+
+
 def _from_json_ld(soup) -> dict[str, Any]:
     """Read schema.org Product markup, the most trustworthy source available."""
     found: dict[str, Any] = {}
@@ -145,6 +159,21 @@ def _from_json_ld(soup) -> dict[str, Any]:
                     key, value = _clean(prop.get("name")), _clean(prop.get("value"))
                     if key and value:
                         specs[key] = value
+
+            # schema.org carries several measurements as first-class properties
+            # rather than in additionalProperty. Milwaukee's product markup has
+            # a weight and nothing else, so a parser that only reads
+            # additionalProperty walks away from a page that did publish specs.
+            for prop, label in _SCHEMA_MEASURES.items():
+                value = node.get(prop)
+                if isinstance(value, dict):  # QuantitativeValue
+                    number = _clean(value.get("value"))
+                    unit = _clean(value.get("unitText") or value.get("unitCode"))
+                    value = f"{number} {unit}".strip() if number else ""
+                value = _clean(value)
+                if value and label not in specs:
+                    specs[label] = value
+
             if specs:
                 found.setdefault("raw_specs", specs)
 

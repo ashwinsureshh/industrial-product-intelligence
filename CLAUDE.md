@@ -727,6 +727,73 @@ caught before they reach a storefront.
 
 ---
 
+## 7.5 Discovery — built, and the measurement is a negative result
+
+`app/discovery/`. Run: `POST /api/discover {brand, mpn}`, or
+`python test_discovery.py` (54 checks, no network, $0).
+
+Brand + MPN -> candidate URLs -> **source policy** -> fetch -> `RawProduct` ->
+the *same* pipeline. No parallel path: a value read off a manufacturer page
+earns the same provenance, validation and readiness score as a form entry.
+
+**The sourcing policy is the feature.** Their brief states three times that data
+must be manufacturer-provided, so the policy is data (`data/discovery/sources.json`)
+and every candidate is recorded accepted or refused with a reason — the same
+ledger idea as the hybrid gate. Three choices are stricter than the brief:
+
+- **Distributors and retailers are blocked alongside marketplaces.** A Grainger
+  or Home Depot page is the second-hand copy Unilog exists to correct, so
+  sourcing from it is circular.
+- **An unknown domain is refused, not fetched.** Allow-by-default would let a
+  blog become a cited source. A page is only manufacturer-provided if the domain
+  can be shown to belong to the manufacturer.
+- **Another maker's official site is refused for this part.** skf.com is not
+  evidence about a Frigidaire dishwasher.
+
+**Two backends, and the free one is default.** `BrandDomainBackend` ($0) builds
+official URLs from the registry's templates — their own delivery row cites
+`frigidaire.com/.../PDSH4816AF`, which is a template with the MPN in it, so no
+search engine is needed for the predictable cases. `ClaudeWebSearchBackend`
+spends, refuses to construct without a key, and **is not reachable from the API**.
+
+### The result: fetch-and-parse does not work on modern manufacturer sites
+
+Measured against four real sites, no API cost:
+
+| Brand | HTTP | Bytes | JSON-LD | Specs parsed |
+| --- | --- | --- | --- | --- |
+| Frigidaire | 200 | 45 KB | 0 | **0** |
+| Milwaukee | 200 | 1.0 MB | 1 | 0 specs, but name/brand/MPN recovered |
+| SKF | 200 | 24 KB | 0 | **0** |
+| Whirlpool | 404 | — | — | template wrong |
+
+**Zero of four yielded a spec table.** §11.1 predicted this for SKF; it holds
+for the product in their own ground truth too. The pages render client-side, and
+the engine reports `fetched but nothing usable was parsed — likely rendered
+client-side` rather than treating an empty page as a product with no
+specifications. That distinction is the point: a tooling gap must not become a
+false claim about the part.
+
+**So discovery does not move §7.3's 14.0% yet.** Closing it needs headless
+rendering or paid search with content extraction — not more parsing. Do not
+claim discovery as a solved step; claim that the sourcing rule is enforced and
+the ceiling is now known.
+
+**Two bugs it exposed, both fixed:**
+
+1. `_from_json_ld` read `additionalProperty` only. Milwaukee publishes a weight
+   as a first-class schema.org property, so a page that *did* carry specs was
+   walked away from. Standard product measures are now mapped.
+2. **The classifier read application prose as identity.** A Milwaukee cut-off
+   wheel scored **0.861 as a fastener** because its page says it cuts bolts,
+   nuts and threaded rod. Confidence is now capped at
+   `CIRCUMSTANTIAL_CONFIDENCE` (0.5) when no category keyword appears in the
+   product *name* and the MPN pattern did not match. The cap deliberately cannot
+   change which category wins — only how certain the claim is — so the 102-case
+   benchmark is untouched.
+
+---
+
 ## 8. Commands
 
 ```bash
@@ -747,6 +814,7 @@ python test_taxonomy_learning.py   # learn → approve → classify → revoke
 python test_hybrid.py              # hybrid gate: adds, never overrules
 python test_export.py              # output profiles, incl. a schema added at runtime
 python test_unilog.py              # house style, LOV refusals, char limits, row ingest
+python test_discovery.py           # sourcing policy, refusals, SSRF, no accidental spend
 python run_cost_model.py           # cost per SKU under deterministic-first triage
 python run_benchmark.py            # 102-case benchmark
 python run_hybrid.py               # hybrid vs demo vs live, $0 from committed records
