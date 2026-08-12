@@ -35,23 +35,33 @@ class MockProvider(Provider):
         have = {a.key for a in known}
         out: list[Attribute] = []
         notes: list[str] = []
+        cross: list[Attribute] = []
 
-        out += self._from_series_table(raw, category, have)
+        filled, standards = self._from_series_table(raw, category, have)
+        out += filled
+        cross += standards
         out += self._from_grade_table(category, known, have)
         out += self._from_derivations(category, known + out, have)
         out += self._from_defaults(category, have)
 
         if not out:
             notes.append("Every category attribute was already resolved from supplier data.")
-        return InferenceResult(attributes=out, notes=notes)
+        return InferenceResult(attributes=out, notes=notes, cross_checks=cross)
 
     def _from_series_table(
         self, raw: RawProduct, category: dict[str, Any], have: set[str]
-    ) -> list[Attribute]:
-        """Bearing dimensions are fully determined by the ISO series number."""
+    ) -> tuple[list[Attribute], list[Attribute]]:
+        """Bearing dimensions are fully determined by the ISO series number.
+
+        Returns the values that fill gaps, and separately the values for fields
+        the supplier already filled. The second list never enters the record —
+        supplier data outranks a lookup — but without it the standard can only
+        ever agree with the supplier, because it is never consulted where the
+        two could differ.
+        """
         table = category.get("series_kb")
         if not table:
-            return []
+            return [], []
 
         corpus = " ".join(
             p for p in [raw.mpn, raw.sku, raw.name, raw.description, raw.free_text] if p
@@ -62,39 +72,40 @@ class MockProvider(Provider):
                 series = candidate
                 break
         if not series:
-            return []
+            return [], []
 
         specs = category.get("attributes", {})
         out: list[Attribute] = []
+        cross: list[Attribute] = []
         for key, value in table[series].items():
-            if key in have:
-                continue
             spec = specs.get(key, {})
             unit = spec.get("unit")
             norm_value, norm_unit = (
                 U.normalize(float(value), unit) if unit else (None, None)
             )
-            out.append(
-                Attribute(
-                    key=key,
-                    label=spec.get("label", key.replace("_", " ").title()),
-                    value=value,
-                    unit=unit,
-                    normalized_value=norm_value,
-                    normalized_unit=norm_unit,
-                    provenance=Provenance.KNOWLEDGE_BASE,
-                    confidence=0.93,
-                    evidence=(
-                        f"ISO 15:2017 dimension series {series}: this designation fixes "
-                        f"{spec.get('label', key)} at {U.format_value(value, unit)} for every "
-                        f"manufacturer."
-                    ),
-                    method="knowledge-base-lookup",
-                    group=spec.get("group", "General"),
-                )
+            attribute = Attribute(
+                key=key,
+                label=spec.get("label", key.replace("_", " ").title()),
+                value=value,
+                unit=unit,
+                normalized_value=norm_value,
+                normalized_unit=norm_unit,
+                provenance=Provenance.KNOWLEDGE_BASE,
+                confidence=0.93,
+                evidence=(
+                    f"ISO 15:2017 dimension series {series}: this designation fixes "
+                    f"{spec.get('label', key)} at {U.format_value(value, unit)} for every "
+                    f"manufacturer."
+                ),
+                method="knowledge-base-lookup",
+                group=spec.get("group", "General"),
             )
+            if key in have:
+                cross.append(attribute)
+                continue
+            out.append(attribute)
             have.add(key)
-        return out
+        return out, cross
 
     def _from_grade_table(
         self, category: dict[str, Any], known: list[Attribute], have: set[str]

@@ -108,6 +108,27 @@ def known_brands() -> list[str]:
     return sorted(e["brand"] for e in _config().get("manufacturers", []))
 
 
+def blocked_kind(url: str) -> str | None:
+    """The kind of prohibited source this URL is, or None.
+
+    Narrower than `check()` on purpose. `check()` also refuses any domain it
+    cannot prove belongs to the manufacturer, which is right when the engine
+    chose the URL itself. On the ingest path a person is asserting that this is
+    their supplier's page, and refusing every unrecognised domain would leave
+    the Document tab able to read almost nothing. What is not negotiable is the
+    organizers' explicit rule: marketplaces, retailers and distributors are
+    never a source, however the URL arrived.
+    """
+    host = (urlparse((url or "").strip()).hostname or "").lower()
+    if not host:
+        return None
+    blocked = _blocked()
+    for suffix in _registrable(host):
+        if suffix in blocked:
+            return blocked[suffix]
+    return None
+
+
 def check(url: str, brand: str | None = None) -> Verdict:
     """Decide whether a URL may be cited as a source."""
     parsed = urlparse((url or "").strip())

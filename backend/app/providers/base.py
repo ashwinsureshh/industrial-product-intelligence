@@ -22,11 +22,17 @@ class InferenceResult:
         content: CommerceContent | None = None,
         notes: list[str] | None = None,
         usage: dict[str, Any] | None = None,
+        cross_checks: list[Attribute] | None = None,
     ) -> None:
         self.attributes = attributes or []
         self.content = content
         self.notes = notes or []
         self.usage = usage or {}
+        # Values a published standard fixes for fields the supplier already
+        # filled. They are not added to the record — the supplier outranks a
+        # lookup — but they must be heard, or a designation can never
+        # contradict the value it determines. See _check_against_standards.
+        self.cross_checks = cross_checks or []
 
 
 class Provider(ABC):

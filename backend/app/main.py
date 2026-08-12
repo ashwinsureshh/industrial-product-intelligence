@@ -499,7 +499,24 @@ def ingest_url(payload: dict = Body(...)) -> dict[str, Any]:
     if not url:
         raise HTTPException(status_code=400, detail="No URL supplied.")
 
+    from .discovery import policy
     from .ingest.web import UnsafeURL, from_url
+
+    # The no-marketplace rule is a property of the catalog, not of the tab the
+    # URL was typed into. Enforcing it only on the discovery path left the door
+    # beside it open: a Grainger page pasted here would have earned a cited
+    # source_url and full provenance, which is the second-hand copy this engine
+    # exists to correct.
+    kind = policy.blocked_kind(url)
+    if kind:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                f"That page is hosted by a {kind}. The content standard requires "
+                f"manufacturer-provided sources, so {kind}s cannot be cited — "
+                f"use the manufacturer's own page or upload their datasheet."
+            ),
+        )
 
     try:
         product, report = from_url(url)

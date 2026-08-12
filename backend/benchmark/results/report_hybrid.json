@@ -35,8 +35,8 @@
     "label": "hybrid (gated)",
     "cases": 102,
     "cached_hits": 102,
-    "elapsed_s": 1.06,
-    "throughput_per_s": 96.2,
+    "elapsed_s": 0.41,
+    "throughput_per_s": 247.2,
     "coverage": {
       "attributes_in": 129,
       "attributes_out": 412,
@@ -493,7 +493,7 @@
     "hours_saved": 9150,
     "cost_saved_usd": 320261,
     "fte_years_saved": 5.1,
-    "processing_hours": 0.29,
+    "processing_hours": 0.11,
     "defects_caught_per_10k": 500
   },
   "policy_actions": {

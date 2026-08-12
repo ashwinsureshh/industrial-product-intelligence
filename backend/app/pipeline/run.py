@@ -129,6 +129,71 @@ def _reconcile(attributes: list[Attribute]) -> tuple[list[Attribute], list[str]]
     return list(best.values()), conflicts
 
 
+def _check_against_standards(
+    attributes: list[Attribute], standards: list[Attribute]
+) -> tuple[list[Attribute], list[dict[str, Any]]]:
+    """Let a published standard disagree with the supplier without overruling it.
+
+    The knowledge base only ever filled gaps, so a designation could not
+    contradict the value it determines: a bearing marked 6205 published a
+    supplier bore of 30 mm at full confidence while citing ISO 15 for the two
+    dimensions either side of it, and nothing in the record said so.
+
+    The supplier still wins — they may be describing a special variant, and a
+    lookup table is not entitled to overrule the person holding the part. What
+    changes is that the disagreement is recorded, the winner's confidence is
+    reduced exactly as any other conflict reduces it, and validation raises an
+    integrity warning so the record cannot publish unreviewed.
+    """
+    if not standards:
+        return attributes, []
+
+    by_key = {a.key: a for a in attributes}
+    conflicts: list[dict[str, Any]] = []
+
+    for standard in standards:
+        held = by_key.get(standard.key)
+        if held is None or _values_agree(held, standard):
+            continue
+
+        conflicts.append({
+            "key": standard.key,
+            "label": standard.label,
+            "held": U.format_value(held.value, held.unit),
+            "held_provenance": held.provenance.value,
+            "standard": U.format_value(standard.value, standard.unit),
+            "evidence": standard.evidence,
+            "summary": (
+                f"{standard.label}: kept {U.format_value(held.value, held.unit)} "
+                f"({held.provenance.value}) over "
+                f"{U.format_value(standard.value, standard.unit)} "
+                f"({standard.provenance.value})"
+            ),
+        })
+        by_key[standard.key] = held.model_copy(update={
+            "confidence": round(max(held.confidence - 0.05, 0.1), 3),
+            "evidence": (
+                f"{held.evidence} — but {standard.evidence} "
+                f"The supplier value is kept and flagged, not overwritten."
+            ),
+        })
+
+    return list(by_key.values()), conflicts
+
+
+def _values_agree(held: Attribute, standard: Attribute) -> bool:
+    """Rounding and unit spelling must not read as a contradiction."""
+    a, b = held.normalized_value, standard.normalized_value
+    if isinstance(a, (int, float)) and isinstance(b, (int, float)):
+        return abs(float(a) - float(b)) <= max(abs(float(b)) * 0.01, 1e-9)
+    try:
+        return abs(float(held.value) - float(standard.value)) <= max(
+            abs(float(standard.value)) * 0.01, 1e-9
+        )
+    except (TypeError, ValueError):
+        return str(held.value).strip().lower() == str(standard.value).strip().lower()
+
+
 def score_readiness(
     attributes: list[Attribute],
     category: dict[str, Any] | None,
@@ -322,6 +387,10 @@ def enrich(raw: RawProduct, provider: Provider) -> EnrichedProduct:
     # ---------------------------------------------------------------- reconcile
     with _Timer() as t:
         attributes, conflicts = _reconcile(extracted + inference.attributes)
+        attributes, standard_conflicts = _check_against_standards(
+            attributes, inference.cross_checks
+        )
+        conflicts += [c["summary"] for c in standard_conflicts]
         attributes.sort(key=lambda a: (a.group, -a.confidence, a.label))
     trace.append(StageTrace(
         stage="reconcile",
@@ -415,7 +484,8 @@ def enrich(raw: RawProduct, provider: Provider) -> EnrichedProduct:
     # ----------------------------------------------------------------- validate
     with _Timer() as t:
         issues, missing = validate.run_all(
-            attributes, category, identity, content_result.content
+            attributes, category, identity, content_result.content,
+            standard_conflicts=standard_conflicts,
         )
         issues += lov_issues
         order_by = {Severity.ERROR: 0, Severity.WARNING: 1, Severity.INFO: 2}

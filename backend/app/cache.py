@@ -21,11 +21,42 @@ _lock = threading.Lock()
 _stats = {"hits": 0, "misses": 0, "writes": 0, "bundled_hits": 0}
 
 
+def taxonomy_fingerprint() -> str:
+    """A short digest of the learned categories currently in force.
+
+    Deliberately empty when nothing has been learned. The 20 precomputed live
+    results and the 102 committed benchmark records are addressed by this same
+    key, so a component that is always present would orphan every one of them;
+    one that appears only once a category is approved leaves the shipped state
+    keyed exactly as before.
+    """
+    from .taxonomy_learning import store
+
+    try:
+        learned = store.learned_categories()
+    except Exception:  # noqa: BLE001 - a missing or unreadable store is "none learned"
+        return ""
+    if not learned:
+        return ""
+
+    codes = sorted(f"{c.get('code')}:{c.get('version', '')}" for c in learned)
+    return hashlib.sha256("|".join(codes).encode("utf-8")).hexdigest()[:8]
+
+
 def key_for(payload: dict[str, Any], mode: str) -> str:
     """The content address for a result. Public so other read-only layers
-    (e.g. the committed benchmark records) can be keyed identically."""
+    (e.g. the committed benchmark records) can be keyed identically.
+
+    The learned taxonomy is part of the address because it changes the answer:
+    approving a category reclassifies products that previously had nowhere to
+    go, and a key that ignored it served the pre-approval verdict forever — the
+    learning loop appeared to fail for the very product used to teach it.
+    """
     blob = json.dumps(payload, sort_keys=True, default=str)
     fingerprint = f"{mode}|{MODEL if mode == 'live' else 'deterministic'}|{blob}"
+    learned = taxonomy_fingerprint()
+    if learned:
+        fingerprint = f"{fingerprint}|taxonomy:{learned}"
     return hashlib.sha256(fingerprint.encode("utf-8")).hexdigest()[:32]
 
 

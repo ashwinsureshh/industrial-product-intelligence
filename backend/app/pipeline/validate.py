@@ -42,6 +42,11 @@ INTEGRITY_CODES = frozenset({
     "STRENGTH_MISMATCH",
     "GRADE_MATERIAL_CONFLICT",
     "GEOMETRY_CONTRADICTION",
+    # A supplied value that the part number's own standard contradicts. The
+    # supplier is kept, because they may hold a special variant — but one of
+    # the two is wrong about a dimension, and shipping either unreviewed is
+    # how a wrong specification reaches a machine.
+    "STANDARD_CONTRADICTION",
     "PRESSURE_CONTRADICTION",
     "UNVERIFIED_FIGURE",
     "UNSUPPORTED_CLAIM",
@@ -499,17 +504,47 @@ def check_cross_fields(
     return issues
 
 
+def check_standard_conflicts(
+    standard_conflicts: list[dict[str, Any]],
+) -> list[ValidationIssue]:
+    """Report a supplied value that its own part number contradicts.
+
+    A warning rather than an error, deliberately: both numbers are individually
+    plausible and the supplier may be describing a variant the table does not
+    cover. It is an integrity warning, so the record goes to a human instead of
+    to the storefront.
+    """
+    return [
+        ValidationIssue(
+            code="STANDARD_CONTRADICTION",
+            severity=Severity.WARNING,
+            field=c["key"],
+            message=(
+                f"{c['label']} is given as {c['held']} but the part number's "
+                f"standard fixes it at {c['standard']}."
+            ),
+            suggestion=(
+                "Confirm the part number against the dimension. One of the two "
+                "is wrong, and the supplier value has been kept unchanged."
+            ),
+        )
+        for c in standard_conflicts
+    ]
+
+
 def run_all(
     attributes: list[Attribute],
     category: dict[str, Any] | None,
     identity: dict[str, Any],
     content: Any = None,
+    standard_conflicts: list[dict[str, Any]] | None = None,
 ) -> tuple[list[ValidationIssue], list[str]]:
     issues: list[ValidationIssue] = []
     issues += check_ranges(attributes, category)
     required_issues, missing = check_required(attributes, category, identity)
     issues += required_issues
     issues += check_cross_fields(attributes, category)
+    issues += check_standard_conflicts(standard_conflicts or [])
     issues += check_confidence(attributes)
     issues += check_content(content, attributes)
 

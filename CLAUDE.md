@@ -316,7 +316,7 @@ score as a CSV row. Do not add a parallel path for a new input type.
 | `pipeline/units.py` | Unit parsing/normalization; canonical unit per dimension |
 | `pipeline/taxonomy.py` | Category classification; merges curated + learned categories |
 | `pipeline/extract.py` | Deterministic extraction (spec tables + 3 prose strategies) |
-| `pipeline/validate.py` | Range/vocabulary/required checks + 16 cross-field rules |
+| `pipeline/validate.py` | Range/vocabulary/required checks + 16 cross-field rules + the standards contradiction check (§7.8) |
 | `pipeline/run.py` | Stage orchestration, reconciliation, readiness scoring |
 | `pipeline/gate.py` | **The hybrid gate** — model may add, never overrule; records every decision |
 | `providers/mock.py` | Deterministic engine — knowledge-base driven, free, default |
@@ -936,6 +936,82 @@ slide 8's qualification when editing the deck.
 
 ---
 
+## 7.8 QA pass (12 Aug) — three defects an outside test found
+
+An independent A–Z pass against the deployed build. Most claims held: the 16
+cross-field rules caught **5 of 5 novel contradictions** they had never seen,
+including geometry in a category the documented example never used and a motor
+current computed from power and voltage; 5 clean products across 5 categories
+published with zero false alarms; the gate reproduced its documented refusals
+keylessly; determinism was proven on two fresh cache keys. Every benchmark
+figure in §7 and §7.2 re-measured **unchanged** after the fixes below.
+
+Three defects were real, and all three broke the same promise from different
+directions. Each has a regression in `backend/test_qa_fixes.py` ($0).
+
+**1. A part number's own standard could not contradict a supplied dimension.**
+A bearing marked **6205** published a supplier bore of **30 mm at 99%
+confidence, verdict `publish`** — while the same card cited ISO 15 for the
+Outer Diameter and Width either side of it. Root cause: `_from_series_table`
+skipped any key the supplier had already filled (`if key in have: continue`),
+so the knowledge base could only ever *agree*. The fastener path had the
+equivalent check (`grade_tensile`) and caught its own version of this; bearings
+did not.
+
+The fix keeps the supplier's value — they may hold a variant the table does not
+cover, and a lookup is not entitled to overrule the person holding the part —
+but the standard is now *heard*: the disagreement is recorded, confidence drops
+by the same 0.05 any conflict costs, the evidence line states what the standard
+says, and `STANDARD_CONTRADICTION` is an integrity warning, so the record goes
+to review instead of to a storefront. Deliberately a warning, not an error:
+both numbers are individually plausible and we cannot know which is wrong.
+
+**2. The cache ignored the learned taxonomy.** Approving a category did not
+change the answer for a product already cached, so the documented learning loop
+("re-submit and it now scores highly") failed for the exact product used to
+train it — while an identical product with one character changed in the SKU
+classified correctly. `key_for()` now folds in a taxonomy fingerprint. **The
+fingerprint is empty when nothing has been learned**, which is load-bearing:
+the 20 precomputed live results and the 102 committed benchmark records are
+addressed by this same key, and a component that was always present would
+orphan every one of them. `test_qa_fixes.py` asserts the no-learning key is
+byte-identical to the pre-fix scheme.
+
+**3. The manufacturer-only rule was enforced on one path.** `/api/discover`
+refused marketplaces properly; `/api/ingest/url` beside it had no reference to
+the policy, and amazon.com and grainger.com both fetched with HTTP 200. A page
+that parsed would have entered the catalog with a marketplace `source_url`
+cited as provenance — the second-hand copy Unilog exists to correct.
+`policy.blocked_kind()` now gates that path too. It is **narrower than
+`policy.check()` on purpose**: check() also refuses any domain it cannot prove
+belongs to the manufacturer, which is right when the engine chose the URL, but
+on the ingest path a person is asserting this is their supplier's page and
+refusing every unrecognised domain would leave the Document tab able to read
+almost nothing. Explicit marketplaces, retailers and distributors are refused;
+unknown domains are still read.
+
+**Two lower-priority findings left open**, both recorded rather than fixed:
+
+- **Space-aligned PDF columns are mis-extracted.** Of the three claimed layouts,
+  bordered and dot-leader are perfect; the space-aligned one clips at the column
+  boundary (`14.0 kN` → `14.0 k`, `Chrome Steel` → `Chrome`) and invents keys
+  from the title line. **Validation catches it** — two `TYPE_MISMATCH` errors,
+  record blocked — so nothing false publishes. The honesty layer holds where the
+  extractor fails, which is why this is not urgent.
+- **The compliance layer is invisible in the UI.** The five commerce
+  descriptions, the `provisional` standards markers and the profile-driven
+  exports (including the 252-column delivery format) all work through the API
+  and are rendered by no component. §5.7 and §7.3 describe work a judge cannot
+  see in the product.
+
+**Not a defect, but do not quote it as one:** throughput on the deployed free
+tier is **~19 products/s**, not the 305/s in §7. The engine reaches 287/s
+locally on the same corpus, so this is Render's shared CPU rather than the
+pipeline — but the number as printed cannot be reproduced at the live link.
+Say "287/s measured locally" when the deployment is in the room.
+
+---
+
 ### Deck tooling — `docs/deck/`
 
 The deck is generated, not hand-edited, so a re-measurement is one command
@@ -990,6 +1066,7 @@ python test_hybrid.py              # hybrid gate: adds, never overrules
 python test_export.py              # output profiles, incl. a schema added at runtime
 python test_unilog.py              # house style, LOV refusals, char limits, row ingest
 python test_discovery.py           # sourcing policy, refusals, SSRF, no accidental spend
+python test_qa_fixes.py            # standards contradiction, cache/taxonomy, ingest policy (§7.8)
 python run_cost_model.py           # cost per SKU under deterministic-first triage
 python run_benchmark.py            # 102-case benchmark
 python run_hybrid.py               # hybrid vs demo vs live, $0 from committed records
