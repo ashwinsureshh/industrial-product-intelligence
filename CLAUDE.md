@@ -1013,14 +1013,32 @@ exports all worked through the API and were rendered by no component: §5.7 and
   it up with no change.** `api.exportCsv` is gone; `/api/export/csv` is now
   reached as the `catalog_csv` profile.
 
-**One lower-priority finding left open:**
+**5. Space-aligned PDF columns were sliced through a token — fixed.** The
+bordered and dot-leader layouts were perfect; the space-aligned one returned
+`14.0 kN` as `14.0 k`, `Chrome Steel` as `Chrome`, and invented a key from the
+title line. Validation caught it (two `TYPE_MISMATCH` errors, record blocked),
+so nothing false ever published — the honesty layer held where the extractor
+failed, which is why this ranked last.
 
-- **Space-aligned PDF columns are mis-extracted.** Of the three claimed layouts,
-  bordered and dot-leader are perfect; the space-aligned one clips at the column
-  boundary (`14.0 kN` → `14.0 k`, `Chrome Steel` → `Chrome`) and invents keys
-  from the title line. **Validation catches it** — two `TYPE_MISMATCH` errors,
-  record blocked — so nothing false publishes. The honesty layer holds where the
-  extractor fails, which is why this is not urgent.
+Cause: pdfplumber's `text` strategy infers column edges across the **whole
+page**, so one wide title line drags an edge into the value column and every row
+beneath is cut at that x. `_pairs_from_columns()` now reads such tables line by
+line, splitting on runs of two or more spaces — a split point that is a run of
+spaces **cannot fall inside a token**. It runs before the pdfplumber strategy,
+which stays as a last resort. All three layouts now recover the same 7 values.
+
+**The alignment check is what keeps it honest**, and it is the part to preserve:
+two words with a wide gap happen constantly in prose, so a value offset must be
+shared by at least three lines before any of them counts as a spec. That is what
+stops the documented `Single Row D` → `eep Groove Ball` failure recurring, and
+`test_qa_fixes.py` asserts a page of prose still yields nothing.
+
+**A bug inside that fix, worth remembering:** the first version clustered on
+*distinct* offsets rather than on how many rows shared each one, so a single
+stray line (`FAG  Rolling Bearing Data`, two spaces) outvoted the eight real
+rows beneath it and the reader returned nothing. It was invisible on the
+handwritten test file, which had no such line, and only appeared against
+`test_ingest.py`'s own fixture. Cluster by row count, not by offset count.
 
 **Not a defect, but do not quote it as one:** throughput on the deployed free
 tier is **~19 products/s**, not the 305/s in §7. The engine reaches 287/s
@@ -1261,7 +1279,9 @@ Findings that will shape it:
 - pdfplumber's whitespace table strategy will slice a page containing **no
   table**, inventing `'Single Row D' → 'eep Groove Ball'` from a heading.
   Strategies must be ordered by evidence strength: borders → explicit line
-  syntax → inferred columns last.
+  syntax → **gutter-split lines** → inferred columns last. It also infers column
+  edges across the *whole page*, so a wide title line cuts every value beneath
+  it (§7.8 defect 5) — never let it read a page a line-level reader can.
 - A loose numeric parse types `M10x1.25` as the measurement `10`. Values must
   be *essentially* a quantity to be typed numeric.
 - The learned-taxonomy files (`data/learned_categories.json`,

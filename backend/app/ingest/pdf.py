@@ -8,8 +8,10 @@ confidence and cross-field checks exactly like any other input.
 Datasheets come in three broad shapes and all three are handled:
 
   1. Ruled tables  — real table borders. pdfplumber's `lines` strategy.
-  2. Ruleless tables — columns held apart by whitespace only. The `text`
-     strategy, which infers columns from gutters between words.
+  2. Ruleless tables — columns held apart by whitespace only. Read line by line
+     on their own gutters (`_pairs_from_columns`), because pdfplumber's page-wide
+     column inference slices values through a token when a wide title line drags
+     an edge across them. Its `text` strategy remains as a last resort.
   3. Dot-leader lists — "Bore Diameter ......... 25 mm" running down the page,
      which are not tables at all and need line-level parsing.
 
@@ -183,6 +185,59 @@ def _pairs_from_lines(text: str) -> list[tuple[str, str]]:
     return pairs
 
 
+def _is_header_pair(key: str, value: str) -> bool:
+    return key.lower() in _KEY_HEADERS and value.lower() in _VALUE_HEADERS
+
+
+# Two or more spaces is a gutter; one space is a word break. Anything less than
+# two cannot be told apart from prose.
+_GUTTER = re.compile(r"\S+(?: \S+)*")
+
+
+def _pairs_from_columns(text: str) -> list[tuple[str, str]]:
+    """Read a table whose columns are held apart by whitespace alone.
+
+    pdfplumber's `text` strategy infers column edges from word positions across
+    the whole page, so one wide title line drags an edge into the middle of the
+    value column and every row below is sliced through a token: `14.0 kN` comes
+    back as `14.0 k` and `Chrome Steel` as `Chrome`. Splitting each line on its
+    own gutters cannot cut inside a word, because the split points are runs of
+    spaces.
+
+    The alignment check is what keeps this honest. Two words with a wide gap
+    happen in prose all the time; a *column* is the same gap in the same place
+    on line after line, so a value offset shared by at least three lines is
+    required before any of them counts as a spec.
+    """
+    candidates: list[tuple[str, str, int]] = []
+    for line in (text or "").splitlines():
+        cells = [(m.group(), m.start()) for m in _GUTTER.finditer(line)]
+        if len(cells) < 2:
+            continue
+        (key, _), (value, offset) = cells[0], cells[1]
+        key, value = _clean(key), _clean(value)
+        if _is_header_pair(key, value) or not _looks_like_spec(key, value):
+            continue
+        candidates.append((key, value, offset))
+
+    if len(candidates) < 3:
+        return []
+
+    # Cluster on the value's starting column, allowing for a proportional font
+    # nudging characters by a place or two. The winner is the offset shared by
+    # the most *rows*, not by the most distinct offsets: a title line like
+    # "FAG  Rolling Bearing Data" is one stray pair at its own offset, and
+    # counting offsets rather than rows lets that single line outvote the eight
+    # real ones beneath it.
+    best: list[tuple[str, str]] = []
+    for anchor in {o for _, _, o in candidates}:
+        group = [(k, v) for k, v, o in candidates if abs(o - anchor) <= 2]
+        if len(group) > len(best):
+            best = group
+
+    return best if len(best) >= 3 else []
+
+
 def _detect_brand(text: str) -> str | None:
     """Match a known manufacturer anywhere in the document."""
     lowered = text.lower()
@@ -283,7 +338,13 @@ def from_pdf(data: bytes, filename: str = "datasheet.pdf") -> tuple[RawProduct, 
                 if len(line_pairs) >= 3:
                     found_here = absorb(line_pairs, "text:line-pairs")
 
-            # 3. Whitespace columns — inferred, and wrong on non-tabular pages.
+            # 3. Space-aligned columns, read line by line. Splitting on gutters
+            #    cannot cut inside a token, so this is tried before handing the
+            #    page to pdfplumber's page-wide column inference.
+            if not found_here:
+                found_here = absorb(_pairs_from_columns(text), "text:columns")
+
+            # 4. Whitespace columns — inferred, and wrong on non-tabular pages.
             if not found_here:
                 found_here = absorb(
                     read_tables({"vertical_strategy": "text",

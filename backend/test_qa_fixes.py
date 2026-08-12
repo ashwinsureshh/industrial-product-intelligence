@@ -12,6 +12,9 @@ rather leave a field blank than state something it cannot defend.
      used to teach it.
   3. The manufacturer-only sourcing rule was enforced on the discovery path but
      not on the URL ingest path beside it.
+  4. A space-aligned datasheet had its values sliced through a token, because
+     pdfplumber infers column edges across the whole page and one wide title
+     line dragged an edge into the value column.
 
 Costs $0: deterministic engine, no network.
 """
@@ -156,6 +159,83 @@ def test_marketplaces_refused_on_every_path() -> bool:
     return ok
 
 
+# --------------------------------------------------------------- 4. PDF columns
+def _spaced_pdf(title: str, rows: list[tuple[str, str]]) -> bytes:
+    """A whitespace-aligned datasheet with a wide title line above the table.
+
+    The title is the whole point: it is what dragged pdfplumber's inferred
+    column edge across the values below it.
+    """
+    import io
+
+    from reportlab.lib.pagesizes import A4
+    from reportlab.pdfgen import canvas
+
+    buffer = io.BytesIO()
+    c = canvas.Canvas(buffer, pagesize=A4)
+    c.setFont("Helvetica-Bold", 15)
+    c.drawString(70, 780, title)
+    c.setFont("Courier", 10)
+    y = 720
+    c.drawString(70, y, f"{'CHARACTERISTIC':<30} VALUE")
+    for key, value in rows:
+        y -= 16
+        c.drawString(70, y, f"{key:<30} {value}")
+    c.showPage()
+    c.save()
+    return buffer.getvalue()
+
+
+def test_space_aligned_columns_are_not_clipped() -> bool:
+    print("\n[4] a space-aligned datasheet keeps whole values")
+    ok = True
+    from app.ingest.pdf import from_pdf
+
+    rows = [("Bore Diameter", "25 mm"), ("Outer Diameter", "52 mm"),
+            ("Width", "15 mm"), ("Dynamic Load Rating", "14.0 kN"),
+            ("Limiting Speed", "16000 rpm"), ("Ring Material", "Chrome Steel")]
+    product, report = from_pdf(
+        _spaced_pdf("Datasheet B - space aligned, no rules", rows), "spaced.pdf")
+    specs = product.raw_specs
+
+    ok &= check("every row is recovered", len(specs) >= len(rows))
+    # The three that used to come back as '14.0 k', '16000' and 'Chrome'.
+    for key, value in [("Dynamic Load Rating", "14.0 kN"),
+                       ("Limiting Speed", "16000 rpm"),
+                       ("Ring Material", "Chrome Steel")]:
+        ok &= check(f"{key} survives whole ({value})", specs.get(key) == value)
+
+    ok &= check("no key is invented from the title line",
+                not any("Datasheet" in k for k in specs))
+    ok &= check("the column reader is what read it",
+                "text:columns" in report.strategies_used)
+    ok &= check("every value cites the page it came from",
+                all(v == "page 1" for v in product.spec_sources.values()))
+
+    # The guard that matters: prose must not become a spec table. Two words
+    # with a wide gap happen everywhere; a column is the same gap repeatedly.
+    import io
+
+    from reportlab.lib.pagesizes import A4
+    from reportlab.pdfgen import canvas
+
+    buffer = io.BytesIO()
+    c = canvas.Canvas(buffer, pagesize=A4)
+    c.setFont("Helvetica", 11)
+    for i, line in enumerate([
+        "Single Row Deep Groove Ball Bearings",
+        "These bearings are supplied in a range of sizes and seal types.",
+        "Consult the engineering team before selecting a fit for high loads.",
+        "All dimensions conform to the relevant international standards.",
+    ]):
+        c.drawString(70, 760 - i * 22, line)
+    c.showPage()
+    c.save()
+    prose, _ = from_pdf(buffer.getvalue(), "prose.pdf")
+    ok &= check("a page of prose yields no invented specs", not prose.raw_specs)
+    return ok
+
+
 def main() -> int:
     print("=" * 66)
     print("  QA FIX REGRESSIONS")
@@ -164,6 +244,7 @@ def main() -> int:
         test_standard_contradicts_supplier(),
         test_cache_follows_the_taxonomy(),
         test_marketplaces_refused_on_every_path(),
+        test_space_aligned_columns_are_not_clipped(),
     ]
     print("\n" + "=" * 66)
     if all(results):
