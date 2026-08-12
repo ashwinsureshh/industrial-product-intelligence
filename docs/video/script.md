@@ -36,6 +36,41 @@ if you cut anything, do not cut the refusals.
 
 ---
 
+## Measured timings
+
+Not estimates. `voiceover.py` speaks each segment and reads the real duration
+out of the WAV header, and those numbers set the video's marks — so the picture
+changes when the line is spoken, not when a word count guessed it would.
+
+| # | Segment | Starts | Runs |
+|---|---------|--------|------|
+| 1 | open | 0:00.0 | 13.3 s |
+| 2 | bearing | 0:13.7 | 30.4 s |
+| 3 | gate | 0:44.6 | 31.7 s |
+| 4 | valve | 1:16.8 | 18.2 s |
+| 5 | content | 1:35.4 | 20.8 s |
+| 6 | discover | 1:56.6 | 25.2 s |
+| 7 | catalog | 2:22.2 | 18.7 s |
+| 8 | close | 2:41.4 | 16.0 s |
+
+**Narration 2:57.4, picture 3:02.9.** The first cut of the script ran 183.7 s
+and `voiceover.py` refused it — three trims that cost no substance (a hand-off
+line, a redundant clause, and a third export format the slide already lists)
+brought it under.
+
+## Assembling it
+
+`footage/narration.wav` is a single full-length track with every segment already
+at its own offset, so there is nothing to nudge:
+
+1. Drop `demo_walkthrough.webm` and `narration.wav` on a timeline, **both at
+   0:00**. That is the whole edit.
+2. Export as MP4 and upload.
+
+To use your own voice instead — which will sound better than the synthetic one —
+read the narration column against the timings above. The picture is already cut
+to them, so a take that hits those marks needs no adjustment either.
+
 ## Why this order
 
 Segments 2 and 3 are the thesis and take a third of the runtime on purpose:

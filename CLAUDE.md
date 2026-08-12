@@ -1297,10 +1297,38 @@ products/s while the live site is on screen, "100% of errors caught" without
 "seeded, on our corpus", and the learned category names.
 
 `record.py` drives the live site through that shot list and writes a silent
-1280×720 webm to `docs/video/footage/` (gitignored — 9.6 MB, rebuildable, and
-the submitted file will live on YouTube). Needs `playwright install ffmpeg`
-once. `--fast` runs the same path with no dwells to check it still works after a
+1280×720 webm to `docs/video/footage/` (gitignored — rebuildable, and the
+submitted file will live on YouTube). Needs `playwright install ffmpeg` once.
+`--fast` runs the same path with no dwells to check it still works after a
 UI change.
+
+`voiceover.py` speaks the narration with the **Windows** speech engine — free,
+local, no account — and writes `narration.wav`, one full-length track with every
+segment already at its own offset. Assembly is therefore "drop both at 0:00",
+with nothing to nudge.
+
+**The sync is exact because the audio drives the video, not the reverse.**
+Each segment's real duration is read out of its WAV header and becomes
+`record.py`'s marks. It also refuses to run long: the first cut measured 183.7 s
+and the script printed *"over three minutes — cut the script, not the pauses"*,
+which is what produced the three trims now in `voiceover.py`. Current state:
+narration **2:57.4**, picture **3:02.9**.
+
+Two things learned the expensive way:
+
+- **Viewmax voiceover returns 402, no subscription.** Nothing was spent. If a
+  better voice is wanted, a human read against the measured table in `script.md`
+  needs no re-cut, because the picture is already timed to those marks.
+- **Playwright's ffmpeg is video-only** — no WAV demuxer, no audio encoders, so
+  it cannot mux the track in. Durations are read with the stdlib `wave` module
+  and the track is assembled by writing PCM directly. Muxing to a single MP4
+  needs a full ffmpeg or any editor.
+
+**Never let a normaliser near the part numbers.** `normalize_tts_text` rendered
+`6205` as "six thousand two hundred five" — a bearing designation is read
+"sixty-two oh five". The spellings in `voiceover.py` are deliberate; tidying
+them back produces the wrong number said confidently, which is the exact failure
+this whole project argues against.
 
 **It holds absolute marks, not relative waits.** The first take ran 97 seconds
 against 175 seconds of narration, because hand-tuned dwells drift. `hold_until`
