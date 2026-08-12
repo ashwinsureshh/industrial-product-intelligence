@@ -708,7 +708,7 @@ def build():
         "row points at. Given the facts, the writing is exact; without them "
         "there is nothing to write. Quoting only the first number would be "
         "precisely the kind of confident overstatement this project exists to "
-        "avoid, so the website shows both side by side on the Accuracy screen.",
+        "avoid, so both are published together wherever either one appears.",
         tint=BLUE_SOFT, bar=ACCENT))
 
     a(P("This is also the clearest argument for the unfinished work listed "

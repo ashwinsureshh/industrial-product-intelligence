@@ -344,16 +344,17 @@ score as a CSV row. Do not add a parallel path for a new input type.
 
 ### Frontend (`frontend/src/`)
 
-React 19 + Vite, no runtime UI dependencies. Six tabs: **Single Product**,
-**Document**, **Discover**, **Catalog**, **Learning**, **Accuracy**. Three
-engines: **Demo**, **Hybrid**, **Live AI**. Vite proxies `/api` to port 8000.
+React 19 + Vite, no runtime UI dependencies. Five tabs: **Single Product**,
+**Document**, **Discover**, **Catalog**, **Learning**. Three engines: **Demo**,
+**Hybrid**, **Live AI**. Vite proxies `/api` to port 8000.
 
-`GroundTruthPanel.jsx` is the Accuracy tab — their labelled delivery rows scored
-against our output, served live from `/api/ground-truth`. It exists because
-"show your evaluation" is one of their stated judging criteria and a reviewer
-should not have to clone the repo to see it. It always renders **both** states
-(§7.3); the component cannot show one without the other, and `test_unilog.py`
-asserts that.
+**The Accuracy tab was removed on 12 Aug** — §7.7 held the question open and the
+user closed it. `GroundTruthPanel.jsx` and `api.getGroundTruth` are gone. The
+measurement is not: `/api/ground-truth`, `run_expected_vs_ours.py` and
+`app/unilog/ground_truth.py` are all untouched, `test_unilog.py` still asserts
+both states, and deck slide 8 still carries the argument. It was a benchmark
+wearing the costume of a product feature, and a skimming judge could read
+**2/14** in large type and stop before the sentence explaining it.
 
 `DiscoveryPanel.jsx` carries the source ledger, built to mirror `GateLedger`:
 refusals sort first, because what the crawler declined to read is the evidence
@@ -913,28 +914,25 @@ the page. Production bundle builds.
 
 ---
 
-## 7.7 The Accuracy tab — their evaluation, inside the product
+## 7.7 Their evaluation — endpoint and CLI, no longer a tab
 
-`GET /api/ground-truth`, rendered by `GroundTruthPanel.jsx`. Run the same thing
-on the CLI with `python run_expected_vs_ours.py`. All three read
+`GET /api/ground-truth` and `python run_expected_vs_ours.py`. Both read
 `app/unilog/ground_truth.py`, so the endpoint, the script and the deck cannot
 quote different numbers.
 
-It exists because judging is asynchronous. Their guide names field-level
-accuracy against the known-good rows as a metric judges will look for, and a
-reviewer should not have to clone the repo to see it.
+**The Accuracy tab that used to render this was removed on 12 Aug** — the open
+question this section carried is now settled, against keeping it. It was a
+benchmark rather than a product feature, no real Unilog user would open it, and
+a skimming judge could read **2/14** in large type and stop before the sentence
+that explains it. `GroundTruthPanel.jsx` and `api.getGroundTruth` are deleted;
+`docs/deck/shots.py` no longer captures a fifth screenshot (slide 12 only ever
+used four).
 
-**It always shows both states, and the component cannot show one without the
-other.** `test_unilog.py` asserts both are present in the payload and on every
-field, so the qualification cannot be dropped by a later edit.
-
-**Open question the user has not settled:** whether the tab earns its place.
-The case for it is above. The case against: it is a benchmark rather than a
-product feature, no real Unilog user would open it, and a skimming judge could
-read **2/14** in large type and stop before the sentence that explains it. Two
-lighter options if it goes: rename to "Evaluation", or fold it into the Catalog
-tab and drop back to five tabs. If removed, keep the endpoint and the script —
-deck slide 8 carries the argument either way.
+**The measurement is untouched.** The endpoint, the CLI and
+`expected_vs_ours.json` all still work, `test_unilog.py` still asserts both
+states are present in the payload and on every field, and **deck slide 8 is now
+the only place a judge sees this** — which makes it load-bearing. Do not weaken
+slide 8's qualification when editing the deck.
 
 ---
 
@@ -1079,7 +1077,7 @@ things only the user can supply.** Deadline Sun 23 Aug 2026, 10:31 IST.
 | 2 | **Demo video link, deck slide 14** | **Blocked on the user.** Slide has a marked placeholder |
 | 3 | **Demo video, 3 minutes** | Not started — see the running order below |
 | 4 | **Rotate the API key** | It passed through a conversation transcript. Delete `backend/.env` when local live testing is finished |
-| 5 | Decide the Accuracy tab question | §7.7. Default is keep |
+| 5 | ~~Decide the Accuracy tab question~~ | **Done 12 Aug — removed.** §7.7 |
 | 6 | Leave UptimeRobot running | A sleeping free instance returns **404**, so a reviewer's first click looks like a dead link |
 
 Done since this list was last written: repo public (`0a85c93`), deck built and
@@ -1091,7 +1089,11 @@ screenshotted from the deployed app (`ba45bea`, `27f2129`, `9319d57`),
 1. Hybrid engine on the sparse bearing. Point at the two refusals: the model
    proposed 14.8 kN and 14000 rpm, ISO 15 says 14 and 16000, both refused, and
    an unbacked default replaced. Twenty seconds, and it is the whole thesis.
-2. The Accuracy tab — their own expected row beside ours, with both numbers.
+2. Their expected row beside ours, with **both** numbers — 14/14 given the
+   attribute values, 2/14 from the catalogue row. This used to be the Accuracy
+   tab; with that gone it now comes off **deck slide 8**, or off
+   `python run_expected_vs_ours.py` if the video prefers a terminal. Do not quote
+   14/14 alone.
 3. Discover on SKF: the page is fetched, refused as unusable, and the record
    below still scores 94 because ISO 15 decodes the part number. Says exactly
    what is and is not sourced.
@@ -1165,7 +1167,7 @@ Findings that will shape it:
 - **`.banner` is `display: flex`.** Every element child becomes a flex item, so
   a banner containing inline markup must wrap its prose in one element or the
   browser deals the sentence into columns. Cost one broken paragraph on the
-  Accuracy tab; the constraint is now noted on the rule itself.
+  since-removed Accuracy tab; the constraint is now noted on the rule itself.
 - **A `content:` value can be double-encoded and nothing will notice.** Two
   glyphs rendered as `â–¸` and `â†’` on the deployed site for several sessions.
   No geometry audit catches this — only reading the rendered pixels does.

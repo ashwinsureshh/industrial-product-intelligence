@@ -60,8 +60,6 @@ export const discover = (brand, mpn, mode, apiKey) =>
     body: JSON.stringify({ brand, mpn, mode, api_key: apiKey || null }),
   }).then(json)
 
-export const getGroundTruth = () => fetch('/api/ground-truth').then(json)
-
 export const getDiscoverySources = () => fetch('/api/discover/sources').then(json)
 
 export const proposeCategories = (products, mode, apiKey) =>
