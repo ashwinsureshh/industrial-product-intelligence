@@ -36,3 +36,9 @@ backend/app/data/proposals.json
 
 # Skill definitions pulled in by the agent runtime, not project source.
 .claude/skills/
+
+# build_deck.py's working copy and preview scratch. The deliverable is
+# docs/UniHack_Prototype_Submission.pptx, which the script copies up.
+docs/deck/UniHack_Prototype_Submission.pptx
+docs/deck/*_preview.png
+docs/deck/_preview.html

@@ -946,9 +946,16 @@ rather than fifteen slides of retyping.
 | `build_deck.py` | Fills the organizers' template. Run from `docs/deck/` |
 | `template.pptx` | Their untouched original |
 | `shots.py` | Playwright against the **deployed** site; writes `shots/` |
-| `preview.py` | Renders one slide to PNG by re-laying its geometry in HTML |
+| `preview.py` | Renders one slide to PNG by re-laying its geometry in HTML. Takes the **1-based slide number**, so `preview.py 8` is `S[7]` |
 | `fitcheck.py` | Overflow, margin, overlap and chip-wrap checks |
 | `expected_vs_ours.json` | Written by `run_expected_vs_ours.py`; slide 8 reads it |
+
+**The build writes two copies and only one is the deliverable.** `prs.save()`
+lands in `docs/deck/` (untracked scratch); the submitted file is
+`docs/UniHack_Prototype_Submission.pptx`. That copy used to be a remembered
+manual step, which meant a rebuild could look successful and still ship the
+previous deck — the tracked file sat 18 hours behind the script. `build_deck.py`
+now copies it up itself and prints the destination.
 
 **There is no LibreOffice in this environment**, so slides cannot be rendered
 the normal way. `fitcheck.py` substitutes for visual QA on the defect that
