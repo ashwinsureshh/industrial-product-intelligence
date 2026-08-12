@@ -1279,7 +1279,7 @@ things only the user can supply.** Deadline Sun 23 Aug 2026, 10:31 IST.
 | --- | --- | --- |
 | 1 | ~~Team details, deck slide 2~~ | **Done 12 Aug.** Team Codes; leader **Ankur Goswami**; Ashwin S, Argho Kumar Halder, SV Chiranjeevi. Values live in `TEAM_NAME` / `TEAM_LEADER` / `TEAM_MEMBERS` at the top of slide 2's block in `build_deck.py`. Emails are on the portal roster and deliberately off the slide |
 | 2 | **Demo video link, deck slide 14** | **Blocked on the user.** Slide has a marked placeholder |
-| 3 | **Demo video, 3 minutes** | Not started — see the running order below |
+| 3 | **Demo video, 3 minutes** | **Script and silent footage done** — `docs/video/`. Needs your voiceover and an upload |
 | 4 | **Rotate the API key** | It passed through a conversation transcript. Delete `backend/.env` when local live testing is finished |
 | 5 | ~~Decide the Accuracy tab question~~ | **Done 12 Aug — removed.** §7.7 |
 | 6 | Leave UptimeRobot running | A sleeping free instance returns **404**, so a reviewer's first click looks like a dead link |
@@ -1287,6 +1287,33 @@ things only the user can supply.** Deadline Sun 23 Aug 2026, 10:31 IST.
 Done since this list was last written: repo public (`0a85c93`), deck built and
 screenshotted from the deployed app (`ba45bea`, `27f2129`, `9319d57`),
 `Project_Understanding.pdf` brought current.
+
+### Demo video — `docs/video/`
+
+`script.md` is the shooting script: 436 words of narration (2:55 at 150 wpm)
+against a hard 3:00, an eight-segment shot list with every click path verified
+on the deployed site, and a **"do not say" list** — 14/14 unqualified, 305
+products/s while the live site is on screen, "100% of errors caught" without
+"seeded, on our corpus", and the learned category names.
+
+`record.py` drives the live site through that shot list and writes a silent
+1280×720 webm to `docs/video/footage/` (gitignored — 9.6 MB, rebuildable, and
+the submitted file will live on YouTube). Needs `playwright install ffmpeg`
+once. `--fast` runs the same path with no dwells to check it still works after a
+UI change.
+
+**It holds absolute marks, not relative waits.** The first take ran 97 seconds
+against 175 seconds of narration, because hand-tuned dwells drift. `hold_until`
+takes a mark from the script — "hold until 0:50" — so the gate is on screen at
+0:50 whatever the network did on the way there, and it prints a warning if a
+segment overruns. Current take: **3:02**.
+
+Two framing traps already paid for: `scrollIntoView({block:'center'})` on a card
+taller than the viewport pushes its first row off the top — which cost the
+40-character invoice line, the only reason that shot exists, so it takes
+`block:'start'` with a **-120 px offset to clear the sticky header**. And the
+pointer left where it clicked holds a hover highlight on a sample card that is
+not the one on screen; `park_mouse()` moves it away.
 
 **Video running order** — the three things worth the 3 minutes:
 

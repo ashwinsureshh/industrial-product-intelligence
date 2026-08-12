@@ -42,3 +42,7 @@ backend/app/data/proposals.json
 docs/deck/UniHack_Prototype_Submission.pptx
 docs/deck/*_preview.png
 docs/deck/_preview.html
+
+# Draft demo footage. The recorder and the script are tracked; the 9 MB webm is
+# a rebuildable intermediate, and the submitted video lives on YouTube.
+docs/video/footage/
