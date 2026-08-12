@@ -304,6 +304,18 @@ def test_space_aligned_columns_are_not_clipped() -> bool:
     ok &= check("and the header row is not read as a spec",
                 not any(k.lower() == "parameter" for k in three.raw_specs))
 
+    # ...but only a real unit. A "short alphabetic token" rule joined a NOTES
+    # column onto the value, turning a clean 25 mm into '25 mm typical', which
+    # then failed numeric parsing and blocked a perfectly read record.
+    notes, _ = from_pdf(_lines_pdf([
+        "PARAMETER                      VALUE      NOTES",
+        "Bore Diameter                  25 mm      typical",
+        "Outer Diameter                 52 mm      nominal",
+        "Width                          15 mm      measured",
+    ]), "notes.pdf")
+    ok &= check("a third column that is not a unit is left alone",
+                notes.raw_specs.get("Bore Diameter") == "25 mm")
+
     # The guard that matters: prose must not become a spec table. Two words
     # with a wide gap happen everywhere; a column is the same gap repeatedly.
     # This is the documented 'Single Row D' -> 'eep Groove Ball' failure, and

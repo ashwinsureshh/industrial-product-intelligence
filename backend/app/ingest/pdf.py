@@ -193,8 +193,19 @@ def _is_header_pair(key: str, value: str) -> bool:
 # two cannot be told apart from prose.
 _GUTTER = re.compile(r"\S+(?: \S+)*")
 
-# A unit sitting in its own column: mm, kN, rpm, °C, N·m, %, in.
-_UNIT_CELL = re.compile(r"[A-Za-zµ°%/·.\-]{1,8}[0-9]?")
+def _is_unit_cell(cell: str) -> bool:
+    """Is this third column a unit, or a third column of something else?
+
+    Matched against the engine's own unit vocabulary rather than by shape. A
+    "short alphabetic token" rule looked reasonable and quietly joined a NOTES
+    column onto the value, turning a clean `25 mm` into `25 mm typical` — which
+    then failed numeric parsing and blocked a record that had been read
+    perfectly.
+    """
+    from ..pipeline.units import _UNITS
+
+    probe = cell.strip().strip(".").lower()
+    return bool(probe) and (probe in _UNITS or probe.rstrip("s") in _UNITS)
 
 
 def _pairs_from_columns(text: str) -> list[tuple[str, str]]:
@@ -227,7 +238,7 @@ def _pairs_from_columns(text: str) -> list[tuple[str, str]]:
             continue
         # A trailing unit column: "Bore Diameter    25    mm". Dropping it would
         # publish a limiting speed of "16000" with no rpm attached.
-        if len(cells) == 3 and _UNIT_CELL.fullmatch(cells[2][0].strip()):
+        if len(cells) == 3 and _is_unit_cell(cells[2][0]):
             value = f"{value} {cells[2][0].strip()}"
         value = _clean(value)
         if not _looks_like_spec(key, value):

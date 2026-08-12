@@ -1076,6 +1076,19 @@ reader that requires the same gutter on three or more lines cannot do either, so
 the failure is structurally impossible instead of filtered afterwards. All three
 claimed layouts still recover their values.
 
+**A third round probed only the round-two changes and found one more, again
+mine:** the unit-column join matched "a short alphabetic token", so a **NOTES**
+column was joined onto the value — a cleanly read `25 mm` became
+`25 mm typical`, which then failed numeric parsing and blocked a record that had
+been read perfectly. It now matches against the engine's own unit vocabulary
+(`pipeline/units._UNITS`) instead of guessing from shape.
+
+**One deliberate loss, recorded so nobody treats it as a bug:** a spec table of
+only *two* rows now yields nothing, where pdfplumber's inference used to return
+the pair. Three lines sharing a gutter is what separates a column from a
+coincidence, and inventing specs is worse than missing a two-row table. No
+fixture or real datasheet in the corpus has one.
+
 **The lesson worth keeping:** the first version of the column clustering counted
 *distinct offsets* rather than rows, so one stray line outvoted the eight real
 rows beneath it — and that was invisible on the file written to test it, showing
