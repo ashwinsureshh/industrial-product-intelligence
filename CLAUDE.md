@@ -1315,6 +1315,24 @@ taller than the viewport pushes its first row off the top — which cost the
 pointer left where it clicked holds a hover highlight on a sample card that is
 not the one on screen; `park_mouse()` moves it away.
 
+**Three things make it read as someone using the product rather than a
+slideshow, and an edit can silently drop any of them:**
+
+1. **A drawn pointer.** Screen capture records no cursor, so without the
+   injected `CURSOR` overlay buttons press themselves and tabs switch on their
+   own. It is added via `add_init_script`, and it also pulses on mousedown so a
+   click is visible as an event.
+2. **`behavior:'smooth'` on every scroll.** An instant jump between two dense
+   screens gives the eye nothing to follow and reads as a cut.
+3. **Pointer travel before each click** — `glide()` interpolates ~22 steps, so
+   the cursor arrives at a control before pressing it.
+
+Motion is measurable: the same three minutes went 413 → 503 kb/s once these
+landed. Two staging notes that are easy to get wrong — park the pointer *only*
+when the next action is not a click (otherwise it flies to the bottom of the
+frame and straight back), and rest it on the control about to be used, because
+a pointer drifting onto an unrelated button reads as a click that never comes.
+
 **Video running order** — the three things worth the 3 minutes:
 
 1. Hybrid engine on the sparse bearing. Point at the two refusals: the model

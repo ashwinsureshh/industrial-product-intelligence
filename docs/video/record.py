@@ -7,9 +7,14 @@ is what a judge clicking the link actually sees.
     python docs/video/record.py            # full run, ~3 minutes
     python docs/video/record.py --fast     # same path, no dwell, for checking
 
-The dwell times are the script's segment budgets minus the interaction time
-measured on the deployed instance. If the narration runs long, the fix is the
-script, not this file.
+Segments hold to absolute marks taken from the script, not to relative waits, so
+the picture and the narration cannot drift apart. If the narration runs long the
+fix is the script, not this file.
+
+Three things carry the smoothness, and all three are easy to lose in an edit:
+a drawn pointer (screen capture records no cursor, so clicks otherwise happen
+with no visible cause), `behavior:'smooth'` on every scroll, and pointer travel
+interpolated over ~22 steps before each click.
 """
 from __future__ import annotations
 
@@ -57,8 +62,58 @@ def beat(page, seconds: float, label: str = "") -> None:
     page.wait_for_timeout(150 if FAST else int(seconds * 1000))
 
 
+# A pointer, drawn by the page itself. Screen capture does not record the real
+# cursor, so without this things change with no visible cause: buttons press
+# themselves and tabs switch on their own, which is what made the first cut feel
+# like a slideshow rather than someone using the product.
+CURSOR = """
+(() => {
+  const draw = () => {
+    if (document.getElementById('__cursor')) return;
+    const dot = document.createElement('div');
+    dot.id = '__cursor';
+    dot.style.cssText = `position:fixed;left:-100px;top:-100px;width:20px;height:20px;
+      border-radius:50%;background:rgba(37,99,235,.35);border:2px solid rgba(37,99,235,.9);
+      box-shadow:0 2px 10px rgba(0,0,0,.35);pointer-events:none;z-index:2147483647;
+      transform:translate(-50%,-50%);transition:width .12s ease,height .12s ease,
+      background .12s ease;`;
+    document.body.appendChild(dot);
+    addEventListener('mousemove', e => {
+      dot.style.left = e.clientX + 'px';
+      dot.style.top = e.clientY + 'px';
+    }, true);
+    addEventListener('mousedown', () => {
+      dot.style.width = '34px'; dot.style.height = '34px';
+      dot.style.background = 'rgba(37,99,235,.55)';
+    }, true);
+    addEventListener('mouseup', () => {
+      dot.style.width = '20px'; dot.style.height = '20px';
+      dot.style.background = 'rgba(37,99,235,.35)';
+    }, true);
+  };
+  if (document.body) draw(); else addEventListener('DOMContentLoaded', draw);
+})();
+"""
+
+
+def glide(page, selector: str) -> None:
+    """Move the pointer to an element the way a hand would, then settle."""
+    box = page.query_selector(selector).bounding_box()
+    x = box["x"] + box["width"] / 2
+    y = box["y"] + box["height"] / 2
+    page.mouse.move(x, y, steps=1 if FAST else 22)
+    page.wait_for_timeout(60 if FAST else 260)
+
+
+def tap(page, selector: str) -> None:
+    """Glide to a control and click it, so the click has a visible cause."""
+    glide(page, selector)
+    page.click(selector)
+    page.wait_for_timeout(80 if FAST else 320)
+
+
 def creep(page, selector: str, block: str = "center", offset: int = 0) -> None:
-    """Scroll a card into view slowly enough to read on playback.
+    """Scroll a card into view, smoothly, at a readable pace.
 
     `block` matters for tall cards: centring the Content Standard card pushes
     its first row off the top of the frame, and that first row — the
@@ -66,11 +121,17 @@ def creep(page, selector: str, block: str = "center", offset: int = 0) -> None:
     shot exists. Use "start" for anything taller than the viewport, and an
     `offset` to clear the sticky header, which otherwise sits over the row that
     "start" just brought to the top.
+
+    `behavior:'smooth'` is not decoration. An instant jump between two dense
+    screens gives the eye nothing to follow and reads as a cut; the same
+    movement animated reads as scrolling.
     """
-    page.eval_on_selector(selector, f"e => e.scrollIntoView({{block:'{block}'}})")
+    page.eval_on_selector(
+        selector, f"e => e.scrollIntoView({{behavior:'smooth', block:'{block}'}})")
+    page.wait_for_timeout(80 if FAST else 900)
     if offset:
-        page.evaluate(f"window.scrollBy(0, {offset})")
-    page.wait_for_timeout(120 if FAST else 700)
+        page.evaluate(f"window.scrollBy({{top:{offset}, behavior:'smooth'}})")
+        page.wait_for_timeout(60 if FAST else 500)
 
 
 def park_mouse(page) -> None:
@@ -79,7 +140,8 @@ def park_mouse(page) -> None:
     Left where it clicked, it holds a hover highlight on a card that is not the
     one on screen, which reads as the wrong demo being shown.
     """
-    page.mouse.move(SIZE["width"] // 2, SIZE["height"] - 8)
+    page.mouse.move(SIZE["width"] // 2, SIZE["height"] - 8,
+                    steps=1 if FAST else 14)
 
 
 def main() -> int:
@@ -89,20 +151,29 @@ def main() -> int:
         browser = p.chromium.launch(channel="chrome", headless=True)
         context = browser.new_context(viewport=SIZE, record_video_dir=str(OUT),
                                       record_video_size=SIZE)
+        context.add_init_script(CURSOR)
         page = context.new_page()
 
         # 1 — the loaded app. Clock starts once there is something to look at.
         print("[1] 0:00 opening")
         page.goto(URL, wait_until="networkidle", timeout=120000)
         _T0[0] = time.time()
-        hold_until(page, "0:18", "empty form, engine on Demo")
+        # Hold the hero while the opening line is read. The result column is
+        # empty until the first enrichment, so scrolling to the demo list early
+        # leaves half the frame blank for no reason.
+        beat(page, 12.0, "empty form, engine on Demo")
+        # Bring the demo list into view and rest the pointer on the case we are
+        # about to open. A pointer drifting onto an unrelated control reads as a
+        # click that never comes.
+        creep(page, '.card:has(h3:text-is("Demo Cases"))', block="start", offset=-110)
+        glide(page, '.sample:has-text("Sparse bearing")')
+        hold_until(page, "0:18")
 
         # 2 — sparse bearing, provenance
         print("[2] 0:18 sparse bearing")
-        page.click('.sample:has-text("Sparse bearing")')
-        park_mouse(page)
-        beat(page, 1.5)
-        page.click('button:has-text("Enrich Product")')
+        tap(page, '.sample:has-text("Sparse bearing")')
+        beat(page, 1.2)
+        tap(page, 'button:has-text("Enrich Product")')
         page.wait_for_selector('.col .card:has(h3:text-is("Attributes"))', timeout=60000)
         beat(page, 3.0, "record lands")
         creep(page, '.col .card:has(h3:text-is("Attributes"))')
@@ -110,21 +181,20 @@ def main() -> int:
 
         # 3 — the gate refusing. The thesis; the longest hold in the film.
         print("[3] 0:50 hybrid gate")
-        page.click('.engine-toggle .tab:text-is("Hybrid")')
+        tap(page, '.engine-toggle .tab:text-is("Hybrid")')
         beat(page, 1.5)
-        page.click('button:has-text("Enrich Product")')
+        tap(page, 'button:has-text("Enrich Product")')
         page.wait_for_selector('.col .card:has(h3:text-is("AI gate"))', timeout=60000)
         creep(page, '.col .card:has(h3:text-is("AI gate"))')
         hold_until(page, "1:24", "hold on 14.8 kN refused and 14000 rpm refused")
 
         # 4 — a contradiction blocked
         print("[4] 1:24 contradictory valve")
-        page.click('.engine-toggle .tab:text-is("Demo")')
+        tap(page, '.engine-toggle .tab:text-is("Demo")')
         beat(page, 0.8)
-        page.click('.sample:has-text("Contradictory valve")')
-        park_mouse(page)
-        beat(page, 1.2)
-        page.click('button:has-text("Enrich Product")')
+        tap(page, '.sample:has-text("Contradictory valve")')
+        beat(page, 1.0)
+        tap(page, 'button:has-text("Enrich Product")')
         page.wait_for_selector('.col .card:has(h3:text-is("Validation"))', timeout=60000)
         creep(page, '.col .card:has(h3:text-is("Validation"))')
         hold_until(page, "1:47", "PVC at 180 C, blocked in plain English")
@@ -137,9 +207,9 @@ def main() -> int:
 
         # 6 — discovery, an honest negative result
         print("[6] 2:10 discover SKF")
-        page.click('.main-nav .tab:text-is("Discover")')
+        tap(page, '.main-nav .tab:text-is("Discover")')
         beat(page, 1.5)
-        page.click('.sample:has-text("SKF 6205-2RS")')
+        tap(page, '.sample:has-text("SKF 6205-2RS")')
         page.wait_for_selector('.col .card:has(h3:text-is("Sources"))', timeout=60000)
         park_mouse(page)
         creep(page, '.col .card:has(h3:text-is("Sources"))')
@@ -149,9 +219,9 @@ def main() -> int:
 
         # 7 — volume and the customer's own output schema
         print("[7] 2:32 catalog and exports")
-        page.click('.main-nav .tab:text-is("Catalog")')
+        tap(page, '.main-nav .tab:text-is("Catalog")')
         beat(page, 1.2)
-        page.click('button:has-text("Run 10-product demo catalog")')
+        tap(page, 'button:has-text("Run 10-product demo catalog")')
         page.wait_for_selector('.col table', timeout=60000)
         hold_until(page, "2:42", "publish / review / blocked")
         creep(page, '.col .card:has(h3:text-is("Export"))')
@@ -159,7 +229,7 @@ def main() -> int:
 
         # 8 — close on the least flattering number, deliberately
         print("[8] 2:50 close")
-        page.click('.main-nav .tab:text-is("Single Product")')
+        tap(page, '.main-nav .tab:text-is("Single Product")')
         hold_until(page, "3:00", "closing frame")
 
         context.close()
