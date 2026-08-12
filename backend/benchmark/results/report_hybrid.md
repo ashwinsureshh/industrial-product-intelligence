@@ -1,6 +1,6 @@
 # Benchmark Results
 
-Engine: **hybrid (gated)** · 102 cases · 0.41 s · 247.2 products/s
+Engine: **hybrid (gated)** · 102 cases · 0.42 s · 242.9 products/s
 
 ## Headline
 

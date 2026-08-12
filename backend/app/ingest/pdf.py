@@ -193,6 +193,9 @@ def _is_header_pair(key: str, value: str) -> bool:
 # two cannot be told apart from prose.
 _GUTTER = re.compile(r"\S+(?: \S+)*")
 
+# A unit sitting in its own column: mm, kN, rpm, °C, N·m, %, in.
+_UNIT_CELL = re.compile(r"[A-Za-zµ°%/·.\-]{1,8}[0-9]?")
+
 
 def _pairs_from_columns(text: str) -> list[tuple[str, str]]:
     """Read a table whose columns are held apart by whitespace alone.
@@ -209,31 +212,46 @@ def _pairs_from_columns(text: str) -> list[tuple[str, str]]:
     on line after line, so a value offset shared by at least three lines is
     required before any of them counts as a spec.
     """
-    candidates: list[tuple[str, str, int]] = []
+    candidates: list[tuple[str, str, int, int]] = []
     for line in (text or "").splitlines():
         cells = [(m.group(), m.start()) for m in _GUTTER.finditer(line)]
         if len(cells) < 2:
             continue
-        (key, _), (value, offset) = cells[0], cells[1]
-        key, value = _clean(key), _clean(value)
-        if _is_header_pair(key, value) or not _looks_like_spec(key, value):
+        key = _clean(cells[0][0])
+        value, start = cells[1]
+        end = start + len(value)
+        # Judge the header before joining anything to it: a "PARAMETER | VALUE |
+        # UNIT" row becomes "VALUE UNIT", which no header list contains, and the
+        # header sails through as a spec.
+        if _is_header_pair(key, _clean(value)):
             continue
-        candidates.append((key, value, offset))
+        # A trailing unit column: "Bore Diameter    25    mm". Dropping it would
+        # publish a limiting speed of "16000" with no rpm attached.
+        if len(cells) == 3 and _UNIT_CELL.fullmatch(cells[2][0].strip()):
+            value = f"{value} {cells[2][0].strip()}"
+        value = _clean(value)
+        if not _looks_like_spec(key, value):
+            continue
+        candidates.append((key, value, start, end))
 
     if len(candidates) < 3:
         return []
 
-    # Cluster on the value's starting column, allowing for a proportional font
-    # nudging characters by a place or two. The winner is the offset shared by
-    # the most *rows*, not by the most distinct offsets: a title line like
-    # "FAG  Rolling Bearing Data" is one stray pair at its own offset, and
-    # counting offsets rather than rows lets that single line outvote the eight
-    # real ones beneath it.
+    # Cluster on the value column, allowing for a proportional font nudging
+    # characters by a place or two. Both edges are tried because datasheets
+    # right-align numeric columns as often as they left-align them, and a
+    # right-aligned column shares its *end*, not its start.
+    #
+    # The winner is the edge shared by the most *rows*, not by the most distinct
+    # offsets: a title line like "FAG  Rolling Bearing Data" is one stray pair at
+    # its own offset, and counting offsets rather than rows lets that single line
+    # outvote the eight real ones beneath it.
     best: list[tuple[str, str]] = []
-    for anchor in {o for _, _, o in candidates}:
-        group = [(k, v) for k, v, o in candidates if abs(o - anchor) <= 2]
-        if len(group) > len(best):
-            best = group
+    for index in (2, 3):
+        for anchor in {c[index] for c in candidates}:
+            group = [(c[0], c[1]) for c in candidates if abs(c[index] - anchor) <= 2]
+            if len(group) > len(best):
+                best = group
 
     return best if len(best) >= 3 else []
 
@@ -338,20 +356,18 @@ def from_pdf(data: bytes, filename: str = "datasheet.pdf") -> tuple[RawProduct, 
                 if len(line_pairs) >= 3:
                     found_here = absorb(line_pairs, "text:line-pairs")
 
-            # 3. Space-aligned columns, read line by line. Splitting on gutters
-            #    cannot cut inside a token, so this is tried before handing the
-            #    page to pdfplumber's page-wide column inference.
+            # 3. Space-aligned columns, read line by line on their own gutters.
+            #
+            #    This replaced pdfplumber's `text` strategy rather than deferring
+            #    to it. That strategy infers column edges across the whole page,
+            #    which produced both documented failures: values sliced through a
+            #    token, and specs invented from prose — a page of sentences came
+            #    back as 'These bearings are supplied sealed' -> 'or open'. A
+            #    reader that requires the same gutter on three or more lines
+            #    cannot do either, so the failure mode is now structurally
+            #    impossible instead of filtered afterwards.
             if not found_here:
                 found_here = absorb(_pairs_from_columns(text), "text:columns")
-
-            # 4. Whitespace columns — inferred, and wrong on non-tabular pages.
-            if not found_here:
-                found_here = absorb(
-                    read_tables({"vertical_strategy": "text",
-                                 "horizontal_strategy": "text",
-                                 "text_x_tolerance": 2}),
-                    "table:text",
-                )
 
             # Finally, pick up any stray labelled lines the winner missed.
             absorb(_pairs_from_lines(text), "text:line-pairs")

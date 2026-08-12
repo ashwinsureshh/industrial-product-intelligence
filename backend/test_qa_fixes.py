@@ -90,6 +90,39 @@ def test_standard_contradicts_supplier() -> bool:
     ok &= check("25.0 is not treated as contradicting 25",
                 issue(rounded, "STANDARD_CONTRADICTION") is None)
 
+    # Nor is the same dimension stated in another unit.
+    imperial = enrich(sku="I", mpn="6205", brand="SKF", name="Deep groove ball bearing",
+                      raw_specs={"Bore": "0.9843 in", "Outer Diameter": "52 mm",
+                                 "Width": "15 mm"})
+    ok &= check("0.9843 in is not treated as contradicting 25 mm",
+                issue(imperial, "STANDARD_CONTRADICTION") is None)
+
+    # The regression this check exists for: a designation mentioned in prose is
+    # not the part's own designation, and must never accuse the supplier. A
+    # correct 6305 was charged with contradicting 6205's dimensions because the
+    # description said "replaces the older 6205".
+    cross_talk = enrich(sku="X", mpn="6305", brand="SKF", name="Deep groove ball bearing",
+                        description="Replaces the older 6205 in this housing.",
+                        raw_specs={"Bore": "25 mm", "Outer Diameter": "62 mm",
+                                   "Width": "17 mm"})
+    ok &= check("a series named only in prose raises no contradiction",
+                issue(cross_talk, "STANDARD_CONTRADICTION") is None
+                and cross_talk.readiness.verdict == "publish")
+
+    # But prose is still good enough to fill a blank: that is a suggestion, not
+    # a charge, and it is where the 6205 recall in §7 comes from.
+    prose_gap = enrich(sku="P", mpn="HOUSE-CODE-9", brand="SKF",
+                       name="Deep groove ball bearing 6205")
+    ok &= check("a series named only in prose still fills gaps",
+                value_of(prose_gap, "bore_diameter") is not None
+                and value_of(prose_gap, "bore_diameter").value == 25)
+    prose_conflict = enrich(sku="P2", mpn="HOUSE-CODE-9", brand="SKF",
+                            name="Deep groove ball bearing 6205",
+                            raw_specs={"Bore": "30 mm", "Outer Diameter": "52 mm",
+                                       "Width": "15 mm"})
+    ok &= check("...but does not contradict a supplied value",
+                issue(prose_conflict, "STANDARD_CONTRADICTION") is None)
+
     from app.pipeline import validate
     ok &= check("the code counts as an integrity warning, so it blocks auto-publish",
                 "STANDARD_CONTRADICTION" in validate.INTEGRITY_CODES)
@@ -147,6 +180,21 @@ def test_marketplaces_refused_on_every_path() -> bool:
         got = policy.blocked_kind(url)
         ok &= check(f"{url.split('/')[2]} is refused as a {kind}", got == kind)
 
+    # A marketplace does not stop being one at another TLD, and the blocked
+    # list is written in .com. amazon.co.uk sailed through a policy whose whole
+    # purpose is to exclude marketplaces.
+    for url in ["https://www.amazon.co.uk/dp/X", "https://www.amazon.de/dp/X",
+                "https://amazon.com.au/dp/X", "https://www.ebay.co.uk/itm/1"]:
+        ok &= check(f"{url.split('/')[2]} is refused at its country domain",
+                    policy.blocked_kind(url) == "marketplace")
+
+    # ...without swallowing everything that merely contains the word.
+    for url in ["https://amazonaws.com/bucket/file",
+                "https://my-amazon-supplier.com/parts",
+                "https://www.skf.com/productinfo/6205-2RS"]:
+        ok &= check(f"{url.split('/')[2]} is not mistaken for a marketplace",
+                    policy.blocked_kind(url) is None)
+
     ok &= check("a manufacturer's own page is still allowed",
                 policy.blocked_kind("https://www.skf.com/productinfo/6205-2RS") is None)
     # Narrower than check() by design: a person pasting their supplier's page
@@ -160,6 +208,25 @@ def test_marketplaces_refused_on_every_path() -> bool:
 
 
 # --------------------------------------------------------------- 4. PDF columns
+def _lines_pdf(lines: list[str]) -> bytes:
+    """A monospaced page of exactly these lines, positions preserved."""
+    import io
+
+    from reportlab.lib.pagesizes import A4
+    from reportlab.pdfgen import canvas
+
+    buffer = io.BytesIO()
+    c = canvas.Canvas(buffer, pagesize=A4)
+    c.setFont("Courier", 10)
+    y = 760
+    for line in lines:
+        c.drawString(60, y, line)
+        y -= 15
+    c.showPage()
+    c.save()
+    return buffer.getvalue()
+
+
 def _spaced_pdf(title: str, rows: list[tuple[str, str]]) -> bytes:
     """A whitespace-aligned datasheet with a wide title line above the table.
 
@@ -212,26 +279,41 @@ def test_space_aligned_columns_are_not_clipped() -> bool:
     ok &= check("every value cites the page it came from",
                 all(v == "page 1" for v in product.spec_sources.values()))
 
+    # Right-aligned numeric columns are as common as left-aligned ones, and a
+    # right-aligned column shares its end, not its start.
+    ragged, ragged_report = from_pdf(_lines_pdf([
+        "Bore Diameter                     25 mm",
+        "Outer Diameter                    52 mm",
+        "Dynamic Load Rating           14.0 kN",
+        "Limiting Speed               16000 rpm",
+    ]), "ragged.pdf")
+    ok &= check("a right-aligned value column is read",
+                ragged.raw_specs.get("Dynamic Load Rating") == "14.0 kN"
+                and ragged.raw_specs.get("Limiting Speed") == "16000 rpm")
+
+    # A unit in its own column belongs to the value; "16000" with no rpm is a
+    # different fact from "16000 rpm".
+    three, _ = from_pdf(_lines_pdf([
+        "PARAMETER                      VALUE      UNIT",
+        "Bore Diameter                  25         mm",
+        "Outer Diameter                 52         mm",
+        "Limiting Speed                 16000      rpm",
+    ]), "three.pdf")
+    ok &= check("a trailing unit column is joined to the value",
+                three.raw_specs.get("Limiting Speed") == "16000 rpm")
+    ok &= check("and the header row is not read as a spec",
+                not any(k.lower() == "parameter" for k in three.raw_specs))
+
     # The guard that matters: prose must not become a spec table. Two words
     # with a wide gap happen everywhere; a column is the same gap repeatedly.
-    import io
-
-    from reportlab.lib.pagesizes import A4
-    from reportlab.pdfgen import canvas
-
-    buffer = io.BytesIO()
-    c = canvas.Canvas(buffer, pagesize=A4)
-    c.setFont("Helvetica", 11)
-    for i, line in enumerate([
-        "Single Row Deep Groove Ball Bearings",
-        "These bearings are supplied in a range of sizes and seal types.",
-        "Consult the engineering team before selecting a fit for high loads.",
-        "All dimensions conform to the relevant international standards.",
-    ]):
-        c.drawString(70, 760 - i * 22, line)
-    c.showPage()
-    c.save()
-    prose, _ = from_pdf(buffer.getvalue(), "prose.pdf")
+    # This is the documented 'Single Row D' -> 'eep Groove Ball' failure, and
+    # the reason pdfplumber's page-wide inference no longer runs at all.
+    prose, _ = from_pdf(_lines_pdf([
+        "Deep Groove Ball Bearings            Product Family",
+        "These bearings are supplied sealed   or open",
+        "Consult engineering before use       in high loads",
+        "All dimensions conform to the        relevant standards",
+    ]), "prose.pdf")
     ok &= check("a page of prose yields no invented specs", not prose.raw_specs)
     return ok
 

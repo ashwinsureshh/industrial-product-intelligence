@@ -2,41 +2,104 @@
   "source": "provisional",
   "replaces_with": "UniCat_Manufacturer_and_Brand_List.xlsx (27,000+ approved manufacturer/brand rows)",
   "note": "The brand -> official-domain registry is the whole basis for deciding whether a page is manufacturer-provided. Twelve entries here are a stand-in seeded from the brands in Unilog's own sample; their approved list replaces this file, not the code.",
-
   "policy": {
     "allow_unknown_domains": false,
     "allow_unknown_note": "A page can only be cited as manufacturer-provided if we can show the domain belongs to the manufacturer. Defaulting to open would let any blog or reseller become a source, and their brief bans non-manufacturer sourcing outright. Unknown domains are refused with a reason rather than fetched."
   },
-
   "blocked": [
-    {"domain": "amazon.com", "kind": "marketplace"},
-    {"domain": "ebay.com", "kind": "marketplace"},
-    {"domain": "walmart.com", "kind": "marketplace"},
-    {"domain": "alibaba.com", "kind": "marketplace"},
-    {"domain": "aliexpress.com", "kind": "marketplace"},
-    {"domain": "etsy.com", "kind": "marketplace"},
-    {"domain": "temu.com", "kind": "marketplace"},
-    {"domain": "wayfair.com", "kind": "marketplace"},
-    {"domain": "homedepot.com", "kind": "retailer"},
-    {"domain": "lowes.com", "kind": "retailer"},
-    {"domain": "grainger.com", "kind": "distributor"},
-    {"domain": "mcmaster.com", "kind": "distributor"},
-    {"domain": "zoro.com", "kind": "distributor"},
-    {"domain": "fastenal.com", "kind": "distributor"},
-    {"domain": "motionindustries.com", "kind": "distributor"},
-    {"domain": "globalindustrial.com", "kind": "distributor"},
-    {"domain": "reddit.com", "kind": "forum"},
-    {"domain": "quora.com", "kind": "forum"},
-    {"domain": "wikipedia.org", "kind": "encyclopedia"},
-    {"domain": "pinterest.com", "kind": "social"}
+    {
+      "domain": "amazon.com",
+      "kind": "marketplace",
+      "any_tld": true
+    },
+    {
+      "domain": "ebay.com",
+      "kind": "marketplace",
+      "any_tld": true
+    },
+    {
+      "domain": "walmart.com",
+      "kind": "marketplace"
+    },
+    {
+      "domain": "alibaba.com",
+      "kind": "marketplace",
+      "any_tld": true
+    },
+    {
+      "domain": "aliexpress.com",
+      "kind": "marketplace",
+      "any_tld": true
+    },
+    {
+      "domain": "etsy.com",
+      "kind": "marketplace"
+    },
+    {
+      "domain": "temu.com",
+      "kind": "marketplace"
+    },
+    {
+      "domain": "wayfair.com",
+      "kind": "marketplace"
+    },
+    {
+      "domain": "homedepot.com",
+      "kind": "retailer"
+    },
+    {
+      "domain": "lowes.com",
+      "kind": "retailer"
+    },
+    {
+      "domain": "grainger.com",
+      "kind": "distributor"
+    },
+    {
+      "domain": "mcmaster.com",
+      "kind": "distributor"
+    },
+    {
+      "domain": "zoro.com",
+      "kind": "distributor"
+    },
+    {
+      "domain": "fastenal.com",
+      "kind": "distributor"
+    },
+    {
+      "domain": "motionindustries.com",
+      "kind": "distributor"
+    },
+    {
+      "domain": "globalindustrial.com",
+      "kind": "distributor"
+    },
+    {
+      "domain": "reddit.com",
+      "kind": "forum"
+    },
+    {
+      "domain": "quora.com",
+      "kind": "forum"
+    },
+    {
+      "domain": "wikipedia.org",
+      "kind": "encyclopedia"
+    },
+    {
+      "domain": "pinterest.com",
+      "kind": "social"
+    }
   ],
   "blocked_note": "Distributors and retailers are blocked alongside marketplaces. Their rule is that data must come from the manufacturer's own site or documentation, and a distributor page is exactly the second-hand copy that rule exists to keep out — it is also where most catalogue errors originate.",
-
   "manufacturers": [
     {
       "brand": "FRIGIDAIRE",
       "manufacturer": "Electrolux Major Appliances North America",
-      "domains": ["frigidaire.com"],
+      "domains": [
+        "frigidaire.com"
+      ],
       "url_templates": [
         "https://www.frigidaire.com/en/p/owner-center/product-support/{mpn}"
       ],
@@ -45,7 +108,10 @@
     {
       "brand": "Whirlpool",
       "manufacturer": "Whirlpool Corporation",
-      "domains": ["whirlpool.com", "learnwhirlpool.com"],
+      "domains": [
+        "whirlpool.com",
+        "learnwhirlpool.com"
+      ],
       "url_templates": [
         "https://www.whirlpool.com/products/{mpn}.html"
       ]
@@ -53,19 +119,25 @@
     {
       "brand": "3M",
       "manufacturer": "3M Company",
-      "domains": ["3m.com"],
+      "domains": [
+        "3m.com"
+      ],
       "url_templates": []
     },
     {
       "brand": "TREX",
       "manufacturer": "Trex Company, Inc.",
-      "domains": ["trex.com"],
+      "domains": [
+        "trex.com"
+      ],
       "url_templates": []
     },
     {
       "brand": "Milwaukee",
       "manufacturer": "Milwaukee Tool",
-      "domains": ["milwaukeetool.com"],
+      "domains": [
+        "milwaukeetool.com"
+      ],
       "url_templates": [
         "https://www.milwaukeetool.com/Products/{mpn}"
       ]
@@ -73,19 +145,26 @@
     {
       "brand": "Diablo",
       "manufacturer": "Freud America, Inc.",
-      "domains": ["diablotools.com", "freudtools.com"],
+      "domains": [
+        "diablotools.com",
+        "freudtools.com"
+      ],
       "url_templates": []
     },
     {
       "brand": "Kichler",
       "manufacturer": "Kichler Lighting LLC",
-      "domains": ["kichler.com"],
+      "domains": [
+        "kichler.com"
+      ],
       "url_templates": []
     },
     {
       "brand": "SKF",
       "manufacturer": "AB SKF",
-      "domains": ["skf.com"],
+      "domains": [
+        "skf.com"
+      ],
       "url_templates": [
         "https://www.skf.com/productinfo/{mpn}"
       ],
@@ -94,25 +173,36 @@
     {
       "brand": "ABB",
       "manufacturer": "ABB Ltd",
-      "domains": ["abb.com", "new.abb.com"],
+      "domains": [
+        "abb.com",
+        "new.abb.com"
+      ],
       "url_templates": []
     },
     {
       "brand": "Makita",
       "manufacturer": "Makita Corporation",
-      "domains": ["makitatools.com", "makita.com"],
+      "domains": [
+        "makitatools.com",
+        "makita.com"
+      ],
       "url_templates": []
     },
     {
       "brand": "AZEK",
       "manufacturer": "The AZEK Company",
-      "domains": ["azekco.com", "timbertech.com"],
+      "domains": [
+        "azekco.com",
+        "timbertech.com"
+      ],
       "url_templates": []
     },
     {
       "brand": "TIMBERTECH",
       "manufacturer": "TimberTech",
-      "domains": ["timbertech.com"],
+      "domains": [
+        "timbertech.com"
+      ],
       "url_templates": []
     }
   ]

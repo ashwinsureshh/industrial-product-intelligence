@@ -98,6 +98,54 @@ def _registrable(host: str) -> list[str]:
     return [".".join(parts[i:]) for i in range(len(parts))]
 
 
+# Second-level domains that are part of a country's suffix rather than a name:
+# in 'amazon.co.uk' the registrable name is 'amazon', not 'co'.
+_SLD_SUFFIXES = {"co", "com", "net", "org", "gov", "ac"}
+
+
+def _registrable_name(host: str) -> str:
+    """The brand-carrying label: amazon.com, amazon.co.uk and amazon.de -> amazon.
+
+    A miniature public-suffix rule. It exists because the blocked list is
+    written in .com and a marketplace does not stop being one at another TLD —
+    amazon.co.uk sailed through a policy whose whole purpose is to exclude
+    marketplaces.
+    """
+    parts = host.lower().strip(".").split(".")
+    if len(parts) >= 3 and len(parts[-1]) == 2 and parts[-2] in _SLD_SUFFIXES:
+        return parts[-3]
+    return parts[-2] if len(parts) >= 2 else ""
+
+
+@lru_cache(maxsize=1)
+def _blocked_names() -> dict[str, str]:
+    """Blocked entries that apply at any TLD, keyed by their brand label."""
+    table: dict[str, str] = {}
+    for entry in _config().get("blocked", []):
+        if entry.get("any_tld"):
+            label = str(entry["domain"]).lower().split(".")[0]
+            table[label] = str(entry.get("kind", "blocked"))
+    return table
+
+
+def blocked_verdict(url: str) -> tuple[str, str] | None:
+    """(kind, matched) if this URL is an explicitly prohibited source."""
+    host = (urlparse((url or "").strip()).hostname or "").lower()
+    if not host:
+        return None
+
+    blocked = _blocked()
+    for suffix in _registrable(host):
+        if suffix in blocked:
+            return blocked[suffix], suffix
+
+    name = _registrable_name(host)
+    names = _blocked_names()
+    if name in names:
+        return names[name], host
+    return None
+
+
 def brand_entry(brand: str | None) -> dict[str, Any] | None:
     if not brand:
         return None
@@ -119,14 +167,8 @@ def blocked_kind(url: str) -> str | None:
     organizers' explicit rule: marketplaces, retailers and distributors are
     never a source, however the URL arrived.
     """
-    host = (urlparse((url or "").strip()).hostname or "").lower()
-    if not host:
-        return None
-    blocked = _blocked()
-    for suffix in _registrable(host):
-        if suffix in blocked:
-            return blocked[suffix]
-    return None
+    verdict = blocked_verdict(url)
+    return verdict[0] if verdict else None
 
 
 def check(url: str, brand: str | None = None) -> Verdict:
@@ -141,16 +183,15 @@ def check(url: str, brand: str | None = None) -> Verdict:
 
     suffixes = _registrable(host)
 
-    blocked = _blocked()
-    for suffix in suffixes:
-        if suffix in blocked:
-            kind = blocked[suffix]
-            return Verdict(
-                False,
-                f"{suffix} is a {kind}. The content standard requires "
-                f"manufacturer-provided sources, so {kind}s are excluded.",
-                kind=kind,
-            )
+    prohibited = blocked_verdict(url)
+    if prohibited:
+        kind, matched = prohibited
+        return Verdict(
+            False,
+            f"{matched} is a {kind}. The content standard requires "
+            f"manufacturer-provided sources, so {kind}s are excluded.",
+            kind=kind,
+        )
 
     registry = _by_domain()
     for suffix in suffixes:

@@ -36,7 +36,7 @@
     "cases": 102,
     "cached_hits": 0,
     "elapsed_s": 0.35,
-    "throughput_per_s": 287.4,
+    "throughput_per_s": 287.8,
     "coverage": {
       "attributes_in": 129,
       "attributes_out": 355,

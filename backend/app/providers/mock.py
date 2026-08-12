@@ -48,6 +48,17 @@ class MockProvider(Provider):
             notes.append("Every category attribute was already resolved from supplier data.")
         return InferenceResult(attributes=out, notes=notes, cross_checks=cross)
 
+    @staticmethod
+    def _find_series_in(table: dict[str, Any], fields: list[str | None]) -> str | None:
+        """Longest designation appearing as a whole word in any of these fields."""
+        corpus = " ".join(f for f in fields if f)
+        if not corpus:
+            return None
+        for candidate in sorted(table, key=len, reverse=True):
+            if re.search(rf"\b{candidate}\b", corpus):
+                return candidate
+        return None
+
     def _from_series_table(
         self, raw: RawProduct, category: dict[str, Any], have: set[str]
     ) -> tuple[list[Attribute], list[Attribute]]:
@@ -63,14 +74,15 @@ class MockProvider(Provider):
         if not table:
             return [], []
 
-        corpus = " ".join(
-            p for p in [raw.mpn, raw.sku, raw.name, raw.description, raw.free_text] if p
-        )
-        series = None
-        for candidate in sorted(table, key=len, reverse=True):
-            if re.search(rf"\b{candidate}\b", corpus):
-                series = candidate
-                break
+        # Identity first, prose second, and the difference matters. "6205" in a
+        # part number means the part IS a 6205; "replaces the older 6205" in a
+        # description only means the number was mentioned. Reading both from one
+        # corpus let a 6305 with correct dimensions be accused of contradicting
+        # ISO 15, quoting "the part number's standard" for a series the part
+        # number never contained.
+        identified = self._find_series_in(table, [raw.mpn, raw.sku])
+        series = identified or self._find_series_in(
+            table, [raw.name, raw.description, raw.free_text])
         if not series:
             return [], []
 
@@ -101,7 +113,11 @@ class MockProvider(Provider):
                 group=spec.get("group", "General"),
             )
             if key in have:
-                cross.append(attribute)
+                # Only a series read off the part number is allowed to accuse a
+                # supplier of contradicting it. One found in prose is still good
+                # enough to fill a blank, which is a suggestion, not a charge.
+                if identified:
+                    cross.append(attribute)
                 continue
             out.append(attribute)
             have.add(key)
