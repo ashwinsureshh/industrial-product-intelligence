@@ -1040,6 +1040,48 @@ rows beneath it and the reader returned nothing. It was invisible on the
 handwritten test file, which had no such line, and only appeared against
 `test_ingest.py`'s own fixture. Cluster by row count, not by offset count.
 
+### 7.8.1 The re-test — running the pass again against the fixes
+
+Worth recording because it earned its keep: re-running A–N found **four more
+things, one of them a regression introduced by the fix above.**
+
+**A false alarm on a clean record, which is the worst kind here.** The series
+lookup searched a single corpus built from the part number *and* the prose, so a
+correct **6305** whose description said "replaces the older 6205" was charged
+with contradicting 6205's dimensions — quoting *"the part number's standard"*
+for a series the part number never contained. Latent before §7.8's defect 1,
+because the knowledge base only filled gaps; the standards check turned a silent
+mis-detection into a visible false accusation, against a claimed 0.0%
+false-alarm rate. **Identity is read first now, and only a series found in the
+part number may accuse a supplier.** One found in prose can still fill a blank —
+that is a suggestion, not a charge, and it is where §7's 6205 recall comes from.
+
+**A marketplace stopped being one at another TLD.** The blocked list is written
+in `.com`, so `amazon.co.uk` and `amazon.de` passed a policy whose entire purpose
+is to exclude marketplaces. Global marketplaces now carry `any_tld` in
+`sources.json` and match on their registrable name — without swallowing
+`amazonaws.com` or `my-amazon-supplier.com`, both asserted in the tests.
+
+**Two gaps in the new PDF reader:** a right-aligned numeric column read as
+nothing (it shares its *end* offset, not its start), and a unit in its own
+column was dropped — `16000` is a different fact from `16000 rpm`. It now
+clusters on whichever edge more rows agree on and joins a trailing unit cell. A
+header row survived by being joined to its own unit column, so headers are
+judged *before* anything is joined to them.
+
+**pdfplumber's page-wide inference is now gone rather than demoted.** It was the
+source of both documented failures — values sliced through a token, and specs
+invented from prose (`'These bearings are supplied sealed' → 'or open'`). A
+reader that requires the same gutter on three or more lines cannot do either, so
+the failure is structurally impossible instead of filtered afterwards. All three
+claimed layouts still recover their values.
+
+**The lesson worth keeping:** the first version of the column clustering counted
+*distinct offsets* rather than rows, so one stray line outvoted the eight real
+rows beneath it — and that was invisible on the file written to test it, showing
+up only against `test_ingest.py`'s existing fixture. A fix verified only against
+the case that motivated it is not verified.
+
 **Not a defect, but do not quote it as one:** throughput on the deployed free
 tier is **~19 products/s**, not the 305/s in §7. The engine reaches 287/s
 locally on the same corpus, so this is Render's shared CPU rather than the
