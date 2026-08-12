@@ -1,9 +1,10 @@
 """Generate the narration and report how long each segment actually takes.
 
-Uses the Windows speech engine, which is free and local. It is plainly
-synthetic, and a human read of the same script will be better — but it makes
-the sync exact, because every segment's real duration is measured here and fed
-back into record.py's marks rather than estimated from a word count.
+Uses edge-tts — Microsoft's neural voices, free and without an account
+(pip install edge-tts). A human read of the same script will still be better,
+but the sync is exact either way, because every segment's real duration is
+measured here and fed back into record.py's marks rather than estimated from a
+word count.
 
     python docs/video/voiceover.py
 
@@ -24,69 +25,84 @@ import wave
 from pathlib import Path
 
 OUT = Path(__file__).parent / "footage"
-VOICE = "Microsoft David Desktop"
-RATE = 0          # SAPI scale, -10..10. 0 is roughly 160 wpm.
-GAP = 0.45        # breath between segments, seconds
+VOICE = "en-US-AndrewNeural"   # "warm, confident, authentic" — fits the pitch
+RATE = "-4%"                   # a touch under default; this is dense material
+GAP = 0.40        # breath between segments, seconds
 
 SEGMENTS: list[tuple[str, str]] = [
-    ("open", "In industrial commerce, a wrong specification ships a broken machine. "
-             "So this engine is built to do something unusual. It would rather leave "
-             "a field empty than state something it cannot defend."),
-    ("bearing", "Three fields in. A part number, a brand, a name. Out comes a full "
-                "record. Bore twenty five millimetres, outer diameter fifty two, "
-                "width fifteen. None of that was supplied. I.S.O. fifteen fixes those "
-                "dimensions for the designation sixty two oh five. The purple badge "
-                "means a published standard. The grey ones "
-                "are category defaults, flagged as unconfirmed, not presented as fact."),
-    ("gate", "Now the A.I. engine. It proposed a load rating of fourteen point eight "
-             "kilonewtons, and a speed of fourteen thousand r.p.m. I.S.O. fifteen says "
-             "fourteen, and sixteen thousand. Both refused, and the reason is printed. "
-             "The model may fill a blank, or replace an unbacked default. It may never "
-             "overrule evidence. Bounded this way it beats both the raw model and the "
-             "rules engine, and precision on evidence backed values stays at exactly "
-             "one hundred percent."),
-    ("valve", "Sixteen cross field rules catch what no single field check can. A "
-              "P.V.C. body rated to one hundred and eighty degrees Celsius. Every "
-              "number plausible alone, impossible together. Blocked, in plain English, "
-              "with the reason a buyer can act on."),
-    ("content", "The customer needs the same product written five times, to five "
-                "character limits. This is the forty character invoice line. It hit "
-                "the limit by dropping whole facts, and naming which ones. Cutting at "
-                "forty characters would truncate the part number, and an unsearchable "
-                "part number is worse than a shorter line."),
-    ("discover", "Discovery, from a brand and a part number. It found S.K.F.'s own "
-                 "page, fetched it, and refused it. The page renders client side and "
-                 "yielded nothing. That refusal is the honest answer. The record below "
-                 "still scores ninety four, because the part number itself decodes "
-                 "against I.S.O. fifteen. Nothing was invented to fill the gap."),
-    ("catalog", "At volume. Ten products, triaged into publish, review, and blocked. "
-                "Exports render into the customer's own two hundred and fifty two "
-                "column delivery format, or schema dot org. The target schema is "
-                "data, so a new one needs no code."),
-    ("close", "Against their own labelled rows. Fourteen of fourteen fields exact when "
-              "the engine has the attribute values. Two of fourteen from a bare "
-              "catalogue row. Both numbers, because the gap is sourcing, and saying so "
-              "is the point."),
+    ("architecture",
+     "This is Product Intelligence. It turns a supplier record, often just a part "
+     "number and a brand, into a complete, validated, commerce ready product where "
+     "every value carries its evidence. Six input paths all become one shape, and "
+     "run the same ten stages. Nothing gets a shortcut."),
+    ("bearing",
+     "Three fields in. Out comes a full record, and the trace shows all ten stages "
+     "with their timings. Bore twenty five millimetres, outer diameter fifty two, "
+     "width fifteen. None of that was supplied. I.S.O. fifteen fixes those "
+     "dimensions for the designation sixty two oh five. Purple is a published "
+     "standard. Grey is an unconfirmed default, flagged, not presented as fact."),
+    ("gate",
+     "The A.I. is a contributor, never the source of record. Here it proposed a load "
+     "rating of fourteen point eight kilonewtons, and a speed of fourteen thousand. "
+     "I.S.O. fifteen says fourteen, and sixteen thousand. Both refused, with the "
+     "reason printed. It may fill a blank or replace an unbacked default, never "
+     "overrule evidence. Bounded this way it beats both the raw model and the "
+     "rules engine, and precision on evidence backed values stays at one hundred "
+     "percent."),
+    ("valve",
+     "Sixteen cross field rules catch what no single field check can. A P.V.C. body "
+     "rated to one hundred and eighty degrees Celsius. Every number plausible alone, "
+     "impossible together. Blocked, in plain English."),
+    ("content",
+     "The same product is then written five times, to five character limits. This is "
+     "the forty character invoice line. It hit the limit by dropping whole facts and "
+     "naming which ones, because truncating would have cut the part number in half."),
+    ("outputs",
+     "That record renders into three target schemas. The customer's own delivery "
+     "format, two hundred and fifty two columns in their order. Schema dot org, for "
+     "search. And a catalogue sheet where every attribute ships its provenance, "
+     "confidence and source, so a downstream system inherits the whole audit "
+     "trail, not a summary of it."),
+    ("storage",
+     "There is no database. The taxonomy, the I.S.O. knowledge base, the unit "
+     "tables and the export profiles are versioned JSON in the repository, so "
+     "adding a category is a reviewed diff. At runtime it writes a content "
+     "addressed cache and any categories it has learned. It runs in one container, "
+     "stores no A.P.I. key, and cannot spend money."),
+    ("scale",
+     "On their own thousand row sample, six hundred and eleven rows a second "
+     "ingested, and two hundred and eighty seven products a second enriched on one "
+     "core. Under a cent per S.K.U. batched, against the ten minutes a person takes "
+     "today."),
+    ("close",
+     "Measured against their own labelled rows. Fourteen of fourteen fields exact "
+     "when the engine has the attribute values. Two of fourteen from a bare "
+     "catalogue row. We publish both, because the gap is sourcing, not formatting, "
+     "and saying which one you are quoting is the point."),
 ]
 
-PS_TEMPLATE = """
-Add-Type -AssemblyName System.Speech
-$s = New-Object System.Speech.Synthesis.SpeechSynthesizer
-$s.SelectVoice("{voice}")
-$s.Rate = {rate}
-$s.SetOutputToWaveFile("{path}")
-$s.Speak(@'
-{text}
-'@)
-$s.Dispose()
-"""
+def _ffmpeg() -> str:
+    import shutil
+    found = shutil.which("ffmpeg")
+    if found:
+        return found
+    packages = Path.home() / "AppData/Local/Microsoft/WinGet/Packages"
+    for candidate in packages.glob("Gyan.FFmpeg*/**/bin/ffmpeg.exe"):
+        return str(candidate)
+    raise SystemExit("no ffmpeg — winget install Gyan.FFmpeg")
 
 
 def synth(text: str, path: Path) -> None:
-    script = PS_TEMPLATE.format(voice=VOICE, rate=RATE, path=str(path).replace("\\", "\\\\"),
-                                text=text)
-    subprocess.run(["powershell", "-NoProfile", "-NonInteractive", "-Command", script],
+    """Speak one segment, and land it as PCM the assembler can splice."""
+    mp3 = path.with_suffix(".mp3")
+    subprocess.run([sys.executable, "-m", "edge_tts", "--voice", VOICE,
+                    # One argument, not two: a bare "-4%" is read as an option.
+                    f"--rate={RATE}", "--text", text, "--write-media", str(mp3)],
                    check=True, capture_output=True)
+    subprocess.run([_ffmpeg(), "-hide_banner", "-loglevel", "error", "-y",
+                    "-i", str(mp3), "-ar", "24000", "-ac", "1", str(path)],
+                   check=True, capture_output=True)
+    mp3.unlink(missing_ok=True)
 
 
 def duration(path: Path) -> float:

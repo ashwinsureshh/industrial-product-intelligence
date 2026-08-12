@@ -1,8 +1,10 @@
 """Record the demo walkthrough against the deployed site.
 
-Produces a silent 1280x720 .webm paced to docs/video/script.md, for voiceover in
-any editor. Driven against the live URL rather than a dev server, so the footage
-is what a judge clicking the link actually sees.
+Produces a silent 1280x720 .webm paced to docs/video/script.md. Driven against
+the live URL rather than a dev server, so the footage is what a judge clicking
+the link actually sees, intercut with the explainer frames from frames.py —
+a recording proves the thing works, but only the frames say what was built,
+where the data lives and what comes out.
 
     python docs/video/record.py            # full run, ~3 minutes
     python docs/video/record.py --fast     # same path, no dwell, for checking
@@ -19,6 +21,7 @@ every scroll on an eased curve of our own rather than the browser's quick
 """
 from __future__ import annotations
 
+import json
 import sys
 import time
 from pathlib import Path
@@ -27,8 +30,19 @@ from playwright.sync_api import sync_playwright
 
 URL = "https://industrial-product-intelligence.onrender.com"
 OUT = Path(__file__).parent / "footage"
+FRAMES = OUT / "frames"
+
+
 FAST = "--fast" in sys.argv
 SIZE = {"width": 1280, "height": 720}
+
+
+def frame(name: str) -> str:
+    """A file:// URL for an explainer frame. Build them with frames.py first."""
+    path = FRAMES / f"{name}.html"
+    if not path.exists():
+        raise SystemExit(f"missing {path.name} — run: python docs/video/frames.py")
+    return path.as_uri()
 
 
 _T0 = [0.0]
@@ -213,36 +227,38 @@ def main() -> int:
         context = browser.new_context(viewport=SIZE, record_video_dir=str(OUT),
                                       record_video_size=SIZE)
         context.add_init_script(CURSOR)
+        # Recording begins when the context does, not when the first frame
+        # renders. That lead-in of blank browser is real footage, and without
+        # measuring it the narration starts over an empty screen.
+        recording_started = time.time()
         page = context.new_page()
 
-        # 1 — the loaded app. Clock starts once there is something to look at.
-        print("[1] 0:00 opening")
-        page.goto(URL, wait_until="networkidle", timeout=120000)
+        # 1 — what was built. A screen recording cannot say this, and it is the
+        #     first thing a judge is scoring.
+        print("[1] 0:00 architecture")
+        page.goto(frame("1_architecture"), wait_until="load", timeout=60000)
         _T0[0] = time.time()
-        # Hold the hero while the opening line is read. The result column is
-        # empty until the first enrichment, so scrolling to the demo list early
-        # leaves half the frame blank for no reason.
-        beat(page, 12.0, "empty form, engine on Demo")
-        # Bring the demo list into view and rest the pointer on the case we are
-        # about to open. A pointer drifting onto an unrelated control reads as a
-        # click that never comes.
-        creep(page, '.card:has(h3:text-is("Demo Cases"))', block="start",
-              offset=-108, seconds=1.8)
-        glide(page, '.sample:has-text("Sparse bearing")')
-        hold_until(page, "0:13")
+        hold_until(page, "0:19", "inputs, one shape, ten stages, outputs")
 
-        # 2 — sparse bearing, provenance
-        print("[2] 0:18 sparse bearing")
+        # 2 — the same claim, running. The trace card lists the real stages.
+        print("[2] 0:19 sparse bearing and the pipeline trace")
+        page.goto(URL, wait_until="networkidle", timeout=120000)
+        beat(page, 1.0)
+        creep(page, '.card:has(h3:text-is("Demo Cases"))', block="start",
+              offset=-108, seconds=1.4)
         tap(page, '.sample:has-text("Sparse bearing")')
-        beat(page, 1.2)
+        beat(page, 0.8)
         tap(page, 'button:has-text("Enrich Product")')
         page.wait_for_selector('.col .card:has(h3:text-is("Attributes"))', timeout=60000)
-        beat(page, 3.0, "record lands")
-        creep(page, '.col .card:has(h3:text-is("Attributes"))')
+        beat(page, 1.5, "record lands")
+        creep(page, '.col .card:has(h3:text-is("Pipeline Trace"))',
+              block="start", offset=-118, seconds=1.6)
+        beat(page, 7.0, "ten stages with timings")
+        creep(page, '.col .card:has(h3:text-is("Attributes"))', seconds=1.6)
         hold_until(page, "0:44", "dwell on the provenance badges")
 
         # 3 — the gate refusing. The thesis; the longest hold in the film.
-        print("[3] 0:50 hybrid gate")
+        print("[3] 0:44 hybrid gate")
         tap(page, '.engine-toggle .tab:text-is("Hybrid")')
         beat(page, 1.5)
         tap(page, 'button:has-text("Enrich Product")')
@@ -253,7 +269,7 @@ def main() -> int:
         hold_until(page, "1:16")
 
         # 4 — a contradiction blocked
-        print("[4] 1:24 contradictory valve")
+        print("[4] 1:14 contradictory valve")
         tap(page, '.engine-toggle .tab:text-is("Demo")')
         beat(page, 0.8)
         tap(page, '.sample:has-text("Contradictory valve")')
@@ -261,46 +277,47 @@ def main() -> int:
         tap(page, 'button:has-text("Enrich Product")')
         page.wait_for_selector('.col .card:has(h3:text-is("Validation"))', timeout=60000)
         creep(page, '.col .card:has(h3:text-is("Validation"))')
-        hold_until(page, "1:35", "PVC at 180 C, blocked in plain English")
+        hold_until(page, "1:28", "PVC at 180 C, blocked in plain English")
 
         # 5 — the customer's content standard
-        print("[5] 1:47 content standard")
+        print("[5] 1:28 content standard")
         creep(page, '.col .card:has(h3:text-is("Content Standard"))',
               block="start", offset=-118, seconds=1.8)
-        hold_until(page, "1:56", "40-character invoice line and the dropped tokens")
+        hold_until(page, "1:43", "40-character invoice line and the dropped tokens")
 
-        # 6 — discovery, an honest negative result
-        print("[6] 2:10 discover SKF")
-        to_top(page)
-        tap(page, '.main-nav .tab:text-is("Discover")')
-        beat(page, 1.5)
-        tap(page, '.sample:has-text("SKF 6205-2RS")')
-        page.wait_for_selector('.col .card:has(h3:text-is("Sources"))', timeout=60000)
-        park_mouse(page)
-        creep(page, '.col .card:has(h3:text-is("Sources"))')
-        hold_until(page, "2:12", "fetched, refused as unusable")
-        creep(page, '.col .card:has(h3:text-is("Commerce Readiness"))')
-        hold_until(page, "2:22", "and the record below still scores 94")
+        # 6 — what actually comes out. Real bytes, fetched from the deployment.
+        print("[6] 1:43 outputs")
+        page.goto(frame("2_outputs"), wait_until="load", timeout=60000)
+        hold_until(page, "2:04", "252 columns, JSON-LD, and the audit-trail CSV")
 
-        # 7 — volume and the customer's own output schema
-        print("[7] 2:32 catalog and exports")
-        to_top(page)
-        tap(page, '.main-nav .tab:text-is("Catalog")')
-        beat(page, 1.2)
-        tap(page, 'button:has-text("Run 10-product demo catalog")')
-        page.wait_for_selector('.col table', timeout=60000)
-        hold_until(page, "2:32", "publish / review / blocked")
-        creep(page, '.col .card:has(h3:text-is("Export"))')
-        hold_until(page, "2:41", "252-column delivery format, schema.org, catalogue CSV")
+        # 7 — where the data lives, which no screen in the product can answer
+        print("[7] 2:04 storage")
+        page.goto(frame("3_storage"), wait_until="load", timeout=60000)
+        hold_until(page, "2:27", "no database; versioned data; a container that cannot spend")
 
-        # 8 — close on the least flattering number, deliberately
-        print("[8] 2:50 close")
-        to_top(page)
-        tap(page, '.main-nav .tab:text-is("Single Product")')
-        hold_until(page, "3:00", "closing frame")
+        # 8 — scale and cost per SKU
+        print("[8] 2:27 scale")
+        page.goto(frame("4_scale"), wait_until="load", timeout=60000)
+        hold_until(page, "2:42", "611 rows/s, 287 products/s, $0.0084 per SKU")
 
+        # 9 — close on the least flattering number, deliberately
+        print("[9] 2:42 accuracy")
+        page.goto(frame("5_accuracy"), wait_until="load", timeout=60000)
+        hold_until(page, "3:00", "14/14 and 2/14, both")
+
+        lead_in = _T0[0] - recording_started
+        span = time.time() - _T0[0]
         context.close()
         browser.close()
+
+    # Both numbers matter to the mux. Playwright writes the webm at a variable
+    # rate but labels it 25 fps, so the file's own duration can run several
+    # percent long — 197.7 s for a 185 s session on this shot list — which would
+    # slide every line of narration progressively later. The true content span
+    # is wall-clock, measured here, and mux.py rescales the timeline onto it.
+    (OUT / "lead_in.json").write_text(json.dumps(
+        {"lead_in": round(lead_in, 3), "span": round(span, 3)}))
+    print(f"\n  lead-in {lead_in:.2f}s, real span {span:.1f}s — mux.py corrects the timeline")
 
     video = max(OUT.glob("*.webm"), key=lambda f: f.stat().st_mtime)
     final = OUT / "demo_walkthrough.webm"
