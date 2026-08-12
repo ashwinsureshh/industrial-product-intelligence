@@ -215,7 +215,7 @@ auto-deploys on push to `main`, built from the root `Dockerfile`.
 | 5b | Demo video | Not started — running order in §11 |
 | 6 | Unilog compliance layer (§5.7) | **Done, $0** — built against the solution guide (§1.6) |
 | 7 | Delivery format + accuracy (§7.3, §7.7) | **Done, $0** — 252 columns, both states reported everywhere |
-| 8 | Taxonomy learning at volume (§7.4) | **Done, $0** — 8.9% → 81.7% on their 1,000 rows |
+| 8 | Taxonomy learning at volume (§7.4) | **Done, $0** — 8.9% → 81.7% on their 1,000 rows (38 of 83 proposals; 91.4% if all are approved — §7.4) |
 | 9 | Discovery (§7.5) | **Done, $0** — sourcing policy enforced; fetch blocked by client-side rendering |
 | 10 | Pre-deck audit (§7.6) | **Done** — four defects found and fixed |
 
@@ -751,6 +751,19 @@ Run: the loop is `propose -> save_proposals -> approve -> reclassify`
 out of 911 unclassified rows. Every record under a learned category is
 **blocked**, by design — see the third bug.
 
+**Both halves of that sentence carry a condition, and it went unstated for a
+day.** Re-measured 12 Aug: the loop produces **83 proposals and 91.4%** coverage
+if every proposal is approved. The published 38 / 81.7% is what you get
+approving only clusters with **at least 5 supporting rows** — verified exactly,
+`support >= 5` reproduces 38 and 81.7% to the digit. That filter is a sensible
+reviewer's behaviour (three rows is thin evidence for a whole category) but it
+is a *human* act, not something the engine does, and quoting the filtered number
+as the loop's output is the same overclaim §7.3 already corrected once for
+14/14. Quote it as "38 categories a reviewer would accept, out of 83 proposed".
+
+Support distribution, so the filter is inspectable: 82, 30, 21, 21, 21, 20, 18,
+17, 14, 14, 14, 14, … with a floor of 3.
+
 Running at volume broke three things that ten curated categories never could.
 All three are fixed and each has a regression test.
 
@@ -789,7 +802,20 @@ capped at 0.45 so they can never outrank a proposal that inferred a real schema.
 over-match. A Diablo sanding belt lands in "Saw Blades", a 3M disc in "Milw
 Discs". Nothing published because of it, and human approval is the designed
 mitigation, but do not claim clean classification — claim that wrong guesses are
-caught before they reach a storefront.
+caught before they reach a storefront. Re-measured 12 Aug, the names are worse
+than that sentence suggests: "Led Meds", "Metal Offs", "Harvest Pvcs",
+"Pvc Deckings" — mangled plurals of marketing words, not category names. Still
+harmless (everything under them blocks) but do not put them on a slide.
+
+**One fix that came out of re-running it:** two clusters that name alike but
+keep different keywords are deliberately not merged — they are different groups
+— and at volume that put **two separate "Trex Enhances" proposals in one review
+queue**. Human approval is the designed mitigation for everything this feature
+does, and a reviewer who cannot tell two proposals apart cannot review them.
+`_disambiguate()` now qualifies a repeated name with the first keyword its
+namesakes lack ("Trex Enhances (Decking)" / "(Golden)"), falling back to the
+code's last four digits. **The code itself is untouched** — it is derived from
+noun + keywords, is already unique, and `revoke()` depends on that stability.
 
 ---
 

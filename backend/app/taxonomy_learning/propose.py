@@ -401,6 +401,41 @@ def _merge_alike(groups: list[list[RawProduct]]) -> list[list[RawProduct]]:
     return [merged[s] for s in order]
 
 
+def _disambiguate(proposals: list[CategoryProposal]) -> None:
+    """Give same-named proposals distinguishable names.
+
+    Clusters with the same name but different keywords are deliberately *not*
+    merged — they are different groups. But at volume that produced two separate
+    'Trex Enhances' proposals in one review queue, and human approval is the
+    designed mitigation for everything this feature does. A reviewer who cannot
+    tell two proposals apart cannot review them.
+
+    The code is untouched: it is derived from noun + keywords and is already
+    unique, and changing it here would break the stability `_code_for` exists
+    to guarantee.
+    """
+    seen: Counter[str] = Counter(p.path[-1] for p in proposals)
+    duplicated = {name for name, n in seen.items() if n > 1}
+    if not duplicated:
+        return
+
+    used: set[str] = set()
+    for proposal in proposals:
+        name = proposal.path[-1]
+        if name not in duplicated:
+            used.add(name)
+            continue
+        # The first keyword this cluster has that its namesakes do not.
+        extra = next(
+            (k for k in proposal.keywords
+             if k.lower() not in name.lower() and f"{name} ({k.title()})" not in used),
+            None,
+        )
+        label = f"{name} ({extra.title()})" if extra else f"{name} ({proposal.code[-4:]})"
+        used.add(label)
+        proposal.path = [*proposal.path[:-1], label]
+
+
 def propose(products: list[RawProduct]) -> list[CategoryProposal]:
     """Cluster unclassified products and propose a category for each group."""
     proposals: list[CategoryProposal] = []
@@ -409,4 +444,5 @@ def propose(products: list[RawProduct]) -> list[CategoryProposal]:
         if proposal is not None:
             proposals.append(proposal)
     proposals.sort(key=lambda p: (-p.sample_count, -p.confidence))
+    _disambiguate(proposals)
     return proposals

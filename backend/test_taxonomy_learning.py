@@ -251,6 +251,39 @@ def main() -> int:
               "and the reason is stated, not implied")
         store.revoke(schema_only[0].code)
 
+    # [9] Two clusters may legitimately share a name; a review queue cannot.
+    # Volume produced two separate 'Trex Enhances' proposals at once, and human
+    # approval is the designed mitigation for everything this feature does — a
+    # reviewer who cannot tell two proposals apart cannot review them.
+    print("\n[9] Same-named clusters get distinguishable names")
+    from collections import Counter
+
+    from app.models import CategoryProposal
+
+    # Constructed directly rather than clustered: two groups that name alike but
+    # keep different keywords are exactly what volume produced, and a fixture
+    # that merges them would pass this test without exercising anything.
+    def proposal(code: str, keywords: list[str]) -> CategoryProposal:
+        return CategoryProposal(
+            id=code, code=code, noun="Trex Enhance",
+            path=["Industrial Components", "Learned Categories", "Trex Enhances"],
+            keywords=keywords, sample_count=len(keywords),
+        )
+
+    clashing = [proposal("99000001", ["decking", "grooved", "beach"]),
+                proposal("99000002", ["decking", "golden", "hour"])]
+    check(len({p.path[-1] for p in clashing}) == 1,
+          "the fixture really does start with two identically-named proposals")
+
+    proposer._disambiguate(clashing)
+    labels = [p.path[-1] for p in clashing]
+    duplicated = {n for n, c in Counter(labels).items() if c > 1}
+    check(not duplicated, f"no two proposals share a display name ({labels})")
+    check(all(p.path[-1].startswith("Trex Enhances") for p in clashing),
+          "the original name is kept, only qualified")
+    check([p.code for p in clashing] == ["99000001", "99000002"],
+          "and the codes are untouched, so revoke still targets the right one")
+
     print("\n" + "=" * 66)
     if FAILURES:
         print(f"{len(FAILURES)} CHECK(S) FAILED")

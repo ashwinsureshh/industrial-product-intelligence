@@ -277,7 +277,11 @@ blocks = [
     ("3", "Scale",
      "611 rows/s ingested and 305 products/s enriched on one core. Unseen categories "
      "are learned from the data, not hand-curated.",
-     [("8.9% → 81.7%", "classified, their 1,000 rows"), ("$0.0084", "per SKU, batched")]),
+     # The condition travels with the number: 81.7% is what a reviewer who
+     # approves only well-supported clusters gets. Approving all 83 proposals
+     # reaches 91.4%. Quoting either alone is the 14/14 mistake again.
+     [("8.9% → 81.7%", "their 1,000 rows — 38 of\n83 clusters approved"),
+      ("$0.0084", "per SKU, batched")]),
 ]
 y = 1.42
 for n, title, body, stats in blocks:
