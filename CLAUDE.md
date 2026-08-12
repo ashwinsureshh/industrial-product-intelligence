@@ -356,6 +356,11 @@ both states, and deck slide 8 still carries the argument. It was a benchmark
 wearing the costume of a product feature, and a skimming judge could read
 **2/14** in large type and stop before the sentence explaining it.
 
+`CompliancePanel.jsx` ("Content Standard") and `ExportPanel.jsx` surface the
+§5.7 compliance layer and the profile-driven exports, which until 12 Aug existed
+only in the API — see §7.8. `ExportPanel` reads `/api/export/profiles`, so a new
+output schema still needs no UI change.
+
 `DiscoveryPanel.jsx` carries the source ledger, built to mirror `GateLedger`:
 refusals sort first, because what the crawler declined to read is the evidence
 that the manufacturer-only rule is enforced rather than asserted. Verified in
@@ -990,7 +995,25 @@ refusing every unrecognised domain would leave the Document tab able to read
 almost nothing. Explicit marketplaces, retailers and distributors are refused;
 unknown domains are still read.
 
-**Two lower-priority findings left open**, both recorded rather than fixed:
+**4. The compliance layer was invisible in the UI — fixed.** The five commerce
+descriptions, the `provisional` standards markers and the profile-driven
+exports all worked through the API and were rendered by no component: §5.7 and
+§7.3 described work a judge could not see in the product. Two new panels:
+
+- `CompliancePanel.jsx` — "Content Standard". Each field with its limit, a fill
+  bar, and **the dropped-token disclosure**, which is the row worth demoing:
+  *"Dropped whole to fit: Width, Dynamic Load Rating (C), Limiting Speed,
+  Static Load Rating (C0) — the part number is never cut mid-code."* A
+  provisional stub can never read as certified compliance: when any standard
+  reports `provisional` the panel says so in a warning banner, and "no list of
+  values covers this category" is stated as *not the same as passing one*.
+- `ExportPanel.jsx` — replaces the two hard-coded buttons on both the Single
+  Product and Catalog tabs. Profiles are fetched from `/api/export/profiles`, so
+  **adding an export schema still means adding data, not code, and the UI picks
+  it up with no change.** `api.exportCsv` is gone; `/api/export/csv` is now
+  reached as the `catalog_csv` profile.
+
+**One lower-priority finding left open:**
 
 - **Space-aligned PDF columns are mis-extracted.** Of the three claimed layouts,
   bordered and dot-leader are perfect; the space-aligned one clips at the column
@@ -998,11 +1021,6 @@ unknown domains are still read.
   from the title line. **Validation catches it** — two `TYPE_MISMATCH` errors,
   record blocked — so nothing false publishes. The honesty layer holds where the
   extractor fails, which is why this is not urgent.
-- **The compliance layer is invisible in the UI.** The five commerce
-  descriptions, the `provisional` standards markers and the profile-driven
-  exports (including the 252-column delivery format) all work through the API
-  and are rendered by no component. §5.7 and §7.3 describe work a judge cannot
-  see in the product.
 
 **Not a defect, but do not quote it as one:** throughput on the deployed free
 tier is **~19 products/s**, not the 305/s in §7. The engine reaches 287/s

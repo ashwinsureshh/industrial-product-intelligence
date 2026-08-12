@@ -62,6 +62,25 @@ export const discover = (brand, mpn, mode, apiKey) =>
 
 export const getDiscoverySources = () => fetch('/api/discover/sources').then(json)
 
+export const getExportProfiles = () => fetch('/api/export/profiles').then(json)
+
+/** Render records into a named output schema and download the result. */
+export const exportProfile = async (results, profile, filename) => {
+  const response = await fetch(`/api/export?profile=${encodeURIComponent(profile)}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(results),
+  })
+  if (!response.ok) throw new Error(`Export failed (${response.status})`)
+  const blob = await response.blob()
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = filename
+  link.click()
+  URL.revokeObjectURL(url)
+}
+
 export const proposeCategories = (products, mode, apiKey) =>
   fetch('/api/taxonomy/propose', {
     method: 'POST',
@@ -81,21 +100,8 @@ export const reviewProposal = (id, decision, note) =>
 export const revokeLearned = (code) =>
   fetch(`/api/taxonomy/learned/${code}`, { method: 'DELETE' }).then(json)
 
-export const exportCsv = async (results) => {
-  const response = await fetch('/api/export/csv', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(results),
-  })
-  if (!response.ok) throw new Error('Export failed')
-  const blob = await response.blob()
-  const url = URL.createObjectURL(blob)
-  const link = document.createElement('a')
-  link.href = url
-  link.download = 'enriched_catalog.csv'
-  link.click()
-  URL.revokeObjectURL(url)
-}
+// The fixed /api/export/csv shape is now reached as the `catalog_csv` profile,
+// so the UI has one export path and the target schema stays data.
 
 export const downloadJson = (data, filename) => {
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })

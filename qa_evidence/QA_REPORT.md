@@ -1,10 +1,10 @@
 # Industrial Product Intelligence — A–Z QA pass
 
-> **Status: D1, D2 and D3 below were fixed the same day.** See CLAUDE.md §7.8 for
-> what changed and why, and `backend/test_qa_fixes.py` for the regressions that
-> hold them fixed. Every benchmark figure re-measured unchanged afterwards. D4
-> (space-aligned PDF extraction, already caught by validation) and D5 (the
-> compliance layer not surfaced in the UI) are open and recorded in §7.8.
+> **Status: D1, D2, D3 and D5 below were fixed the same day.** See CLAUDE.md §7.8
+> for what changed and why, and `backend/test_qa_fixes.py` for the regressions
+> that hold D1–D3 fixed. Every benchmark figure re-measured unchanged afterwards.
+> **D4 alone remains open** — space-aligned PDF extraction, which validation
+> already catches and blocks, so nothing false publishes.
 > The report below is preserved as written, before the fixes.
 
 Target: https://industrial-product-intelligence.onrender.com

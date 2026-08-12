@@ -2,7 +2,9 @@ import { useEffect, useMemo, useState } from 'react'
 import * as api from './api.js'
 import AttributeTable from './components/AttributeTable.jsx'
 import BatchInput, { BatchEmpty, BatchSummary, BatchTable } from './components/BatchView.jsx'
+import CompliancePanel from './components/CompliancePanel.jsx'
 import ContentPanel from './components/ContentPanel.jsx'
+import ExportPanel from './components/ExportPanel.jsx'
 import DiscoveryInput, { DiscoveryEmpty, SourceLedger } from './components/DiscoveryPanel.jsx'
 import GateLedger from './components/GateLedger.jsx'
 import DocumentInput, { IngestReport } from './components/DocumentPanel.jsx'
@@ -493,29 +495,7 @@ export default function App() {
                 batchDemo={samples?.batch_demo}
               />
               {batch && (
-                <div className="card">
-                  <div className="card-head">
-                    <h3>Export</h3>
-                  </div>
-                  <div className="card-body" style={{ display: 'flex', gap: 8 }}>
-                    <button
-                      className="btn"
-                      style={{ flex: 1, justifyContent: 'center' }}
-                      onClick={() => api.exportCsv(batch.results)}
-                      type="button"
-                    >
-                      Download CSV
-                    </button>
-                    <button
-                      className="btn"
-                      style={{ flex: 1, justifyContent: 'center' }}
-                      onClick={() => api.downloadJson(batch.results, 'enriched_catalog.json')}
-                      type="button"
-                    >
-                      Download JSON
-                    </button>
-                  </div>
-                </div>
+                <ExportPanel records={batch.results} stem="enriched_catalog" />
               )}
             </>
           )}
@@ -561,30 +541,11 @@ export default function App() {
               <IssueList issues={detail.issues} />
               <AttributeTable attributes={detail.attributes} />
               <ContentPanel content={detail.content} />
+              <CompliancePanel compliance={detail.compliance} />
               <TraceTimeline trace={detail.trace} />
 
               {tab !== 'batch' && (
-                <div className="card">
-                  <div className="card-head">
-                    <h3>Export</h3>
-                  </div>
-                  <div className="card-body" style={{ display: 'flex', gap: 8 }}>
-                    <button
-                      className="btn"
-                      onClick={() => api.exportCsv([detail])}
-                      type="button"
-                    >
-                      Download CSV
-                    </button>
-                    <button
-                      className="btn"
-                      onClick={() => api.downloadJson(detail, 'enriched_product.json')}
-                      type="button"
-                    >
-                      Download JSON
-                    </button>
-                  </div>
-                </div>
+                <ExportPanel records={[detail]} stem="enriched_product" />
               )}
             </>
           ) : tab === 'single' ? (
