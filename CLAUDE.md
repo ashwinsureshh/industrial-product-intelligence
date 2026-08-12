@@ -1045,6 +1045,9 @@ python run_benchmark.py --live --budget 5
   32. `5f27011` **Accuracy tab** + `/api/ground-truth` (§7.7)
   33. `8573856` `.banner` is flex, so its prose needs one wrapper element
   34. `9319d57` deck screenshots re-captured against the current build
+  35. `e549771` **Accuracy tab removed** (§7.7) — the endpoint, the CLI and the
+      both-states tests stay; deck slide 8 is now the only place a judge sees
+      those numbers
 - `main` and `origin/main` are level; the working tree is clean.
 - Public as of 11 Aug (submission requires it). No LICENSE yet — see below.
 - No LICENSE yet, deliberately: organizers may have IP terms. Check before adding.
