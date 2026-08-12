@@ -60,12 +60,14 @@ brought it under.
 
 ## Assembling it
 
-`footage/narration.wav` is a single full-length track with every segment already
-at its own offset, so there is nothing to nudge:
+**`footage/demo_walkthrough.mp4` is already assembled** — H.264 / AAC, 1280×720,
+3:02.9, ready to upload. Rebuild it with `python docs/video/mux.py` after
+re-recording or re-narrating (needs a full ffmpeg: `winget install Gyan.FFmpeg`).
 
-1. Drop `demo_walkthrough.webm` and `narration.wav` on a timeline, **both at
-   0:00**. That is the whole edit.
-2. Export as MP4 and upload.
+To assemble by hand instead, `footage/narration.wav` is a single full-length
+track with every segment already at its own offset: drop it and
+`demo_walkthrough.webm` on a timeline **both at 0:00**, and that is the whole
+edit.
 
 To use your own voice instead — which will sound better than the synthetic one —
 read the narration column against the timings above. The picture is already cut

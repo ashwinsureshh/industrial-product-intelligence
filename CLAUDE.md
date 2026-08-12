@@ -1321,8 +1321,17 @@ Two things learned the expensive way:
   needs no re-cut, because the picture is already timed to those marks.
 - **Playwright's ffmpeg is video-only** — no WAV demuxer, no audio encoders, so
   it cannot mux the track in. Durations are read with the stdlib `wave` module
-  and the track is assembled by writing PCM directly. Muxing to a single MP4
-  needs a full ffmpeg or any editor.
+  and the track is assembled by writing PCM directly. `mux.py` uses a real
+  ffmpeg (`winget install Gyan.FFmpeg`) to produce the deliverable MP4, and
+  finds it under the winget package directory because winget only edits PATH
+  for *new* shells.
+
+`mux.py` writes `demo_walkthrough.mp4` — H.264/AAC, faststart, a half-second
+fade at each end, and the narration **loudness-normalised to −16 LUFS**, because
+the Windows voice outputs quiet mono and a viewer otherwise reaches for the
+volume. Sync is verified by measurement, not by ear: sampling a 2.5 s window at
+each of the eight marks returns −19.7 to −23.9 dB (speech at every one) and the
+tail after the last line returns −91 dB.
 
 **Never let a normaliser near the part numbers.** `normalize_tts_text` rendered
 `6205` as "six thousand two hundred five" — a bearing designation is read
