@@ -1302,36 +1302,38 @@ submitted file will live on YouTube). Needs `playwright install ffmpeg` once.
 `--fast` runs the same path with no dwells to check it still works after a
 UI change.
 
-`voiceover.py` speaks the narration with the **Windows** speech engine — free,
-local, no account — and writes `narration.wav`, one full-length track with every
-segment already at its own offset. Assembly is therefore "drop both at 0:00",
-with nothing to nudge.
+`voiceover.py` speaks the narration with **edge-tts** (Microsoft's neural
+voices, free, `pip install edge-tts`) and measures each segment's real duration.
+`frames.py` renders five explainer frames — architecture, outputs, storage,
+scale, accuracy — because a recording can only show the product working, and
+what a judge is scoring is what was built, where the data lives and what comes
+out. Every number on them is measured elsewhere in the repo and the outputs
+frame is rendered from bytes fetched live from the deployment.
 
-**The sync is exact because the audio drives the video, not the reverse.**
-Each segment's real duration is read out of its WAV header and becomes
-`record.py`'s marks. It also refuses to run long: the first cut measured 183.7 s
-and the script printed *"over three minutes — cut the script, not the pauses"*,
-which is what produced the three trims now in `voiceover.py`. Current state:
-narration **2:57.4**, picture **3:02.9**.
+**How the sync is made exact, and why the obvious way was wrong.** The first
+attempt rescaled the video's timeline to fit the narration, on the theory that
+Playwright's variable-rate webm ran long. It does run long — but the extra is
+*trailing frames flushed after the last hold*, not drift, so squeezing the whole
+picture by 9% sped it up progressively and slid it out from under the voice.
+That was the "not quite synced" everyone could hear.
 
-Two things learned the expensive way:
+The fix is to stop calculating and ask the picture. `record.py` flashes a
+magenta block at the start of every segment; `align.py` reads those beacons back
+out of the finished file, and the narration clips are laid on the timestamps the
+*player* will use. Verified at ±0.12 s on all nine boundaries, with no drift
+across three minutes.
 
-- **Viewmax voiceover returns 402, no subscription.** Nothing was spent. If a
-  better voice is wanted, a human read against the measured table in `script.md`
-  needs no re-cut, because the picture is already timed to those marks.
-- **Playwright's ffmpeg is video-only** — no WAV demuxer, no audio encoders, so
-  it cannot mux the track in. Durations are read with the stdlib `wave` module
-  and the track is assembled by writing PCM directly. `mux.py` uses a real
-  ffmpeg (`winget install Gyan.FFmpeg`) to produce the deliverable MP4, and
-  finds it under the winget package directory because winget only edits PATH
-  for *new* shells.
+Three traps that cost a rebuild each:
 
-`mux.py` writes `demo_walkthrough.mp4` — H.264/AAC, faststart, a half-second
-fade at each end, and the narration **loudness-normalised to −16 LUFS**, because
-the Windows voice outputs quiet mono and a viewer otherwise reaches for the
-volume. Sync is verified by measurement, not by ear: sampling a 2.5 s window at
-each of the eight marks returns −19.7 to −23.9 dB (speech at every one) and the
-tail after the last line returns −91 dB.
+- **The beacon must force a repaint.** A static explainer frame stops painting,
+  and the screencast only emits on damage, so a brief flash fell between frames
+  and four of nine beacons never reached the file. It now animates on
+  `requestAnimationFrame` for a full second.
+- **The grouping window must exceed the flash.** At exactly one second, a
+  one-second beacon was detected as two.
+- **The beacon must not reach the viewer.** It lives in a 20 px strip below the
+  delivered frame: the browser records at 1280x740 and `mux.py` crops to
+  1280x720, so the timing marks are cut away with it.
 
 **Never let a normaliser near the part numbers.** `normalize_tts_text` rendered
 `6205` as "six thousand two hundred five" — a bearing designation is read

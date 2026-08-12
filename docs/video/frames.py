@@ -65,9 +65,9 @@ def architecture() -> None:
     stages = ["normalise", "classify", "extract", "infer + AI gate", "reconcile",
               "vocabulary", "content", "compliance", "validate", "score"]
     write("1_architecture", f"""
-<h1>One pipeline, whatever the input</h1>
-<p class="sub">A value read off page 2 of a datasheet earns the same provenance,
-validation and readiness score as a hand-typed one. There is no separate path.</p>
+<h1>However it arrives, one process</h1>
+<p class="sub">A fact read off page 2 of a datasheet is checked exactly as hard
+as one typed in by hand. Nothing takes a shortcut.</p>
 <div class="row">
   <div class="card" style="width:250px">
     <div class="k">Inputs</div>
@@ -77,12 +77,11 @@ validation and readiness score as a hand-typed one. There is no separate path.</
   </div>
   <div class="arrow">&rarr;</div>
   <div class="card" style="width:150px;display:flex;flex-direction:column;justify-content:center;text-align:center;background:var(--navy);color:#fff;border-color:var(--navy)">
-    <div style="font-size:17px;font-weight:700">RawProduct</div>
-    <div style="font-size:12px;opacity:.75;margin-top:3px">one shape</div>
+    <div style="font-size:16px;font-weight:700">One common<br>record</div>
   </div>
   <div class="arrow">&rarr;</div>
   <div class="card" style="flex:1">
-    <div class="k">Ten stages, every time</div>
+    <div class="k">The same ten checks, every time</div>
     {''.join(f'<span class="chip{" gate" if "gate" in s else ""}">{s}</span>'
              for s in stages)}
   </div>
@@ -95,7 +94,7 @@ validation and readiness score as a hand-typed one. There is no separate path.</
               "catalogue CSV with provenance", "refusal ledger"])}
   </div>
   <div class="card" style="width:430px">
-    <div class="k">The rule the whole engine turns on</div>
+    <div class="k">The rule everything turns on</div>
     <div style="font-size:14.5px;line-height:1.55">A wrong specification ships a
     broken machine. So a value is published only with evidence behind it —
     otherwise the field stays empty and the record says why.</div>
@@ -132,8 +131,8 @@ data, not code — a new customer format is a JSON profile, not a release.</p>
 def storage() -> None:
     write("3_storage", """
 <h1>Where the data lives</h1>
-<p class="sub">There is no database, and nothing about a product leaves the
-container it runs in.</p>
+<p class="sub">No database to run or back up, and nothing about a product is
+sent anywhere else.</p>
 <div class="row">
   <div class="card" style="flex:1">
     <div class="k">Versioned in the repository</div>
@@ -183,13 +182,20 @@ The projections are labelled as projections.</p>
     <div class="lab">10 min/SKU at $35/hr</div></div>
 </div>
 <div class="row" style="margin-top:16px">
+  <div class="card" style="flex:1.3">
+    <div class="k">What a merchandiser actually gets</div>
+    <div style="font-size:14.5px;line-height:1.6">Every record arrives sorted into
+    <b style="color:var(--ok)">ready to publish</b>,
+    <b style="color:var(--amber)">needs review</b> or
+    <b style="color:#b91c1c">blocked</b>, with the reason attached — so a person
+    opens only what needs a person. On a 10-product run: 7 publishable, 1 review,
+    2 blocked.</div>
+  </div>
   <div class="card" style="flex:1">
-    <div class="k">Learning categories it has never seen</div>
-    <div style="font-size:14.5px">On their 1,000 rows, classification coverage goes
-    from <b>8.9%</b> to <b>81.7%</b> — 38 of 83 proposed clusters, approved by a
-    human. Every record under a learned category is <b>blocked</b> until its
-    schema is confirmed, because a category with nothing to validate against
-    scores full marks on an empty exam.</div>
+    <div class="k">Categories it has never seen</div>
+    <div style="font-size:14.5px;line-height:1.6">Learned from the data and held
+    for approval: coverage on their 1,000 rows goes <b>8.9% &rarr; 81.7%</b>.
+    Nothing publishes under a learned category until a human confirms it.</div>
   </div>
 </div>""")
 

@@ -34,7 +34,10 @@ FRAMES = OUT / "frames"
 
 
 FAST = "--fast" in sys.argv
-SIZE = {"width": 1280, "height": 720}
+# 20 px taller than the delivered frame. The beacons live in that bottom strip
+# and mux.py crops it off, so the timing marks never reach the viewer.
+SIZE = {"width": 1280, "height": 740}
+CROP_TO = 720
 
 
 def frame(name: str) -> str:
@@ -199,6 +202,49 @@ def to_top(page, seconds: float = 0.9) -> None:
     scroll_to_y(page, 0, seconds)
 
 
+# A beacon: a small block of pure colour in the top-left corner, held for a few
+# frames at the start of every segment.
+#
+# It exists because the recording's own clock cannot be trusted. Playwright
+# writes the webm at a variable rate and labels it 25 fps, so a wall-clock
+# schedule and the file's timeline disagree — and the disagreement is not
+# uniform, it accumulates at page navigations, so rescaling by a single factor
+# lines up the ends and lets the middle drift. Detecting these flashes in the
+# finished file gives the *player's* timestamp for each segment, which is the
+# only timeline the narration has to match.
+BEACON = """
+(() => {
+  let el = document.getElementById('__beacon');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = '__beacon';
+    el.style.cssText = 'position:fixed;left:0;bottom:0;width:44px;height:18px;' +
+      'z-index:2147483646;pointer-events:none;background:transparent;';
+    document.body.appendChild(el);
+  }
+  // Held for a second, and repainted every frame while it is up. A static
+  // page stops painting, and Playwright's screencast only emits on damage —
+  // a brief flash on an explainer frame fell between emitted frames and four
+  // of the nine beacons never reached the file. The rAF loop guarantees the
+  // damage, and a second is long enough that no sampling can miss it.
+  const until = performance.now() + 1000;
+  const tick = now => {
+    if (now >= until) { el.style.background = 'transparent'; return; }
+    el.style.background = (Math.floor(now / 100) % 2)
+      ? 'rgb(255,0,255)' : 'rgb(250,0,250)';
+    requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
+})();
+"""
+
+
+def beacon(page) -> None:
+    """Mark a segment boundary in the picture itself."""
+    page.evaluate(BEACON)
+    page.wait_for_timeout(60 if FAST else 1100)
+
+
 def park_mouse(page) -> None:
     """Move the pointer off the sample list.
 
@@ -238,12 +284,14 @@ def main() -> int:
         print("[1] 0:00 architecture")
         page.goto(frame("1_architecture"), wait_until="load", timeout=60000)
         _T0[0] = time.time()
-        hold_until(page, "0:19", "inputs, one shape, ten stages, outputs")
+        beacon(page)
+        hold_until(page, "0:24", "inputs, one shape, ten stages, outputs")
 
         # 2 — the same claim, running. The trace card lists the real stages.
         print("[2] 0:19 sparse bearing and the pipeline trace")
         page.goto(URL, wait_until="networkidle", timeout=120000)
-        beat(page, 1.0)
+        beacon(page)
+        beat(page, 0.6)
         creep(page, '.card:has(h3:text-is("Demo Cases"))', block="start",
               offset=-108, seconds=1.4)
         tap(page, '.sample:has-text("Sparse bearing")')
@@ -255,10 +303,11 @@ def main() -> int:
               block="start", offset=-118, seconds=1.6)
         beat(page, 7.0, "ten stages with timings")
         creep(page, '.col .card:has(h3:text-is("Attributes"))', seconds=1.6)
-        hold_until(page, "0:44", "dwell on the provenance badges")
+        hold_until(page, "0:49", "dwell on the provenance badges")
 
         # 3 — the gate refusing. The thesis; the longest hold in the film.
         print("[3] 0:44 hybrid gate")
+        beacon(page)
         tap(page, '.engine-toggle .tab:text-is("Hybrid")')
         beat(page, 1.5)
         tap(page, 'button:has-text("Enrich Product")')
@@ -266,10 +315,11 @@ def main() -> int:
         creep(page, '.col .card:has(h3:text-is("AI gate"))', seconds=1.8)
         beat(page, 16.0, "hold on 14.8 kN refused and 14000 rpm refused")
         drift(page, 120, 6.0)          # ease down to the third row and the note
-        hold_until(page, "1:16")
+        hold_until(page, "1:17")
 
         # 4 — a contradiction blocked
         print("[4] 1:14 contradictory valve")
+        beacon(page)
         tap(page, '.engine-toggle .tab:text-is("Demo")')
         beat(page, 0.8)
         tap(page, '.sample:has-text("Contradictory valve")')
@@ -277,32 +327,37 @@ def main() -> int:
         tap(page, 'button:has-text("Enrich Product")')
         page.wait_for_selector('.col .card:has(h3:text-is("Validation"))', timeout=60000)
         creep(page, '.col .card:has(h3:text-is("Validation"))')
-        hold_until(page, "1:28", "PVC at 180 C, blocked in plain English")
+        hold_until(page, "1:33", "PVC at 180 C, blocked in plain English")
 
         # 5 — the customer's content standard
         print("[5] 1:28 content standard")
+        beacon(page)
         creep(page, '.col .card:has(h3:text-is("Content Standard"))',
               block="start", offset=-118, seconds=1.8)
-        hold_until(page, "1:43", "40-character invoice line and the dropped tokens")
+        hold_until(page, "1:49", "40-character invoice line and the dropped tokens")
 
         # 6 — what actually comes out. Real bytes, fetched from the deployment.
         print("[6] 1:43 outputs")
         page.goto(frame("2_outputs"), wait_until="load", timeout=60000)
-        hold_until(page, "2:04", "252 columns, JSON-LD, and the audit-trail CSV")
+        beacon(page)
+        hold_until(page, "2:06", "252 columns, JSON-LD, and the audit-trail CSV")
 
         # 7 — where the data lives, which no screen in the product can answer
         print("[7] 2:04 storage")
         page.goto(frame("3_storage"), wait_until="load", timeout=60000)
-        hold_until(page, "2:27", "no database; versioned data; a container that cannot spend")
+        beacon(page)
+        hold_until(page, "2:23", "no database; versioned data; a container that cannot spend")
 
         # 8 — scale and cost per SKU
         print("[8] 2:27 scale")
         page.goto(frame("4_scale"), wait_until="load", timeout=60000)
-        hold_until(page, "2:42", "611 rows/s, 287 products/s, $0.0084 per SKU")
+        beacon(page)
+        hold_until(page, "2:41", "611 rows/s, 287 products/s, $0.0084 per SKU")
 
         # 9 — close on the least flattering number, deliberately
         print("[9] 2:42 accuracy")
         page.goto(frame("5_accuracy"), wait_until="load", timeout=60000)
+        beacon(page)
         hold_until(page, "3:00", "14/14 and 2/14, both")
 
         lead_in = _T0[0] - recording_started

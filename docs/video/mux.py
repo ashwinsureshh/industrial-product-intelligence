@@ -67,13 +67,16 @@ def main() -> int:
         span = data.get("span")
 
     raw = duration(ffmpeg, VIDEO) - lead_in
-    # Playwright labels a variable-rate recording as 25 fps, so the file can
-    # claim several percent more than actually elapsed. Rescale onto the real
-    # span or the narration drifts steadily later against the picture.
-    rate = (span / raw) if span else 1.0
-    length = raw * rate
+    # No rescaling. The file's duration does run long — it keeps flushing frames
+    # after the last hold — but the *content* sits at 1:1 with wall clock, and
+    # squeezing the whole picture to make the duration match sped it up by 9%,
+    # sliding it progressively out from under the narration. That was the desync.
+    # align.py reads the beacons straight out of this timeline and lays the audio
+    # on them, so the trailing frames just get cut by -shortest.
+    rate = 1.0
+    length = min(raw, duration(ffmpeg, AUDIO))
     fade = max(length - 0.8, 0)
-    print(f"  video {raw:.2f}s -> {length:.2f}s (x{rate:.4f}), "
+    print(f"  video {raw:.2f}s (trailing frames trimmed to {length:.2f}s), "
           f"lead-in {lead_in:.2f}s, audio {duration(ffmpeg, AUDIO):.2f}s")
 
     cmd = [
@@ -82,16 +85,16 @@ def main() -> int:
         "-map", "0:v:0", "-map", "1:a:0",
         # A short fade at each end. Cutting hard from black to a dense UI, and
         # out again mid-frame, is the last thing that reads as unfinished.
-        "-vf", f"setpts=PTS*{rate:.6f},fade=t=in:st=0:d=0.5,"
+        # Crop away the beacon strip first: it is a timing mark, not content.
+        "-vf", f"crop=1280:720:0:0,fade=t=in:st=0:d=0.5,"
                f"fade=t=out:st={fade:.2f}:d=0.8",
         "-af", "loudnorm=I=-16:TP=-1.5:LRA=11,afade=t=out:st="
                f"{fade:.2f}:d=0.8",
         "-c:v", "libx264", "-preset", "slow", "-crf", "20", "-pix_fmt", "yuv420p",
         "-c:a", "aac", "-b:a", "160k", "-ar", "48000", "-ac", "2",
-        # End on the picture. The narration track is padded past its last word
-        # so the assembler can splice into it; without this the file runs on for
-        # a couple of silent seconds after the final frame.
-        "-shortest",
+        # Explicit, not -shortest: through this filter chain -shortest let the
+        # output run three seconds past the audio.
+        "-t", f"{length:.3f}",
         # Puts the index at the front so it plays before it has fully loaded.
         "-movflags", "+faststart",
         str(TARGET),

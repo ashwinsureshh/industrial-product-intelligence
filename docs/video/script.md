@@ -1,9 +1,9 @@
 # Demo video — 3:00 shooting script
 
 **Deliverable:** short walkthrough, mandatory, link goes on deck slide 14.
-Built by four scripts in `docs/video/`: `frames.py` renders the explainer
+Built by five scripts in `docs/video/`: `frames.py` renders the explainer
 frames, `record.py` drives the live site and intercuts them, `voiceover.py`
-speaks the narration, `mux.py` assembles. Current cut: **180.0 s**.
+speaks the narration, `align.py` locks them together, `mux.py` assembles. Current cut: **180.0 s**.
 
 **What changed, and why:** the first version demonstrated behaviour for three
 minutes and never said what had been built, where the data was stored, or what
@@ -36,26 +36,24 @@ if anything gets cut, it is not the refusals.
 
 ## Measured timings
 
-Not estimates. `voiceover.py` speaks each segment with a neural voice and reads
-the real duration out of the WAV, and those numbers set the video's marks — so
-the picture changes when the line is spoken, not when a word count guessed.
+Not estimates, and not calculated either. `voiceover.py` speaks each segment and
+measures it; `record.py` flashes a hidden marker at every segment start;
+`align.py` reads those markers out of the finished file and lays each line on
+the timestamp the player will actually use. Verified at ±0.12 s on all nine.
 
 | # | Segment | Starts | Runs |
 |---|---------|--------|------|
-| 1 | architecture | 0:00.0 | 18.9 s |
-| 2 | bearing | 0:19.3 | 24.7 s |
-| 3 | gate | 0:44.5 | 29.0 s |
-| 4 | valve | 1:13.9 | 13.5 s |
-| 5 | content | 1:27.8 | 14.4 s |
-| 6 | outputs | 1:42.6 | 21.0 s |
-| 7 | storage | 2:04.0 | 22.7 s |
-| 8 | scale | 2:27.0 | 14.5 s |
-| 9 | close | 2:42.0 | 17.1 s |
+| 1 | architecture | 0:00.0 | 24.6 s |
+| 2 | bearing | 0:26.3 | 24.6 s |
+| 3 | gate | 0:48.8 | 27.6 s |
+| 4 | valve | 1:17.2 | 15.2 s |
+| 5 | content | 1:32.8 | 15.7 s |
+| 6 | outputs | 1:48.8 | 16.9 s |
+| 7 | storage | 2:05.8 | 17.0 s |
+| 8 | scale | 2:22.8 | 18.1 s |
+| 9 | close | 2:40.8 | 17.9 s |
 
-**Narration 179.1 s, picture 180.0 s.** The generator refuses to run
-long: the first cut of this structure measured 206.6 s and printed *"over three
-minutes — cut the script, not the pauses"*, which is what produced the trims now
-in `voiceover.py`.
+**Narration 179.8 s, picture 179.7 s.**
 
 ## Assembling it
 

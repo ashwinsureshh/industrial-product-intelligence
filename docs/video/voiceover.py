@@ -27,58 +27,60 @@ from pathlib import Path
 OUT = Path(__file__).parent / "footage"
 VOICE = "en-US-AndrewNeural"   # "warm, confident, authentic" — fits the pitch
 RATE = "-4%"                   # a touch under default; this is dense material
-GAP = 0.40        # breath between segments, seconds
+GAP = 0.28        # breath between segments, seconds
 
 SEGMENTS: list[tuple[str, str]] = [
     ("architecture",
-     "This is Product Intelligence. It turns a supplier record, often just a part "
-     "number and a brand, into a complete, validated, commerce ready product where "
-     "every value carries its evidence. Six input paths all become one shape, and "
-     "run the same ten stages. Nothing gets a shortcut."),
+     "A distributor's catalogue arrives looking like this. A part number, a brand, "
+     "and a few words. Somebody then has to turn each one into a product page a "
+     "buyer can search and trust. Get it wrong and a plumber fits a valve that "
+     "fails. This system does that job automatically. Whatever comes in, a "
+     "spreadsheet row, a datasheet, or just a part number, goes through the same "
+     "ten steps."),
     ("bearing",
-     "Three fields in. Out comes a full record, and the trace shows all ten stages "
-     "with their timings. Bore twenty five millimetres, outer diameter fifty two, "
-     "width fifteen. None of that was supplied. I.S.O. fifteen fixes those "
-     "dimensions for the designation sixty two oh five. Purple is a published "
-     "standard. Grey is an unconfirmed default, flagged, not presented as fact."),
+     "Here it is on a real part. We give it three things. A part number, a brand, "
+     "a name. It recognises that part number as a standard bearing code, the way an "
+     "experienced parts person would, and fills in the dimensions it fixes. Every "
+     "value is colour coded by where it came from. Purple is a "
+     "published standard. Grey is a sensible guess we have not confirmed, and it "
+     "says so rather than pretending."),
     ("gate",
-     "The A.I. is a contributor, never the source of record. Here it proposed a load "
-     "rating of fourteen point eight kilonewtons, and a speed of fourteen thousand. "
-     "I.S.O. fifteen says fourteen, and sixteen thousand. Both refused, with the "
-     "reason printed. It may fill a blank or replace an unbacked default, never "
-     "overrule evidence. Bounded this way it beats both the raw model and the "
-     "rules engine, and precision on evidence backed values stays at one hundred "
-     "percent."),
+     "We do use A.I., but on a leash. Here it suggested a load rating of fourteen "
+     "point eight, and a speed of fourteen thousand. The standard says fourteen, "
+     "and sixteen thousand, so both were refused, and the refusal is written down. "
+     "It may fill an empty box. It may never overrule a source. That one rule is "
+     "why the accuracy holds. Across a hundred and two test products, values backed "
+     "by evidence were right every time."),
     ("valve",
-     "Sixteen cross field rules catch what no single field check can. A P.V.C. body "
-     "rated to one hundred and eighty degrees Celsius. Every number plausible alone, "
-     "impossible together. Blocked, in plain English."),
+     "Some mistakes only appear when you compare fields. A plastic valve rated to "
+     "a hundred and eighty degrees. Each number looks fine alone. Together they "
+     "describe a product that would melt. Sixteen checks catch it, and it is "
+     "stopped with a reason in plain English."),
     ("content",
-     "The same product is then written five times, to five character limits. This is "
-     "the forty character invoice line. It hit the limit by dropping whole facts and "
-     "naming which ones, because truncating would have cut the part number in half."),
+     "Shops need the same product written several ways. A till receipt line, a "
+     "phone listing, a full page. This is the forty character version. It dropped "
+     "whole facts to fit and listed which ones, because half a part number is "
+     "impossible to search for."),
     ("outputs",
-     "That record renders into three target schemas. The customer's own delivery "
-     "format, two hundred and fifty two columns in their order. Schema dot org, for "
-     "search. And a catalogue sheet where every attribute ships its provenance, "
-     "confidence and source, so a downstream system inherits the whole audit "
-     "trail, not a summary of it."),
+     "What comes out is whatever the customer's system expects. Their own two "
+     "hundred and fifty two column sheet, a format search engines understand, or a "
+     "spreadsheet where every value carries its source and how sure we are. A new "
+     "customer's format is a settings file, not a rewrite."),
     ("storage",
-     "There is no database. The taxonomy, the I.S.O. knowledge base, the unit "
-     "tables and the export profiles are versioned JSON in the repository, so "
-     "adding a category is a reviewed diff. At runtime it writes a content "
-     "addressed cache and any categories it has learned. It runs in one container, "
-     "stores no A.P.I. key, and cannot spend money."),
+     "There is no database to run or back up. The rule book, categories, standards "
+     "and units, is plain text kept with the code, so changing a rule gets "
+     "reviewed. Nothing is sent anywhere else, and the public version holds no "
+     "A.I. key, so it cannot spend money."),
     ("scale",
-     "On their own thousand row sample, six hundred and eleven rows a second "
-     "ingested, and two hundred and eighty seven products a second enriched on one "
-     "core. Under a cent per S.K.U. batched, against the ten minutes a person takes "
-     "today."),
+     "A person takes ten minutes a product. This handles two hundred and "
+     "eighty seven a second on one machine, for under a penny each. And it does not "
+     "hand you a pile of work. Every record comes out marked ready to publish, "
+     "needs review, or blocked, so a merchandiser only opens what needs a person."),
     ("close",
-     "Measured against their own labelled rows. Fourteen of fourteen fields exact "
-     "when the engine has the attribute values. Two of fourteen from a bare "
-     "catalogue row. We publish both, because the gap is sourcing, not formatting, "
-     "and saying which one you are quoting is the point."),
+     "Measured against the customer's own completed rows. Given the facts, fourteen "
+     "of fourteen fields exactly right. From a bare catalogue row, two of fourteen, "
+     "because the rest are not in that row. We publish both. Knowing what you "
+     "cannot answer is what makes a catalogue trustworthy."),
 ]
 
 def _ffmpeg() -> str:
