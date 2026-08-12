@@ -105,8 +105,8 @@ are the rule book.
 | `FAUCETS_LOV.xlsx` / `Fittings_LOV.xlsx` | Two categories specified end-to-end |
 | `Reference_Documents_Summary.xlsx` | Their own index of the pack — read first |
 
-**Status as of 11 Aug: partially delivered.** Two CSVs arrived, now committed
-under `backend/data/unilog_samples/`:
+**Status as of 12 Aug: partially delivered, and the delivered half is fully
+used.** Two CSVs arrived, now committed under `backend/data/unilog_samples/`:
 
 - `input_1000.csv` — the 1,000-row, 6-column sample. Matches the guide.
 - `delivery_expected.csv` — **the delivery format at exactly 252 columns, with
@@ -152,7 +152,7 @@ is what this engine is already best at. Faucets is the narrower fallback.
 | Solution Overview | How the prototype solves the problem |
 | **Prototype Link** | A **live MVP link**. Deployment is mandatory. |
 | **Project Deck** | **A mandatory template must be used** — download it from the portal. |
-| **GitHub Repository** | Must be a **public** link. The repo is currently private; flip it at submission. |
+| **GitHub Repository** | Must be a **public** link. **Done** — public since 11 Aug (§9). |
 | Demo Video | Short walkthrough of the solution |
 
 Consequences that shaped the design:
@@ -211,12 +211,18 @@ auto-deploys on push to `main`, built from the root `Dockerfile`.
 | — | Live ablation (Claude vs deterministic) | **Done, 102/102, $1.62. Negative result — see §7.1.** |
 | — | Hybrid gate (bounded Claude) | **Done, $0 — see §7.2. Best result in the project, and now a selectable engine in the product with a refusal ledger.** |
 | 4 | Public deployment | **Done — live and monitored** |
-| 5 | Deck | **Done** — `docs/UniHack_Prototype_Submission.pptx`, regenerate with `docs/deck/build_deck.py`. Team details, video link outstanding |
-| 5b | Demo video | Not started |
+| 5 | Deck | **Done** — `docs/UniHack_Prototype_Submission.pptx`, 15 slides, screenshots from the deployed app. Regenerate with `docs/deck/build_deck.py`. Team details + video link outstanding |
+| 5b | Demo video | Not started — running order in §11 |
 | 6 | Unilog compliance layer (§5.7) | **Done, $0** — built against the solution guide (§1.6) |
+| 7 | Delivery format + accuracy (§7.3, §7.7) | **Done, $0** — 252 columns, both states reported everywhere |
+| 8 | Taxonomy learning at volume (§7.4) | **Done, $0** — 8.9% → 81.7% on their 1,000 rows |
+| 9 | Discovery (§7.5) | **Done, $0** — sourcing policy enforced; fetch blocked by client-side rendering |
+| 10 | Pre-deck audit (§7.6) | **Done** — four defects found and fixed |
 
-**Everything above is complete, committed, pushed and deployed.** Seven test
-suites pass, benchmark reproduces, live site verified on desktop and phone.
+**Everything above is complete, committed, pushed and deployed.** Eight test
+suites pass (298 checks), the benchmark reproduces, and the live site is
+verified on desktop and phone at 1900 / 1440 / 1300 / 1000 / 901 / 900 / 375 /
+320 px.
 
 **Post-briefing work (6 Aug), all $0:** per-attribute source URLs (§5.5), the
 cost model (§7.05), profile-driven export (§5 `export/`), and the hybrid gate
@@ -330,6 +336,7 @@ score as a CSV row. Do not add a parallel path for a new input type.
 | `unilog/ground_truth.py` | Their labelled rows scored both ways; shared by the API, the CLI and the deck so no two can disagree |
 | `ingest/unilog_rows.py` | Their catalogue rows → `RawProduct`; vendor ≠ manufacturer, placeholder filtering |
 | `data/unilog_samples/` | Their 1,000-row input and 252-column labelled delivery rows |
+| `unilog/ground_truth.py` | Their labelled rows scored both ways (§7.7) — shared by the API, the CLI and the deck |
 | `data/unilog/` | `uom_standards`, `abbreviations`, `content_formats`, `lov/` — **all provisional stubs; their spreadsheets replace these files, not the code** |
 | `export/profiles.py` | Profile-driven output rendering; target schema is data |
 | `data/export_profiles/` | `catalog_csv`, `schema_org`, `unilog_delivery` — **add a customer schema here, not in code** |
@@ -906,6 +913,57 @@ the page. Production bundle builds.
 
 ---
 
+## 7.7 The Accuracy tab — their evaluation, inside the product
+
+`GET /api/ground-truth`, rendered by `GroundTruthPanel.jsx`. Run the same thing
+on the CLI with `python run_expected_vs_ours.py`. All three read
+`app/unilog/ground_truth.py`, so the endpoint, the script and the deck cannot
+quote different numbers.
+
+It exists because judging is asynchronous. Their guide names field-level
+accuracy against the known-good rows as a metric judges will look for, and a
+reviewer should not have to clone the repo to see it.
+
+**It always shows both states, and the component cannot show one without the
+other.** `test_unilog.py` asserts both are present in the payload and on every
+field, so the qualification cannot be dropped by a later edit.
+
+**Open question the user has not settled:** whether the tab earns its place.
+The case for it is above. The case against: it is a benchmark rather than a
+product feature, no real Unilog user would open it, and a skimming judge could
+read **2/14** in large type and stop before the sentence that explains it. Two
+lighter options if it goes: rename to "Evaluation", or fold it into the Catalog
+tab and drop back to five tabs. If removed, keep the endpoint and the script —
+deck slide 8 carries the argument either way.
+
+---
+
+### Deck tooling — `docs/deck/`
+
+The deck is generated, not hand-edited, so a re-measurement is one command
+rather than fifteen slides of retyping.
+
+| File | Role |
+| --- | --- |
+| `build_deck.py` | Fills the organizers' template. Run from `docs/deck/` |
+| `template.pptx` | Their untouched original |
+| `shots.py` | Playwright against the **deployed** site; writes `shots/` |
+| `preview.py` | Renders one slide to PNG by re-laying its geometry in HTML |
+| `fitcheck.py` | Overflow, margin, overlap and chip-wrap checks |
+| `expected_vs_ours.json` | Written by `run_expected_vs_ours.py`; slide 8 reads it |
+
+**There is no LibreOffice in this environment**, so slides cannot be rendered
+the normal way. `fitcheck.py` substitutes for visual QA on the defect that
+matters — text overflowing its shape — by laying out every box against real
+Arial metrics. `preview.py` covers placement. Neither tells you whether it looks
+good: open the file before trusting it.
+
+Playwright drives the **installed Chrome** (`channel="chrome"`), because the
+browser tool in this environment cannot screenshot — the pane does not
+composite frames.
+
+---
+
 ## 8. Commands
 
 ```bash
@@ -970,11 +1028,26 @@ python run_benchmark.py --live --budget 5
   19. `26a71b2` **Unilog compliance layer** (§5.7) — house style, LOV refusals,
       formula-built descriptions, catalogue-row ingest, 100 tests
   20. `3b19213` casing fix: title case no longer flattens bracketed words
-  21. **Real delivery format** (§7.3) — 252-column profile generated from their
-      header, content formulas derived from their two labelled rows (14/14
-      exact), field-level accuracy benchmark, vendor≠manufacturer ingest
-- Local `main` and `origin/main` were level at `f26aae4` before the compliance
-  layer landed.
+  21. `f706259` **real delivery format** (§7.3) — 252-column profile generated
+      from their header, formulas derived from their two labelled rows,
+      field-level accuracy benchmark, vendor≠manufacturer ingest
+  22. `ebe012d` **taxonomy learning on their 1,000 rows** (§7.4) — 8.9% → 81.7%,
+      and the three bugs volume exposed
+  23. `25a8eb3` **discovery** (§7.5) — sourcing policy, refusal ledger, the
+      measured zero-of-four result
+  24. `68de57c` Discover UI tab
+  25. `c764e3d` **pre-deck audit** (§7.6) — corrupted bullets in a served
+      record, empty fields claiming compliance, long-token layout break
+  26. `ba45bea` deck built from the organizers' template, `docs/deck/`
+  27. `0a85c93` repository made public after scanning all 37 commits
+  28. `45a48c4` header sizing: "Live AI" no longer wraps; 901–1300px band
+  29. `63e9856` two glyphs that had rendered as mojibake since the dark theme
+  30. `27f2129` slide 12: four screenshots captured from the deployed app
+  31. `775612d` **stopped quoting 14/14 unqualified** — both states, everywhere
+  32. `5f27011` **Accuracy tab** + `/api/ground-truth` (§7.7)
+  33. `8573856` `.banner` is flex, so its prose needs one wrapper element
+  34. `9319d57` deck screenshots re-captured against the current build
+- `main` and `origin/main` are level; the working tree is clean.
 - Public as of 11 Aug (submission requires it). No LICENSE yet — see below.
 - No LICENSE yet, deliberately: organizers may have IP terms. Check before adding.
 
@@ -997,34 +1070,40 @@ python run_benchmark.py --live --budget 5
 
 ## 11. Immediate next steps
 
-**Everything now waits on the nine data files (§1.6), which are not uploaded
-yet.** The compliance layer (§5.7) was built against the guide so that landing
-them is a data drop.
+**Engineering is done and deployed. What remains is submission admin and two
+things only the user can supply.** Deadline Sun 23 Aug 2026, 10:31 IST.
 
-0. **Chase the organizers for a dataset ETA.** As of 10 Aug only the HTML guide
-   is in Resources. This is the critical path.
-1. **When the pack lands**, in this order:
-   (a) regenerate the four `data/unilog/` stubs from their UOM sheet,
-   guidelines .docx, and LOV files — no code change, and `source` flips from
-   `provisional` to `unilog`;
-   (b) fill in `unilog_delivery.json` from the 252-column Delivery Format sheet;
-   (c) set `applies_to` on the LOV entries to bind them to our taxonomy, then
-   **re-measure** — that binding is what makes the vocabulary live;
-   (d) add a *second* benchmark scoring field-level accuracy against their 200
-   known-good rows. **Do not touch `build_corpus()`** — it invalidates all 102
-   paid records (§11 gotchas);
-   (e) discovery — now backed by the §7.3 measurement rather than the brief.
-2. **The deck.** The user has the portal template and will supply it once
-   engineering settles. `docs/Project_Understanding.pdf`, §7.1/§7.2 and §7.05
-   carry the narrative; the hybrid gate is the strongest slide.
-3. **Demo video — 3 minutes** (organizer-specified). Best 20 seconds: switch to
-   the Hybrid engine on the sparse bearing and point at the two refusals. Then
-   the Accuracy tab, which shows their own expected row beside ours.
-4. ~~Flip the repo public~~ — **done 11 Aug**, after scanning all 37 commits.
-5. **Rotate the API key** (it passed through a conversation transcript) and
-   **delete `backend/.env`** once local live testing is finished.
-6. **Leave the UptimeRobot monitor running.** A sleeping free instance returns
-   404, so a reviewer's first click would look like a dead link.
+| # | Item | State |
+| --- | --- | --- |
+| 1 | **Team details, deck slide 2** | **Blocked on the user.** Name, leader, members |
+| 2 | **Demo video link, deck slide 14** | **Blocked on the user.** Slide has a marked placeholder |
+| 3 | **Demo video, 3 minutes** | Not started — see the running order below |
+| 4 | **Rotate the API key** | It passed through a conversation transcript. Delete `backend/.env` when local live testing is finished |
+| 5 | Decide the Accuracy tab question | §7.7. Default is keep |
+| 6 | Leave UptimeRobot running | A sleeping free instance returns **404**, so a reviewer's first click looks like a dead link |
+
+Done since this list was last written: repo public (`0a85c93`), deck built and
+screenshotted from the deployed app (`ba45bea`, `27f2129`, `9319d57`),
+`Project_Understanding.pdf` brought current.
+
+**Video running order** — the three things worth the 3 minutes:
+
+1. Hybrid engine on the sparse bearing. Point at the two refusals: the model
+   proposed 14.8 kN and 14000 rpm, ISO 15 says 14 and 16000, both refused, and
+   an unbacked default replaced. Twenty seconds, and it is the whole thesis.
+2. The Accuracy tab — their own expected row beside ours, with both numbers.
+3. Discover on SKF: the page is fetched, refused as unusable, and the record
+   below still scores 94 because ISO 15 decodes the part number. Says exactly
+   what is and is not sourced.
+
+**When the remaining seven reference files land** (§1.6), in this order:
+(a) regenerate the `data/unilog/` stubs from their UOM sheet, guidelines .docx
+and LOV files — no code change, and `source` flips `provisional` → `unilog`;
+(b) set `applies_to` on the LOV entries to bind them to our taxonomy, then
+**re-measure** — that binding is what makes the vocabulary live;
+(c) re-run `run_delivery_accuracy.py` and `run_expected_vs_ours.py`, then
+`docs/deck/build_deck.py` to refresh the slides from the new numbers.
+**Do not touch `build_corpus()`** — it invalidates all 102 paid records.
 
 ### 11.1 Discovery from brand + part number — now measured, not argued
 
@@ -1083,6 +1162,16 @@ Findings that will shape it:
   runs causes confusing results — delete both when debugging.
 - Restart the backend after adding routes; a stale uvicorn returns 404 and
   looks like a frontend bug.
+- **`.banner` is `display: flex`.** Every element child becomes a flex item, so
+  a banner containing inline markup must wrap its prose in one element or the
+  browser deals the sentence into columns. Cost one broken paragraph on the
+  Accuracy tab; the constraint is now noted on the rule itself.
+- **A `content:` value can be double-encoded and nothing will notice.** Two
+  glyphs rendered as `â–¸` and `â†’` on the deployed site for several sessions.
+  No geometry audit catches this — only reading the rendered pixels does.
+- **Deck screenshots contain no navigation.** `docs/deck/shots.py` clips each
+  capture to its card's bounding box, so a change to the tab bar does not
+  require re-taking them. Check before re-running.
 - **Changing `build_corpus()` silently invalidates every committed record.**
   The cache key covers the product payload, so any edit to corpus generation
   makes all 102 keys miss and `run_hybrid.py` aborts. That abort is correct

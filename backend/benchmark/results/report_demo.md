@@ -1,6 +1,6 @@
 # Benchmark Results
 
-Engine: **demo (deterministic)** · 102 cases · 0.35 s · 289.5 products/s
+Engine: **demo (deterministic)** · 102 cases · 0.34 s · 296.8 products/s
 
 ## Headline
 
@@ -56,7 +56,7 @@ Modelled on a **100,000 SKU** catalog.
 | Hours saved | **5,556** |
 | Cost saved | **$194,444** |
 | FTE-years saved | 3.1 |
-| Machine processing time | 0.1 hours |
+| Machine processing time | 0.09 hours |
 
 Assumptions: 10.0 min/SKU manual enrichment, $35.0/hour analyst cost, records needing review credited at 50% of the manual time saving.
 
