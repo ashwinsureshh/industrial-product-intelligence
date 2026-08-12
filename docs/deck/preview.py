@@ -55,7 +55,12 @@ for sh in s.shapes:
                  f'display:flex;flex-direction:column;justify-content:{va};'
                  f'box-sizing:border-box">{body}</div>')
 
-html = (f'<body style="margin:0"><div style="position:relative;width:{10*SCALE}px;'
+# The charset is load-bearing, not boilerplate. The file is written UTF-8; without
+# this the browser reads it as latin-1 and every non-ASCII glyph the deck uses
+# renders doubled — a middle dot became "Â·" and looked like mojibake in the
+# deck itself, which stores a perfectly good U+00B7.
+html = (f'<meta charset="utf-8"><body style="margin:0">'
+        f'<div style="position:relative;width:{10*SCALE}px;'
         f'height:{5.625*SCALE}px;background:#fff;overflow:hidden">'
         + "".join(parts) + "</div></body>")
 pathlib.Path("_preview.html").write_text(html, encoding="utf-8")

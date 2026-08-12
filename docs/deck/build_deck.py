@@ -197,12 +197,20 @@ note(s, "One line: minimal input in, commerce-ready record out, and every value 
 # --- 2. TEAM DETAILS ---------------------------------------------------------
 s = S[1]
 wipe(s)
+TEAM_NAME = "Team Codes"
+TEAM_LEADER = "Ankur Goswami"
+TEAM_MEMBERS = ("Ashwin S", "Argho Kumar Halder", "SV Chiranjeevi")
+
 b, tf = txbox(s, 0.55, 3.62, 8.9, 1.6)
 para(tf, "Team Details", size=20, bold=True, color=NAVY, space_after=10, first=True)
-for label in ("Team name", "Team leader", "Members"):
-    rich(tf, [(f"{label}:   ", True, INK), ("_" * 46, False, RGBColor(0xB6, 0xC3, 0xD1))],
+for label, value in (("Team name", TEAM_NAME),
+                     ("Team leader", TEAM_LEADER),
+                     ("Members", "  ·  ".join(TEAM_MEMBERS))):
+    rich(tf, [(f"{label}:   ", True, INK), (value, False, INK)],
          size=12, space_after=7)
-note(s, "FILL IN before submitting: team name, leader, members.")
+note(s, "Team Codes — leader Ankur Goswami, with Ashwin S, Argho Kumar Halder and "
+        "SV Chiranjeevi. Emails are on the portal roster and deliberately not on the "
+        "slide; add them here if the organizers ask for them.")
 
 
 # --- 3. BRIEF ABOUT YOUR SOLUTION -------------------------------------------

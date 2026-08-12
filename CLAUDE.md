@@ -1083,7 +1083,7 @@ things only the user can supply.** Deadline Sun 23 Aug 2026, 10:31 IST.
 
 | # | Item | State |
 | --- | --- | --- |
-| 1 | **Team details, deck slide 2** | **Blocked on the user.** Name, leader, members |
+| 1 | ~~Team details, deck slide 2~~ | **Done 12 Aug.** Team Codes; leader **Ankur Goswami**; Ashwin S, Argho Kumar Halder, SV Chiranjeevi. Values live in `TEAM_NAME` / `TEAM_LEADER` / `TEAM_MEMBERS` at the top of slide 2's block in `build_deck.py`. Emails are on the portal roster and deliberately off the slide |
 | 2 | **Demo video link, deck slide 14** | **Blocked on the user.** Slide has a marked placeholder |
 | 3 | **Demo video, 3 minutes** | Not started — see the running order below |
 | 4 | **Rotate the API key** | It passed through a conversation transcript. Delete `backend/.env` when local live testing is finished |
@@ -1181,6 +1181,11 @@ Findings that will shape it:
 - **A `content:` value can be double-encoded and nothing will notice.** Two
   glyphs rendered as `â–¸` and `â†’` on the deployed site for several sessions.
   No geometry audit catches this — only reading the rendered pixels does.
+- **`preview.py` used to invent that same bug.** It wrote UTF-8 HTML with no
+  `<meta charset>`, so Chrome read it as latin-1 and slide 2's `·` came back as
+  `Â·` — in the *preview*, while the .pptx held a clean U+00B7. Fixed. The moral
+  cuts both ways: when a rendering shows mojibake, confirm the codepoints in the
+  artefact before "fixing" the artefact.
 - **Deck screenshots contain no navigation.** `docs/deck/shots.py` clips each
   capture to its card's bounding box, so a change to the tab bar does not
   require re-taking them. Check before re-running.
