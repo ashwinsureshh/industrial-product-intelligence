@@ -26,63 +26,68 @@ from pathlib import Path
 
 OUT = Path(__file__).parent / "footage"
 VOICE = "en-US-AndrewNeural"   # "warm, confident, authentic" — fits the pitch
-RATE = "-1%"                   # measured pace; the content is what sets the length
-GAP = 0.25        # breath between segments, seconds
+RATE = "+2%"                   # measured pace; the content is what sets the length
+GAP = 0.22        # breath between segments, seconds
 
 SEGMENTS: list[tuple[str, str]] = [
     ("architecture",
-     "A distributor's catalogue arrives looking like this. A part number, a brand, "
-     "and a few words. Someone has to turn each one into a product page a buyer can "
-     "search and trust. Get it wrong and a plumber fits a valve that fails. "
-     "Whatever comes in goes through the same ten steps."),
+     "Here is the problem. A distributor gets a part number, a brand, and if they "
+     "are lucky, four words. Someone has to turn that into a page a buyer can "
+     "trust. Get it wrong, and a plumber fits a valve that melts. However the data "
+     "arrives, it goes through the same ten steps."),
     ("bearing",
-     "Using it is three steps. Pick how your data arrives, paste in whatever you "
-     "have, and press enrich. Here it gets a part number, a brand and a name. It "
-     "recognises the part number as a standard bearing code, the way a parts "
-     "specialist would, and fills in the dimensions it fixes. Values are colour "
-     "coded by source. Purple is a published standard. Grey is a guess we have not "
-     "confirmed, and it says so rather than pretending."),
+     "Using it is three steps. Pick how your data comes in, paste what you have, "
+     "press enrich. A part number, a brand, a name. Watch what comes back. It read "
+     "that part number as a standard bearing code, the way a parts specialist "
+     "would, and filled in the dimensions it fixes. And the colours matter. Purple "
+     "means a published standard says so. Grey means we are guessing, and we would "
+     "rather tell you."),
     ("gate",
-     "We do use A.I., but on a leash. Here it suggested a load rating of fourteen "
+     "We do use A.I., but on a short leash. It suggested a load rating of fourteen "
      "point eight, and a speed of fourteen thousand. The standard says fourteen, "
-     "and sixteen thousand, so both were refused, in writing. It may fill an empty "
-     "box. It may never overrule a source. That one rule is why "
-     "the accuracy holds. Across a hundred and two test products, values backed by "
-     "evidence were right every time."),
-    ("tour",
-     "That was one product, typed in by hand. The same engine takes a whole "
-     "catalogue. Upload a spreadsheet and every row comes back sorted. Point it at a "
-     "datasheet and it reads the table off the page. Give it nothing but a brand and "
-     "a part number and it goes to the manufacturer's own site. It even works out "
-     "categories it has never seen, for a person to approve."),
+     "and sixteen thousand. Both refused, in writing. It can fill an empty box. It "
+     "does not get to argue with a published standard. That is why the accuracy "
+     "holds up. Across a hundred and two test products, values backed by evidence "
+     "were right every time."),
+    ("catalog",
+     "Now a whole spreadsheet. Ten in, and they come back "
+     "sorted. Eight ready to publish, one to check, one stopped."),
+    ("document",
+     "Only have the P.D.F.? Drop it in. No borders on that table, just columns held "
+     "apart by spaces, the layout that usually defeats this. It read it straight "
+     "off the page, and every value remembers which page."),
+    ("discover",
+     "Brand and part number only? It goes to the manufacturer's own site. And here "
+     "is the good bit. It found S.K.F.'s page, fetched it, then refused it, because "
+     "there was nothing readable on it. And it says so. The record still scores "
+     "ninety four, from the part number alone."),
+    ("learning",
+     "And when something fits no category at all, it works one out and queues it "
+     "for a human. It does not invent a shelf and start stacking things on it."),
     ("valve",
-     "Some mistakes only appear when you compare fields. A plastic valve rated to "
-     "a hundred and eighty degrees. Each number looks fine alone. Together they "
-     "describe a product that would melt. Sixteen checks catch it, and stop it with "
-     "a reason in plain English."),
+     "Some mistakes only show up when you compare fields. Plastic valve, rated to a "
+     "hundred and eighty degrees. Each number is fine on its own. Together, that is "
+     "not a valve, it is a candle. Sixteen checks catch it."),
     ("content",
-     "Shops need the same product written several ways. A till receipt line, a "
-     "phone listing, a full page. This is the forty character version. It dropped "
-     "whole facts to fit and listed which ones, because half a part number is "
-     "useless."),
+     "Shops need the same product written several ways. This is the forty character "
+     "one. It dropped whole facts to fit and told you which, because half a part "
+     "number is no use to anybody."),
     ("outputs",
-     "What comes out is whatever the customer's system expects. Their own two "
-     "hundred and fifty two column sheet, a format search engines understand, or a "
-     "spreadsheet where every value carries its source and how sure we are."),
+     "Out the other end, whatever the customer's system expects. Their own two "
+     "hundred and fifty two column sheet, a format search engines read, or a "
+     "spreadsheet where every value carries its source."),
     ("storage",
-     "There is no database. The rule book, categories, standards and units, is "
-     "plain text kept with the code. Nothing is sent anywhere else, "
-     "and the public version holds no A.I. key, so it cannot spend money."),
+     "There is no database. The rule book, categories, standards, units, is plain "
+     "text sitting next to the code. Nothing is sent anywhere else, and the public "
+     "version holds no A.I. key, so it cannot spend your money."),
     ("scale",
-     "A person takes ten minutes a product. This handles two hundred and eighty "
-     "seven a second, for under a penny each. And every record comes out marked "
-     "ready to publish, needs review, or blocked, so a person only opens what needs "
-     "a person."),
+     "A person takes ten minutes a product. This does two hundred and eighty "
+     "seven a second, for less than a penny each."),
     ("close",
-     "Against the customer's own completed rows. Given the facts, fourteen "
-     "of fourteen fields exactly right. From a bare catalogue row, two of fourteen, "
-     "because the rest are not in that row. We publish both, because knowing what "
-     "you cannot answer is what makes a catalogue trustworthy."),
+     "Last thing, and it is the honest one. Against the customer's own finished "
+     "rows, given the facts, fourteen out of fourteen exactly right. From a bare "
+     "catalogue row, two. We publish both, because knowing what you cannot answer "
+     "is what makes a catalogue worth trusting."),
 ]
 
 def _ffmpeg() -> str:

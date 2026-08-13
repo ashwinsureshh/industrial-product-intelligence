@@ -31,6 +31,7 @@ from playwright.sync_api import sync_playwright
 URL = "https://industrial-product-intelligence.onrender.com"
 OUT = Path(__file__).parent / "footage"
 FRAMES = OUT / "frames"
+DATASHEET = Path(__file__).parent / "assets" / "SKF_6205-2RS_datasheet.pdf"
 
 
 FAST = "--fast" in sys.argv
@@ -279,109 +280,126 @@ def main() -> int:
         recording_started = time.time()
         page = context.new_page()
 
-        # 1 — what was built. A screen recording cannot say this, and it is the
-        #     first thing a judge is scoring.
-        print("[1] architecture at 0:00")
+        # 1 — what this is, before any UI
+        print("[1] architecture")
         page.goto(frame("1_architecture"), wait_until="load", timeout=60000)
         _T0[0] = time.time()
         beacon(page)
-        hold_until(page, "0:17", "inputs, one shape, ten stages, outputs")
+        hold_until(page, "0:16", "inputs, one record, ten checks, outputs")
 
-        # 2 — the same claim, running. The trace card lists the real stages.
-        print("[2] how you use it at 0:17")
+        # 2 — how you use it
+        print("[2] how you use it")
         page.goto(URL, wait_until="networkidle", timeout=120000)
         beacon(page)
-        beat(page, 0.6)
         creep(page, '.card:has(h3:text-is("Demo Cases"))', block="start",
-              offset=-108, seconds=1.4)
+              offset=-108, seconds=1.3)
         tap(page, '.sample:has-text("Sparse bearing")')
-        beat(page, 0.8)
+        beat(page, 0.7)
         tap(page, 'button:has-text("Enrich Product")')
         page.wait_for_selector('.col .card:has(h3:text-is("Attributes"))', timeout=60000)
-        beat(page, 1.5, "record lands")
+        beat(page, 1.2, "record lands")
         creep(page, '.col .card:has(h3:text-is("Pipeline Trace"))',
-              block="start", offset=-118, seconds=1.6)
-        beat(page, 7.0, "ten stages with timings")
-        creep(page, '.col .card:has(h3:text-is("Attributes"))', seconds=1.6)
-        hold_until(page, "0:43", "dwell on the provenance badges")
+              block="start", offset=-118, seconds=1.5)
+        beat(page, 4.0, "ten steps, with timings")
+        creep(page, '.col .card:has(h3:text-is("Attributes"))', seconds=1.5)
+        hold_until(page, "0:39", "the colours: Standard vs Default")
 
-        # 3 — the gate refusing. The thesis; the longest hold in the film.
-        print("[3] the AI gate at 0:43")
+        # 3 — the gate. The thesis.
+        print("[3] the AI gate")
         beacon(page)
         tap(page, '.engine-toggle .tab:text-is("Hybrid")')
-        beat(page, 1.5)
+        beat(page, 1.0)
         tap(page, 'button:has-text("Enrich Product")')
         page.wait_for_selector('.col .card:has(h3:text-is("AI gate"))', timeout=60000)
-        creep(page, '.col .card:has(h3:text-is("AI gate"))', seconds=1.8)
-        beat(page, 12.0, "hold on 14.8 kN refused and 14000 rpm refused")
-        drift(page, 110, 4.5)          # ease down to the third row and the note
-        hold_until(page, "1:08")
+        creep(page, '.col .card:has(h3:text-is("AI gate"))', seconds=1.6)
+        beat(page, 11.0, "14.8 kN refused, 14000 rpm refused")
+        drift(page, 105, 4.0)
+        hold_until(page, "1:03")
 
-        # 4 — the other four ways in. The restructure had left the film showing
-        #     only Single Product; a judge could not tell the rest existed.
-        print("[4] 1:08 the other ways in")
+        # 4 — a whole spreadsheet
+        print("[4] catalog")
         beacon(page)
-        to_top(page)
-        tap(page, '.main-nav .tab:text-is("Document")')
-        beat(page, 2.0, "drop a datasheet or paste a product page")
+        to_top(page, 0.7)
+        tap(page, '.engine-toggle .tab:text-is("Demo")')
         tap(page, '.main-nav .tab:text-is("Catalog")')
-        beat(page, 0.8)
+        beat(page, 0.6)
         tap(page, 'button:has-text("Run 10-product demo catalog")')
         page.wait_for_selector('.col table', timeout=60000)
-        beat(page, 3.0, "a whole spreadsheet, triaged")
-        to_top(page)
+        hold_until(page, "1:10", "publish / review / blocked")
+
+        # 5 — a real datasheet, uploaded on camera. Saying "it reads the table
+        #     off the page" over an empty drop zone is the sort of small gap
+        #     that undoes a demo.
+        print("[5] document")
+        beacon(page)
+        to_top(page, 0.7)
+        tap(page, '.main-nav .tab:text-is("Document")')
+        beat(page, 1.2)
+        page.set_input_files('input[type="file"]', str(DATASHEET))
+        page.wait_for_selector('.col .card:has(h3:text-is("Attributes"))', timeout=60000)
+        beat(page, 2.0, "specs arrive from the PDF")
+        creep(page, '.col .card:has(h3:text-is("Attributes"))', seconds=1.5)
+        hold_until(page, "1:23", "every value cites its page")
+
+        # 6 — brand + part number, and an honest refusal
+        print("[6] discover")
+        beacon(page)
+        to_top(page, 0.7)
         tap(page, '.main-nav .tab:text-is("Discover")')
-        beat(page, 0.8)
+        beat(page, 0.6)
         tap(page, '.sample:has-text("SKF 6205-2RS")')
         page.wait_for_selector('.col .card:has(h3:text-is("Sources"))', timeout=60000)
         park_mouse(page)
-        beat(page, 2.5, "brand and part number only")
-        to_top(page)
-        tap(page, '.main-nav .tab:text-is("Learning")')
-        hold_until(page, "1:30", "categories it has never seen")
+        creep(page, '.col .card:has(h3:text-is("Sources"))', block="start",
+              offset=-118, seconds=1.4)
+        beat(page, 7.0, "fetched, then refused, and it says so")
+        creep(page, '.col .card:has(h3:text-is("Commerce Readiness"))', seconds=1.4)
+        hold_until(page, "1:40", "and the record still scores 94")
 
-        # 5 — a contradiction blocked
-        print("[5] 1:30 contradictory valve")
+        # 7 — categories it has never seen
+        print("[7] learning")
         beacon(page)
-        to_top(page)
+        to_top(page, 0.7)
+        tap(page, '.main-nav .tab:text-is("Learning")')
+        hold_until(page, "1:48", "proposed, and queued for a human")
+
+        # 8 — a contradiction only cross-field checks can catch
+        print("[8] validation")
+        beacon(page)
+        to_top(page, 0.7)
         tap(page, '.main-nav .tab:text-is("Single Product")')
-        beat(page, 0.6)
-        tap(page, '.engine-toggle .tab:text-is("Demo")')
-        beat(page, 0.8)
+        beat(page, 0.5)
         tap(page, '.sample:has-text("Contradictory valve")')
-        beat(page, 1.0)
+        beat(page, 0.7)
         tap(page, 'button:has-text("Enrich Product")')
         page.wait_for_selector('.col .card:has(h3:text-is("Validation"))', timeout=60000)
-        creep(page, '.col .card:has(h3:text-is("Validation"))')
-        hold_until(page, "1:45", "PVC at 180 C, blocked in plain English")
+        creep(page, '.col .card:has(h3:text-is("Validation"))', seconds=1.4)
+        hold_until(page, "2:01", "PVC at 180 C, stopped in plain English")
 
-        # 5 — the customer's content standard
-        print("[6] content standard at 1:45")
+        # 9 — five formats to five limits
+        print("[9] content standard")
         beacon(page)
         creep(page, '.col .card:has(h3:text-is("Content Standard"))',
-              block="start", offset=-118, seconds=1.8)
-        hold_until(page, "2:00", "40-character invoice line and the dropped tokens")
+              block="start", offset=-118, seconds=1.5)
+        hold_until(page, "2:12", "the 40-character line names what it dropped")
 
-        # 6 — what actually comes out. Real bytes, fetched from the deployment.
-        print("[7] outputs at 2:00")
+        # 10..13 — the frames the product cannot show
+        print("[10] outputs")
         page.goto(frame("2_outputs"), wait_until="load", timeout=60000)
         beacon(page)
-        hold_until(page, "2:12", "252 columns, JSON-LD, and the audit-trail CSV")
+        hold_until(page, "2:23", "252 columns, JSON-LD, audit-trail CSV")
 
-        # 7 — where the data lives, which no screen in the product can answer
-        print("[8] storage at 2:12")
+        print("[11] storage")
         page.goto(frame("3_storage"), wait_until="load", timeout=60000)
         beacon(page)
-        hold_until(page, "2:26", "no database; versioned data; a container that cannot spend")
+        hold_until(page, "2:37", "no database, no key, nothing leaves")
 
-        # 8 — scale and cost per SKU
-        print("[9] scale at 2:26")
+        print("[12] scale")
         page.goto(frame("4_scale"), wait_until="load", timeout=60000)
         beacon(page)
-        hold_until(page, "2:41", "611 rows/s, 287 products/s, $0.0084 per SKU")
+        hold_until(page, "2:44", "287/s, under a penny, and the review queue")
 
-        # 9 — close on the least flattering number, deliberately
-        print("[10] accuracy at 2:41")
+        print("[13] accuracy")
         page.goto(frame("5_accuracy"), wait_until="load", timeout=60000)
         beacon(page)
         hold_until(page, "3:00", "14/14 and 2/14, both")

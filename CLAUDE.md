@@ -1372,11 +1372,26 @@ when the next action is not a click (otherwise it flies to the bottom of the
 frame and straight back), and rest it on the control about to be used, because
 a pointer drifting onto an unrelated button reads as a click that never comes.
 
-**The cut is ten segments**, five of them explainer frames and five the live
-product, and it now includes a **usage walkthrough**: after the gate, segment 4
-tours Document, Catalog, Discover and Learning, because the frame-based
-restructure had left the film showing only the Single Product tab and a judge
-could not tell the other four existed.
+**The cut is thirteen segments**, and the count is the point. An earlier version
+toured four tabs inside one segment, and the narration drifted off the picture:
+it said "it goes to the manufacturer's own site" over a screen showing a
+*refusal*, and described a spreadsheet while a datasheet was up. **One claim, one
+segment, one marker** — a mismatch now cannot survive a rebuild, because
+`align.py` pins each line to the shot it describes.
+
+Two details that came out of that audit and are worth keeping:
+
+- **The Document segment uploads a real PDF on camera** (`assets.py` builds it).
+  Saying "it reads the table off the page" over an empty drop zone was the sort
+  of small gap that undoes a demo; the shot now shows *0 tables found*, strategy
+  `text:columns`, nine specs read — the ruleless-layout claim proving itself.
+- **The Discover line tells the truth.** It fetches SKF's page, refuses it, and
+  the narration says so — which is stronger than the overclaim it replaced,
+  because the record still scores 94 from the part number alone.
+
+The narration is written to be spoken by a person, not recited: contractions,
+short sentences, and a few dry jokes ("that is not a valve, it is a candle";
+"it does not invent a shelf and start stacking things on it").
 
 **Video running order** — the three things worth the 3 minutes:
 

@@ -1,9 +1,10 @@
 # Demo video — 3:00 shooting script
 
 **Deliverable:** short walkthrough, mandatory, link goes on deck slide 14.
-Built by five scripts in `docs/video/`: `frames.py` renders the explainer
+Built by six scripts in `docs/video/`: `frames.py` renders the explainer
 frames, `record.py` drives the live site and intercuts them, `voiceover.py`
-speaks the narration, `align.py` locks them together, `mux.py` assembles. Current cut: **2:59.1**.
+speaks the narration, `align.py` locks them together, `assets.py` builds the datasheet it uploads,
+`mux.py` assembles. Current cut: **2:59.8**.
 
 **What changed, and why:** the first version demonstrated behaviour for three
 minutes and never said what had been built, where the data was stored, or what
@@ -22,47 +23,52 @@ if anything gets cut, it is not the refusals.
 
 | # | Time | On screen | The point |
 |---|------|-----------|-----------|
-| 1 | 0:00.0 | **Frame:** six inputs → one record → ten checks → outputs | What this is, before any UI appears |
-| 2 | 0:19.4 | Live app: pick a case, press **Enrich**, read the record | **How you use it** — three steps, then provenance colour-coding |
-| 3 | 0:42.8 | Switch to **Hybrid** → the **AI gate** card | The thesis: 14.8 kN and 14000 rpm both refused against ISO 15 |
-| 4 | 1:07.8 | **Document → Catalog → Discover → Learning** | **The other four ways in**: a datasheet, a spreadsheet, brand + part number, and categories it learns |
-| 5 | 1:29.8 | Contradictory valve → the red **Validation** card | Cross-field checks catch what no single field can |
-| 6 | 1:44.8 | **Content Standard** card | Five formats to five limits; the 40-char line names what it dropped |
-| 7 | 1:59.9 | **Frame:** delivery row, JSON-LD, audit-trail CSV | What actually comes out — real bytes from the live service |
-| 8 | 2:11.9 | **Frame:** where the data lives | No database; versioned rules; a container that cannot spend |
-| 9 | 2:25.9 | **Frame:** throughput, cost, and the review queue | 287/s, under a penny each, and publish / review / blocked |
-| 10 | 2:40.9 | **Frame:** 14/14 and 2/14 | Closes on the least flattering number, deliberately |
+| 1 | 0:00.0 | **Frame:** the problem, then six inputs → one record → ten checks | What this is, before any UI |
+| 2 | 0:18.4 | Live app: pick a case, **Enrich**, read the record | **How you use it** — three steps, then the colour coding |
+| 3 | 0:38.8 | Switch to **Hybrid** → the **AI gate** | 14.8 kN and 14000 rpm refused against ISO 15 |
+| 4 | 1:02.8 | **Catalog** → run the 10-product demo | A spreadsheet comes back sorted: 8 publish, 1 review, 1 blocked |
+| 5 | 1:09.8 | **Document** → a real datasheet PDF is uploaded on camera | 0 tables found, strategy `text:columns` — it reads a ruleless layout |
+| 6 | 1:22.8 | **Discover** → SKF 6205-2RS | Fetches the manufacturer page, **refuses it**, says so, still scores 94 |
+| 7 | 1:39.8 | **Learning** → the proposal queue | Categories it has never seen, queued for a human |
+| 8 | 1:47.8 | Contradictory valve → **Validation** | Plastic at 180 °C — "not a valve, it is a candle" |
+| 9 | 2:00.8 | **Content Standard** | The 40-character line names what it dropped |
+| 10 | 2:11.9 | **Frame:** delivery row, JSON-LD, audit-trail CSV | Real bytes from the live service |
+| 11 | 2:22.9 | **Frame:** where the data lives | No database, no stored key, nothing leaves |
+| 12 | 2:36.9 | **Frame:** throughput, cost, review queue | 287/s, under a penny, publish / review / blocked |
+| 13 | 2:43.9 | **Frame:** 14/14 and 2/14 | Closes on the least flattering number |
+
+**Every line is checked against its own picture.** An earlier cut said "it goes
+to the manufacturer's own site" over a screen showing a *refusal*, and described
+a spreadsheet while a datasheet was on screen, because four claims shared one
+segment. Each claim now has its own segment and its own marker, so a mismatch
+cannot survive a rebuild.
 
 ---
 
 ## Measured timings
 
-Not estimates, and not calculated either. `voiceover.py` speaks each segment and
-measures it; `record.py` flashes a hidden marker at every segment start;
-`align.py` reads those markers out of the finished file and lays each line on
-the timestamp the player will actually use.
-
 | # | Segment | Starts | Runs |
 |---|---------|--------|------|
-| 1 | architecture | 0:00.0 | 17.2 s |
-| 2 | bearing | 0:19.4 | 25.7 s |
-| 3 | gate | 0:42.8 | 25.3 s |
-| 4 | tour | 1:07.8 | 21.7 s |
-| 5 | valve | 1:29.8 | 14.5 s |
-| 6 | content | 1:44.8 | 14.1 s |
-| 7 | outputs | 1:59.9 | 12.7 s |
-| 8 | storage | 2:11.9 | 13.2 s |
-| 9 | scale | 2:25.9 | 14.6 s |
-| 10 | close | 2:40.9 | 17.2 s |
+| 1 | architecture | 0:00.0 | 16.2 s |
+| 2 | bearing | 0:18.4 | 22.7 s |
+| 3 | gate | 0:38.8 | 24.1 s |
+| 4 | catalog | 1:02.8 | 6.9 s |
+| 5 | document | 1:09.8 | 12.8 s |
+| 6 | discover | 1:22.8 | 16.3 s |
+| 7 | learning | 1:39.8 | 8.2 s |
+| 8 | valve | 1:47.8 | 12.8 s |
+| 9 | content | 2:00.8 | 10.2 s |
+| 10 | outputs | 2:11.9 | 11.1 s |
+| 11 | storage | 2:22.9 | 13.5 s |
+| 12 | scale | 2:36.9 | 6.8 s |
+| 13 | close | 2:43.9 | 15.8 s |
 
-**Narration 178.6 s, picture 179.1 s.** `record.py` warns when a segment's
-action outruns its line — the tour and the gate both did on the first take, and
-their dwells were cut until they fitted.
+**Narration 180.0 s, picture 179.8 s.**
 
 ## Assembling it
 
 **`footage/demo_walkthrough.mp4` is already assembled** — H.264 / AAC, 1280×720,
-2:59.1, ready to upload. Rebuild it with `python docs/video/mux.py` after
+2:59.8, ready to upload. Rebuild it with `python docs/video/mux.py` after
 re-recording or re-narrating (needs a full ffmpeg: `winget install Gyan.FFmpeg`).
 
 To assemble by hand instead, `footage/narration.wav` is a single full-length
