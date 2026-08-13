@@ -54,6 +54,21 @@ function Metric({ label, value, hint }) {
   )
 }
 
+// Written when there were two engines, and hybrid fell into the else — so the
+// project's best-measured result was labelled "demo engine" directly above a
+// gate ledger showing the model being refused twice. A reviewer switching to
+// Hybrid had every reason to conclude the toggle did nothing.
+const ENGINE_LABEL = {
+  demo: { text: 'demo engine', hint: 'Deterministic engine only — no model call.' },
+  hybrid: {
+    text: 'hybrid engine',
+    hint: 'Deterministic engine plus a bounded AI contribution: it may fill a blank '
+        + 'or replace an unbacked default, never overwrite evidence. See the gate '
+        + 'ledger below for what was accepted and what was refused.',
+  },
+  live: { text: 'live model', hint: 'Every value proposed by the model.' },
+}
+
 export default function ScoreCard({ readiness, category, cached, mode }) {
   if (!readiness) return null
 
@@ -63,7 +78,9 @@ export default function ScoreCard({ readiness, category, cached, mode }) {
         <h3>Commerce Readiness</h3>
         <div className="spacer" />
         {cached && <span className="pill" title="Served from cache — no API call was made">cached</span>}
-        <span className="pill">{mode === 'live' ? 'live model' : 'demo engine'}</span>
+        <span className="pill" title={ENGINE_LABEL[mode]?.hint}>
+          {ENGINE_LABEL[mode]?.text ?? 'demo engine'}
+        </span>
         <Badge kind={`verdict-${readiness.verdict}`}>{VERDICT_TEXT[readiness.verdict]}</Badge>
       </div>
 

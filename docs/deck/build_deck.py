@@ -639,7 +639,7 @@ note(s, "All four are the deployed app, not mockups. The gate panel is the one t
 # --- 13. FUTURE --------------------------------------------------------------
 s = S[12]
 heading(s, "What we measured but did not solve")
-b, tf = txbox(s, X0, 1.44, W, 0.3)
+b, tf = txbox(s, X0, 1.44, W, 0.24)
 para(tf, "Each item below is a known gap with a number attached, not a wish list.",
      size=10.5, color=MUTED, space_after=0, first=True)
 
@@ -655,17 +655,22 @@ future = [
     ("Attribute recall on categories without a standard", NAVY,
      "41.7% against 99.5% where ISO fixes the answer. Honest ceiling of a knowledge "
      "base; closing it needs manufacturer documents, not a better prompt."),
+    ("Durable storage for runtime state", NAVY,
+     "Results are content-addressed and reproduce exactly, but approved categories sit "
+     "on a container disk the free tier does not persist. A mounted volume or Postgres."),
     ("Batch API and video extraction", MUTED,
      "Costed at $0.0084/SKU but not implemented, and flagged by the organizers as "
      "innovative but slow. Both are catalogue-path work, not interactive."),
 ]
-y = 1.82
+# Five cards rather than four, so the geometry is tightened to keep the last one
+# inside the bottom margin rather than letting it hang off the slide.
+y = 1.70
 for t, colour, d in future:
-    card(s, X0, y, W, 0.80)
-    b, tf = txbox(s, X0 + 0.2, y + 0.12, W - 0.4, 0.6)
+    card(s, X0, y, W, 0.70)
+    b, tf = txbox(s, X0 + 0.2, y + 0.10, W - 0.4, 0.60)
     para(tf, t, size=10.5, bold=True, color=colour, space_after=3, first=True)
     para(tf, d, size=9, color=MUTED, space_after=0, line=1.18)
-    y += 0.88
+    y += 0.76
 note(s, "Saying what does not work, with the measurement, is the same discipline the "
         "engine applies to a product record.")
 

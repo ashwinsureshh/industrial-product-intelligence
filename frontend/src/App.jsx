@@ -14,8 +14,15 @@ import ScoreCard from './components/ScoreCard.jsx'
 import TaxonomyInput, { ProposalList, TaxonomyEmpty } from './components/TaxonomyPanel.jsx'
 import TraceTimeline from './components/TraceTimeline.jsx'
 import { Empty } from './components/shared.jsx'
+import { clearSession, hasContent, loadSession, saveSession } from './session.js'
 
 const BLANK_SPECS = [{ key: '', value: '' }]
+
+// Read once at load rather than inside the component: state initialisers run in
+// declaration order, and re-reading storage on every render to seed ten of them
+// would be both wasteful and a way for two fields to disagree about what was
+// restored.
+const RESTORED = loadSession()
 
 // Inline so the icons cannot fail to load; the project ships no icon library.
 const SUN_ICON = (
@@ -37,20 +44,23 @@ export default function App() {
   const [health, setHealth] = useState(null)
   const [samples, setSamples] = useState(null)
 
-  const [mode, setMode] = useState('demo')
+  const [mode, setMode] = useState(RESTORED?.mode ?? 'demo')
+  // The key is the one thing deliberately not restored: it is never written to
+  // storage, so a shared or borrowed machine cannot hand it to the next person.
   const [apiKey, setApiKey] = useState('')
   const [showKey, setShowKey] = useState(false)
 
-  const [tab, setTab] = useState('single')
-  const [form, setForm] = useState(emptyProduct())
-  const [specs, setSpecs] = useState(BLANK_SPECS)
-  const [activeSample, setActiveSample] = useState(null)
+  const [tab, setTab] = useState(RESTORED?.tab ?? 'single')
+  const [form, setForm] = useState(RESTORED?.form ?? emptyProduct())
+  const [specs, setSpecs] = useState(RESTORED?.specs ?? BLANK_SPECS)
+  const [activeSample, setActiveSample] = useState(RESTORED?.activeSample ?? null)
 
-  const [result, setResult] = useState(null)
-  const [batch, setBatch] = useState(null)
-  const [selectedRow, setSelectedRow] = useState(0)
-  const [ingest, setIngest] = useState(null)
-  const [discovery, setDiscovery] = useState(null)
+  const [result, setResult] = useState(RESTORED?.result ?? null)
+  const [batch, setBatch] = useState(RESTORED?.batch ?? null)
+  const [selectedRow, setSelectedRow] = useState(RESTORED?.selectedRow ?? 0)
+  const [ingest, setIngest] = useState(RESTORED?.ingest ?? null)
+  const [discovery, setDiscovery] = useState(RESTORED?.discovery ?? null)
+  const [restored, setRestored] = useState(() => hasContent(RESTORED))
   const [discoverySources, setDiscoverySources] = useState(null)
   const [proposals, setProposals] = useState(null)
   const [proposalSummary, setProposalSummary] = useState(null)
@@ -73,6 +83,18 @@ export default function App() {
       localStorage.removeItem('pi-theme')
     }
   }, [theme])
+
+  // Keep the screen across a refresh. Debounced because typing in the form
+  // would otherwise serialise the whole record on every keystroke; 400 ms is
+  // below the interval at which anyone reaches for F5.
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      saveSession({ tab, mode, form, specs, activeSample, result, batch,
+                    selectedRow, ingest, discovery })
+    }, 400)
+    return () => clearTimeout(timer)
+  }, [tab, mode, form, specs, activeSample, result, batch, selectedRow,
+      ingest, discovery])
 
   // Re-render when the OS theme changes, but only while following it.
   const [osDark, setOsDark] = useState(
@@ -136,6 +158,7 @@ export default function App() {
     setActiveSample(sample.id)
     setResult(null)
     setError(null)
+    setRestored(false)
   }
 
   const clearForm = () => {
@@ -144,11 +167,31 @@ export default function App() {
     setActiveSample(null)
     setResult(null)
     setError(null)
+    setRestored(false)
+  }
+
+  // Everything the restore put back, taken away again. Offered beside the
+  // notice because a restored screen is only welcome if it is also escapable —
+  // the alternative is a visitor stuck looking at someone else's last product
+  // on a shared machine with no way to say "not mine".
+  const startFresh = () => {
+    clearSession()
+    setForm(emptyProduct())
+    setSpecs(BLANK_SPECS)
+    setActiveSample(null)
+    setResult(null)
+    setBatch(null)
+    setIngest(null)
+    setDiscovery(null)
+    setSelectedRow(0)
+    setError(null)
+    setRestored(false)
   }
 
   const runSingle = async () => {
     setLoading(true)
     setError(null)
+    setRestored(false)
     try {
       setResult(await api.enrich(toProduct(form, specs), mode, apiKey))
     } catch (err) {
@@ -162,6 +205,7 @@ export default function App() {
     if (!samples?.batch_demo) return
     setLoading(true)
     setError(null)
+    setRestored(false)
     try {
       const response = await api.enrichBatch(samples.batch_demo, mode, apiKey)
       setBatch(response)
@@ -178,6 +222,7 @@ export default function App() {
   const runDocument = async (call) => {
     setLoading(true)
     setError(null)
+    setRestored(false)
     setIngest(null)
     try {
       const response = await call()
@@ -202,6 +247,7 @@ export default function App() {
   const runDiscover = async (brand, mpn) => {
     setLoading(true)
     setError(null)
+    setRestored(false)
     setDiscovery(null)
     setResult(null)
     try {
@@ -229,6 +275,7 @@ export default function App() {
     if (!samples?.learning_demo) return
     setLoading(true)
     setError(null)
+    setRestored(false)
     try {
       const response = await api.proposeCategories(samples.learning_demo, mode, apiKey)
       setProposalSummary(response)
@@ -243,6 +290,7 @@ export default function App() {
   const reviewProposal = async (id, decision) => {
     setLoading(true)
     setError(null)
+    setRestored(false)
     try {
       await api.reviewProposal(id, decision)
       await refreshProposals()
@@ -258,6 +306,7 @@ export default function App() {
   const runUpload = async (file) => {
     setLoading(true)
     setError(null)
+    setRestored(false)
     try {
       const response = await api.enrichCsv(file, mode, apiKey)
       setBatch(response)
@@ -428,6 +477,25 @@ export default function App() {
         <div className="col sticky-col">
           {liveWarning && <div className="banner banner-warn">{liveWarning}</div>}
           {error && <div className="banner banner-error">{error}</div>}
+
+          {/* .banner is flex, so the prose needs to be one element or the
+              sentence is dealt into columns beside the button. */}
+          {restored && (
+            <div className="banner banner-info">
+              <span>
+                Restored the last record you were looking at. Results are held in
+                your browser — the engine itself keeps no account and no session.
+              </span>
+              <button
+                className="btn btn-sm"
+                type="button"
+                onClick={startFresh}
+                style={{ marginLeft: 'auto', flex: '0 0 auto' }}
+              >
+                Start fresh
+              </button>
+            </div>
+          )}
 
           {tab === 'single' ? (
             <>

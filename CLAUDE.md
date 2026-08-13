@@ -388,6 +388,13 @@ overflow at all. Any future check must count rendered line boxes
 line, and must sweep the widths where media queries flip (1301 / 1300 / 901 /
 900 / 375 / 320), not just one desktop and one phone size.
 
+**The screen survives a refresh, and the engine still does not (§7.9).**
+`session.js` writes the last record, form, engine and tab to `localStorage`,
+restores them on load, and says so in a banner with a **Start fresh** escape.
+The API key is the one field deliberately never written — the input promises
+"never stored" and a shared machine makes that promise load-bearing. Proven by
+`frontend/test_session.mjs` (17 checks, plain node, no test framework).
+
 Design tokens in `styles.css` (`--s1..--s6` spacing, `--fs-*` type, three
 elevation steps) and a dark theme driven by `prefers-color-scheme` plus a
 `data-theme` override, so an explicit light choice beats an OS set to dark.
@@ -1181,6 +1188,54 @@ Say "287/s measured locally" when the deployment is in the room.
 
 ---
 
+## 7.9 Persistence (14 Aug) — the question, and the two bugs behind it
+
+The user asked whether a database is required, having noticed that a refresh
+blanks the screen. Measuring it turned up two defects and settled the design
+question with evidence rather than assertion.
+
+**What actually resets is only the browser.** The server keeps a real
+persistence layer: submitting the same product twice returns `cached: True` on
+the second call, across browsers and across days. Nothing was being lost —
+except the one copy of *which* product you were looking at, which lived in React
+state. Fixed by `session.js` (§5 Frontend).
+
+**What is genuinely missing is durability, not persistence.** `/api/health` on
+the live instance reported **`entries: 0`, `bundled: 20`** — the container had
+restarted and Render's free tier has no persistent disk, so every runtime write
+was gone. The 20 bundled records survive only because they are committed into
+the image. Results are content-addressed and reproduce exactly, so this costs
+nothing for enrichment; an **approved learned category does not survive a
+restart**, and that is the real gap. It is now deck slide 13's fourth card
+rather than something a judge discovers.
+
+**Verdict on the database: no, and the deck's stateless claim is correct.** The
+engine takes a row and returns an enriched row; the customer's PIM is the system
+of record. A production deployment needs a volume or Postgres for the review
+queue and audit history, which is exactly what the slide now says.
+
+**Defect 1 — the flagship result was labelled as the wrong engine.**
+`ScoreCard` was written when there were two engines and tested `mode === 'live'
+? 'live model' : 'demo engine'`, so **hybrid fell into the else**. Selecting
+Hybrid produced a card reading `demo engine` directly above a gate ledger
+showing the model refused twice — a reviewer had every reason to conclude the
+toggle did nothing. All three modes are now named, with the policy in the
+tooltip. **Checked before assuming a re-record was needed: the ScoreCard is
+never on screen during the video's hybrid segment** (the shot holds on the gate
+ledger at 38.2–61.5 s), so the footage is unaffected.
+
+**Defect 2 — `.claude/launch.json` pointed at a Python without uvicorn.** Three
+interpreters are installed and the one carrying the dependencies is the
+Microsoft Store build (`python3.13`), which is also why `Get-Process python`
+lies (§3.1). The backend entry names `python3.13` explicitly.
+
+**Trap avoided in the fix itself:** the batch is dropped first when the payload
+exceeds quota, because it is both the largest thing stored and the cheapest to
+regenerate — one click. Dropping the single-product record instead would discard
+the more considered work to keep the more disposable. Asserted in the test.
+
+---
+
 ### Deck tooling — `docs/deck/`
 
 The deck is generated, not hand-edited, so a re-measurement is one command
@@ -1236,6 +1291,8 @@ python test_export.py              # output profiles, incl. a schema added at ru
 python test_unilog.py              # house style, LOV refusals, char limits, row ingest
 python test_discovery.py           # sourcing policy, refusals, SSRF, no accidental spend
 python test_qa_fixes.py            # standards contradiction, cache/taxonomy, ingest policy (§7.8)
+cd ../frontend && node test_session.mjs   # refresh restore; the API key is never stored (§7.9)
+cd ../backend
 python run_discovery_render.py     # headless rendering vs plain fetch, the four sites (§7.5.1)
 python run_cost_model.py           # cost per SKU under deterministic-first triage
 python run_benchmark.py            # 102-case benchmark
@@ -1319,6 +1376,10 @@ python run_benchmark.py --live --budget 5
       screenshots, `shots.py` now crops as well as captures
   45. `484d342`, `ad0c97e` **headless rendering measured** (§7.5.1) — still 0/4,
       and the two defects that measurement exposed
+  46. `3ddd000` the Discover sample label stops asserting client-side rendering
+  47. **session persistence** (§7.9) — a refresh restores the last record, the
+      API key is still never stored, and Hybrid stops calling itself the demo
+      engine; deck slide 13 carries the durability gap
 - `main` and `origin/main` are level; the working tree is clean.
 - Public as of 11 Aug (submission requires it). No LICENSE yet — see below.
 - No LICENSE yet, deliberately: organizers may have IP terms. Check before adding.
