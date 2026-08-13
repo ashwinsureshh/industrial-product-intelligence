@@ -62,7 +62,7 @@ their dwells were cut until they fitted.
 ## Assembling it
 
 **`footage/demo_walkthrough.mp4` is already assembled** — H.264 / AAC, 1280×720,
-3:00.0, ready to upload. Rebuild it with `python docs/video/mux.py` after
+2:59.1, ready to upload. Rebuild it with `python docs/video/mux.py` after
 re-recording or re-narrating (needs a full ffmpeg: `winget install Gyan.FFmpeg`).
 
 To assemble by hand instead, `footage/narration.wav` is a single full-length
@@ -84,7 +84,7 @@ Segments 2 and 3 are the thesis and take a third of the runtime on purpose:
 recall without precision is worthless, and the refusal ledger is the only screen
 in the submission that makes the architecture visible in one frame.
 
-Segment 9 closes on the least flattering number in the project. That is
+Segment 10 closes on the least flattering number in the project. That is
 deliberate — the judging criteria name accuracy and trustworthiness, and a demo
 that ends by qualifying its own headline is the strongest evidence for both.
 
