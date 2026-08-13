@@ -896,6 +896,18 @@ template cannot construct it — which is precisely why the organizers wrote
 "search manufacturer websites" rather than "construct a URL". Closing this needs
 a search backend with citations, and that costs money per SKU.
 
+**Two defects the measurement exposed, both fixed:**
+
+- **A soft 404 was being accepted as a product.** `_is_useful()` deliberately
+  keeps a page that has only a name, because Milwaukee's canonical name is what
+  makes classification work — but an error page has a title too, and
+  `"404 - Page not found | SKF"` would have become the product's name and gone
+  into classification as though it described a bearing.
+- **The refusal reason asserted a cause it had not established.** It said the
+  page was "likely rendered client-side"; §7.5.1 shows that is wrong three times
+  out of four. It now reports what was observed and names the possibilities
+  without picking one — the same discipline the engine applies to a spec.
+
 The renderer is kept because it is correct, tested and free: it is a fallback
 only, it is **ignored when the caller supplies its own fetcher** (without that
 rule a stubbed test reached the live network — which is how the rule was found),
@@ -1512,6 +1524,11 @@ Findings that will shape it:
   JSX block across two branches of a conditional chain.
 - A `%` inside a regex character class breaks `%`-formatting; build those
   patterns by concatenation.
+- **A `` written through a shell heredoc can reach the file as a literal
+  backspace (0x08).** `_SOFT_404` compiled cleanly, matched nothing, and printed
+  indistinguishably from the correct pattern in `grep` — the dead branch was
+  only visible in `xxd`. When a regex written that way silently fails, check the
+  bytes before rewriting the logic, and build backslashes with `chr(92)`.
 - pdfplumber's whitespace table strategy will slice a page containing **no
   table**, inventing `'Single Row D' → 'eep Groove Ball'` from a heading.
   Strategies must be ordered by evidence strength: borders → explicit line

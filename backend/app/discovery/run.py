@@ -26,6 +26,7 @@ as an absent product. Headless rendering would fix it and is not built.
 
 from __future__ import annotations
 
+import re
 import time
 from dataclasses import dataclass, field
 from typing import Any
@@ -188,6 +189,7 @@ def discover(
             result.sources.append(record)
             continue
 
+        render_error = None
         if not _is_useful(product) and use_render and render.available():
             # The cheap read found nothing, which is the client-side-rendered
             # case. Try again with a real browser before giving up — same URL,
@@ -198,7 +200,7 @@ def discover(
                 record.status = getattr(report, "status", record.status)
                 record.specs_found = len(product.raw_specs or {})
             except Exception as exc:  # noqa: BLE001 - fall through to the refusal
-                record.reason = f"Rendering also failed: {type(exc).__name__}: {exc}"
+                render_error = f"Rendering also failed: {type(exc).__name__}: {exc}"
 
         if not _is_useful(product):
             # An HTTP 200 with nothing in it is the JavaScript-rendered case. It
@@ -209,15 +211,10 @@ def discover(
             # contributed nothing, and a ledger that called it a source would
             # overstate what the record actually rests on.
             record.accepted = False
-            record.reason = record.reason or (
-                f"Fetched successfully but nothing usable was parsed. The page is "
-                f"likely rendered client-side, which this fetcher cannot read."
-            )
-            if not record.rendered:
-                record.reason = (
-                    "Fetched successfully but nothing usable was parsed. The page "
-                    "is likely rendered client-side, which this fetcher cannot read."
-                )
+            # Assigned outright, not with `or`: at this point record.reason still
+            # holds the policy's *acceptance* text, so a falsy-test keeps the
+            # wrong sentence and the refusal never reaches the ledger.
+            record.reason = render_error or _why_nothing(product, record)
             result.sources.append(record)
             continue
 
@@ -243,6 +240,37 @@ def discover(
     return result
 
 
+# A page that says "404 - Page not found" while returning HTTP 200. Common
+# enough on manufacturer sites that guessing "JavaScript" instead would be
+# wrong more often than right.
+_SOFT_404 = re.compile(
+    r"(?:\b404\b|not found|page (?:cannot|could not) be found"
+    r"|no longer available|something has gone wrong)",
+    re.IGNORECASE,
+)
+
+
+def _why_nothing(product: RawProduct, record: "SourceRecord") -> str:
+    """Say what is known about an empty page, and no more than that.
+
+    This used to assert the page was "likely rendered client-side". Measuring it
+    with a real browser (§7.5.1) showed that was wrong for three sites out of
+    four: two URLs were simply wrong and one page genuinely has no spec table.
+    Naming a cause the engine has not established is the same failure the engine
+    refuses to make about a product specification.
+    """
+    heading = f"{product.name or ''} {product.free_text or ''}"[:400]
+    if _SOFT_404.search(heading):
+        return ("Fetched, but the page itself says the product was not found — the "
+                "address is wrong rather than the part being absent.")
+    if record.rendered:
+        return ("Fetched and rendered in a real browser, and still no specifications "
+                "were present on the page.")
+    return ("Fetched successfully but nothing usable was parsed. It may be built in "
+            "the browser, or the address may be wrong; the engine does not guess "
+            "which, and writes nothing either way.")
+
+
 def _is_useful(product: RawProduct) -> bool:
     """Whether a fetched page told us anything worth keeping.
 
@@ -254,6 +282,12 @@ def _is_useful(product: RawProduct) -> bool:
     """
     if product.raw_specs:
         return True
+    # ...but an error page has a title too. "404 - Page not found | SKF" is a
+    # real thing skf.com serves with HTTP 200, and without this it becomes the
+    # product's name and flows into classification as though it described a
+    # bearing. Measured in §7.5.1.
+    if _SOFT_404.search(f"{product.name or ''} {product.description or ''}"):
+        return False
     return bool(product.name or product.description or product.brand)
 
 

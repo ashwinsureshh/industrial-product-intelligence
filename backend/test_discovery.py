@@ -211,13 +211,34 @@ def test_empty_page_is_not_an_empty_product() -> None:
     check("the fetch is recorded as having happened", result.sources[0].fetched)
     check("but nothing was extracted", result.sources[0].specs_found == 0)
     check("no product was fabricated", result.product is None)
+    # This used to assert the reason named client-side rendering as the cause.
+    # §7.5.1 measured that and it was wrong for three sites of four, so the
+    # engine now reports what it observed and offers the possibilities without
+    # picking one — the same discipline it applies to a specification.
+    reason = result.sources[0].reason
     check(
-        "and the client-side rendering is named as the likely cause",
-        "rendered client-side" in result.sources[0].reason,
+        "the reason states what was observed, not a cause it cannot know",
+        "nothing usable was parsed" in reason and "may be" in reason,
+    )
+    check(
+        "and it does not assert client-side rendering",
+        "likely rendered client-side" not in reason,
     )
     check(
         "the summary says nothing was written rather than nothing exists",
         any("Nothing was written" in n for n in result.notes),
+    )
+
+    # A page that returns HTTP 200 and then says "404 - Page not found" is the
+    # real SKF case: a wrong address, not an unreadable page.
+    soft = discover(
+        "SKF", "6205-2RS",
+        backend=BrandDomainBackend(),
+        fetcher=stub_fetch({}, name="404 - Page not found | SKF"),
+    )
+    check(
+        "a soft 404 is called a wrong address, not an unreadable page",
+        "address is wrong" in soft.sources[0].reason,
     )
 
 
