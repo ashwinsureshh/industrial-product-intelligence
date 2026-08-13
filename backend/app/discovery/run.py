@@ -32,7 +32,7 @@ from typing import Any
 
 from ..ingest import web
 from ..models import RawProduct
-from . import policy
+from . import policy, render
 from .search import Backend, Candidate, SearchOutcome, default_backend
 
 
@@ -46,6 +46,7 @@ class SourceRecord:
     reason: str
     kind: str = ""
     fetched: bool = False
+    rendered: bool = False
     status: int | None = None
     specs_found: int = 0
     title: str = ""
@@ -58,6 +59,7 @@ class SourceRecord:
             "reason": self.reason,
             "kind": self.kind,
             "fetched": self.fetched,
+            "rendered": self.rendered,
             "status": self.status,
             "specs_found": self.specs_found,
             "title": self.title,
@@ -108,15 +110,28 @@ def discover(
     backend: Backend | None = None,
     fetcher=None,
     max_pages: int = 3,
+    render_fallback: bool = True,
 ) -> DiscoveryResult:
     """Find and read the manufacturer's page for a part.
 
     `fetcher` exists so the whole path is testable without a network call; it
     defaults to the SSRF-guarded fetcher the document-ingest tab already uses.
+
+    `render_fallback` retries a page that parsed to nothing in a real browser,
+    which is the only way to read a site that assembles itself in JavaScript. It
+    is inert wherever no browser is installed — including the shipped image — so
+    the deployed behaviour is unchanged unless a browser is deliberately added,
+    and it is ignored entirely when `fetcher` is supplied, so a caller holding
+    the fetch cannot have a network call substituted underneath it.
     """
     started = time.perf_counter()
     backend = backend or default_backend()
     fetch = fetcher or web.from_url
+    # A caller that supplies its own fetcher is controlling how pages are read,
+    # and must not have a browser substituted underneath it. Without this, a
+    # test handing in a stub still reached the live network through the
+    # fallback — which is how this rule was found.
+    use_render = render_fallback and fetcher is None
 
     result = DiscoveryResult(brand=brand, mpn=mpn, backend=backend.name)
 
@@ -173,6 +188,18 @@ def discover(
             result.sources.append(record)
             continue
 
+        if not _is_useful(product) and use_render and render.available():
+            # The cheap read found nothing, which is the client-side-rendered
+            # case. Try again with a real browser before giving up — same URL,
+            # same policy verdict, same parser on the other side.
+            try:
+                product, report = render.fetch(candidate.url)
+                record.rendered = True
+                record.status = getattr(report, "status", record.status)
+                record.specs_found = len(product.raw_specs or {})
+            except Exception as exc:  # noqa: BLE001 - fall through to the refusal
+                record.reason = f"Rendering also failed: {type(exc).__name__}: {exc}"
+
         if not _is_useful(product):
             # An HTTP 200 with nothing in it is the JavaScript-rendered case. It
             # is not the same as "this product does not exist", and conflating
@@ -182,10 +209,15 @@ def discover(
             # contributed nothing, and a ledger that called it a source would
             # overstate what the record actually rests on.
             record.accepted = False
-            record.reason = (
+            record.reason = record.reason or (
                 f"Fetched successfully but nothing usable was parsed. The page is "
                 f"likely rendered client-side, which this fetcher cannot read."
             )
+            if not record.rendered:
+                record.reason = (
+                    "Fetched successfully but nothing usable was parsed. The page "
+                    "is likely rendered client-side, which this fetcher cannot read."
+                )
             result.sources.append(record)
             continue
 

@@ -644,10 +644,10 @@ para(tf, "Each item below is a known gap with a number attached, not a wish list
      size=10.5, color=MUTED, space_after=0, first=True)
 
 future = [
-    ("Headless rendering for manufacturer sites", AMBER,
-     "Zero of four real sites yielded a spec table: Frigidaire, Milwaukee and SKF all "
-     "return HTTP 200 with client-side-rendered content. This is the single change that "
-     "moves delivery accuracy past 14%."),
+    ("Finding the right manufacturer URL", AMBER,
+     "We built headless rendering and measured it: still zero of four. Two URLs are "
+     "simply wrong, and Milwaukee's page renders fine with no spec table on it. The "
+     "constraint is search, not rendering — and search costs money per SKU."),
     ("The seven reference files still to land", NAVY,
      "UOM standards, content guidelines, the 161k-row list of values and the 27k-row "
      "brand list. Every stub reports source: provisional, and swapping them in is a "

@@ -866,10 +866,41 @@ client-side` rather than treating an empty page as a product with no
 specifications. That distinction is the point: a tooling gap must not become a
 false claim about the part.
 
-**So discovery does not move §7.3's 14.0% yet.** Closing it needs headless
-rendering or paid search with content extraction — not more parsing. Do not
-claim discovery as a solved step; claim that the sourcing rule is enforced and
-the ceiling is now known.
+**So discovery does not move §7.3's 14.0% yet.** Do not claim discovery as a
+solved step; claim that the sourcing rule is enforced and the ceiling is known.
+
+### 7.5.1 Headless rendering — built, measured, and it changed nothing
+
+`app/discovery/render.py`, `python run_discovery_render.py` ($0).
+
+The diagnosis above said those pages "render client-side, which this fetcher
+cannot read", and named headless rendering as the fix. **A browser was added and
+the result is still 0 of 4 — because that diagnosis was wrong for three of the
+four.** What a real browser actually sees:
+
+| Site | What the browser gets |
+| --- | --- |
+| SKF | HTTP 200 whose title is **"404 - Page not found"** — a soft 404. The URL template is wrong |
+| Frigidaire | `net::ERR_HTTP2_PROTOCOL_ERROR` — the URL does not work at all |
+| Milwaukee | **Loads perfectly.** Real product title, 3.5 kB of text — and 0 tables, 0 definition lists, no "specification" anywhere. The specs are not on that page |
+| Whirlpool | 404, template wrong (already known) |
+
+**The renderer works** — proved against our own React SPA, where a plain fetch
+reads 42 characters and a rendered fetch reads 1,915. It recovers nothing here
+because rendering was never the binding constraint: **two of four are the wrong
+address, and one is the right page without a spec table on it.**
+
+The real ceiling is *finding the right URL*. A part number a distributor holds
+("6205-2RS") is not the manufacturer's own catalogue ID ("6205-2RS1"), so a
+template cannot construct it — which is precisely why the organizers wrote
+"search manufacturer websites" rather than "construct a URL". Closing this needs
+a search backend with citations, and that costs money per SKU.
+
+The renderer is kept because it is correct, tested and free: it is a fallback
+only, it is **ignored when the caller supplies its own fetcher** (without that
+rule a stubbed test reached the live network — which is how the rule was found),
+and `available()` is False in the shipped image, so the deployment is byte-for-
+byte unchanged.
 
 **A third bug, found only by looking at the UI:** an empty page was recorded as
 an *accepted* source, so the ledger read "1 used" for a page that contributed
@@ -1184,6 +1215,7 @@ python test_export.py              # output profiles, incl. a schema added at ru
 python test_unilog.py              # house style, LOV refusals, char limits, row ingest
 python test_discovery.py           # sourcing policy, refusals, SSRF, no accidental spend
 python test_qa_fixes.py            # standards contradiction, cache/taxonomy, ingest policy (§7.8)
+python run_discovery_render.py     # headless rendering vs plain fetch, the four sites (§7.5.1)
 python run_cost_model.py           # cost per SKU under deterministic-first triage
 python run_benchmark.py            # 102-case benchmark
 python run_hybrid.py               # hybrid vs demo vs live, $0 from committed records

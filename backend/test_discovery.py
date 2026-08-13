@@ -277,6 +277,37 @@ def test_cannot_spend_by_accident() -> None:
     check("and is honest that it spends", ClaudeWebSearchBackend.spends is True)
 
 
+def test_rendering_is_a_guarded_fallback() -> bool:
+    """Headless rendering may not change the deployment or dodge the guard."""
+    section("Headless rendering is a bounded fallback")
+    from app.discovery import render
+
+    ok = check("available() answers without raising",
+               isinstance(render.available(), bool))
+
+    # The guard has to run before a browser exists, not after: a browser will
+    # happily fetch the container's own metadata endpoint.
+    refused = False
+    try:
+        render.fetch("http://169.254.169.254/latest/meta-data/")
+    except web.UnsafeURL:
+        refused = True
+    except Exception:  # noqa: BLE001 - any other failure means the guard did not run first
+        refused = False
+    ok &= check("the SSRF guard refuses before a browser is launched", refused)
+
+    # Discovery must be able to run exactly as the deployment runs it.
+    result = discover("SKF", "6205-2RS",
+                      backend=StubBackend(["https://www.skf.com/productinfo/6205-2RS"]),
+                      fetcher=stub_fetch({}), render_fallback=False)
+    ok &= check("with the fallback off, an unreadable page is still refused",
+                result.product is None
+                and any(not s.accepted for s in result.sources))
+    ok &= check("and the ledger says whether a browser was used",
+                all("rendered" in s.as_dict() for s in result.sources))
+    return ok
+
+
 def main() -> int:
     print("=" * 66)
     print("  DISCOVERY TESTS - no API calls, no network, $0.00")
@@ -290,6 +321,7 @@ def main() -> int:
     test_empty_page_is_not_an_empty_product()
     test_pipeline_handoff()
     test_cannot_spend_by_accident()
+    test_rendering_is_a_guarded_fallback()
 
     print()
     print("=" * 66)
