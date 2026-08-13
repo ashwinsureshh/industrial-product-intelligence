@@ -54,8 +54,8 @@ SEGMENTS: list[tuple[str, str]] = [
      "sorted. Eight ready to publish, one to check, one stopped."),
     ("document",
      "Only have the P.D.F.? Drop it in. No borders on that table, just columns held "
-     "apart by spaces, the layout that usually defeats this. It read it straight "
-     "off the page."),
+     "apart by spaces, the layout that usually defeats this. Read straight off "
+     "the page."),
     ("discover",
      "Brand and part number only? It goes to the manufacturer's site. And here "
      "is the good bit. It found S.K.F.'s page, fetched it, then refused it, because "
@@ -86,10 +86,10 @@ SEGMENTS: list[tuple[str, str]] = [
     ("close",
      "Last thing, and it is the honest one. Against the customer's own finished "
      "rows, given the facts, fourteen out of fourteen. From a bare catalogue row, "
-     "two. We publish both, because knowing what you cannot answer is what makes a "
-     "catalogue worth trusting."),
+     "two. We publish both, because knowing what you cannot answer is what makes "
+     "a catalogue worth trusting."),
     ("thanks",
-     "The prototype is live at that link, no login, no key needed, and the code is "
+     "The prototype is live at that link, no login or key needed, and the code is "
      "public, so every number you have seen can be checked. Thanks for watching."),
 ]
 

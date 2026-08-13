@@ -1387,6 +1387,12 @@ film jumping straight to the AI. The placement now takes
 `max(marker, previous line's end)` and prints every clip it had to nudge, which
 also surfaces exactly which shots are too tight.
 
+**And every line starts a beat after its picture.** `align.py` adds a 0.45 s
+lead before each clip, so the screen arrives, then the voice describes it —
+landing a sentence on the exact frame the picture changes reads as a jump cut.
+Measured leads on the shipped cut: 0.45–1.55 s, and it reports any shot that is
+tighter than its own line.
+
 It ends on a **sign-off frame** — thank you, the live link, the public
 repository — because a demo that stops mid-sentence on a statistic reads as
 unfinished.

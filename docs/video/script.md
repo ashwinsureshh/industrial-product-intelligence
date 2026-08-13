@@ -52,23 +52,25 @@ cannot survive a rebuild.
 | 1 | architecture | 0:00.0 | 15.2 s |
 | 2 | bearing | 0:15.3 | 22.9 s |
 | 3 | gate | 0:38.3 | 23.4 s |
-| 4 | catalog | 1:01.8 | 6.7 s |
-| 5 | document | 1:08.6 | 10.1 s |
-| 6 | discover | 1:18.8 | 15.2 s |
-| 7 | learning | 1:34.2 | 7.9 s |
-| 8 | valve | 1:42.2 | 12.5 s |
-| 9 | content | 1:54.8 | 9.9 s |
-| 10 | outputs | 2:04.9 | 10.8 s |
-| 11 | storage | 2:15.8 | 12.9 s |
-| 12 | scale | 2:28.8 | 6.6 s |
-| 13 | close | 2:35.8 | 14.6 s |
-| 14 | thanks | 2:50.8 | 8.5 s |
+| 4 | catalog | 1:02.2 | 6.7 s |
+| 5 | document | 1:09.0 | 9.9 s |
+| 6 | discover | 1:19.2 | 15.2 s |
+| 7 | learning | 1:34.5 | 7.9 s |
+| 8 | valve | 1:42.6 | 12.5 s |
+| 9 | content | 1:55.2 | 9.9 s |
+| 10 | outputs | 2:05.3 | 10.8 s |
+| 11 | storage | 2:16.2 | 12.9 s |
+| 12 | scale | 2:29.2 | 6.6 s |
+| 13 | close | 2:36.2 | 14.6 s |
+| 14 | thanks | 2:51.2 | 8.4 s |
 
-**Narration 179.7 s, picture 179.8 s.** `align.py` enforces one more rule than
-it used to: a line may never begin while the previous one is still speaking.
-The picture is allowed to move early — a beat of silence on a new screen reads
-fine — but two voices at once does not, and that is what "it jumps straight to
-the AI" was at 0:38.
+**Narration 179.4 s, picture 179.8 s, last word at 179.6 s.**
+
+`align.py` enforces two rules the earlier cuts did not. A line may never begin
+while the previous one is still speaking — that overlap was what "it jumps
+straight to the AI" sounded like at 0:38. And every line starts a beat *after*
+the screen it describes: a deliberate 0.45 s lead, more where a shot runs long.
+Landing a sentence on the exact frame the picture changes reads as a jump cut.
 
 ## Assembling it
 

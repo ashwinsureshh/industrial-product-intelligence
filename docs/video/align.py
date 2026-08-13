@@ -31,6 +31,10 @@ TRACK = OUT / "narration.wav"
 FPS = 25
 BEACON_RGB = (255, 0, 255)
 TOLERANCE = 60
+# The picture should arrive a beat before the line that describes it. Landing a
+# sentence on the exact frame the screen changes feels like a jump cut; a short
+# lead reads as someone looking at the screen and then speaking.
+LEAD = 0.45
 
 
 def ffmpeg() -> str:
@@ -113,16 +117,18 @@ def main() -> int:
             lengths.append(handle.getnframes() / handle.getframerate())
 
     placed: list[float] = []
-    shifted: list[str] = []
+    tight: list[str] = []
     for index, (start, length) in enumerate(zip(found, lengths)):
+        wanted = start + (LEAD if index else 0.0)
         earliest = 0.0 if not placed else placed[-1] + lengths[index - 1] + 0.12
-        if start < earliest - 0.01:
-            shifted.append(f"{clips[index].stem.split('_', 2)[2]} "
-                           f"+{earliest - start:.2f}s")
-        placed.append(max(start, earliest))
-    if shifted:
-        print(f"  nudged to avoid overlap: {', '.join(shifted)}")
-        print("  (a segment's picture is shorter than its line — lengthen its hold)")
+        if wanted < earliest - 0.01:
+            tight.append(f"{clips[index].stem.split('_', 2)[2]} "
+                         f"+{earliest - wanted:.2f}s")
+        placed.append(max(wanted, earliest))
+    if tight:
+        print(f"  shots tighter than their line: {', '.join(tight)}")
+    leads = [p - f for p, f in zip(placed, found)]
+    print(f"  picture leads the voice by {min(leads):.2f}–{max(leads):.2f}s")
     found = placed
 
     tail = lengths[-1]
