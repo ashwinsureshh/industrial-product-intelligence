@@ -1040,6 +1040,15 @@ says, and `STANDARD_CONTRADICTION` is an integrity warning, so the record goes
 to review instead of to a storefront. Deliberately a warning, not an error:
 both numbers are individually plausible and we cannot know which is wrong.
 
+**2b. …and the fix had a sharp edge, found live.** Two learned categories left
+on the deployment by testing shifted every cache key, orphaned all 20
+precomputed records, and **silently degraded Hybrid to the deterministic engine
+for every visitor** — `mode: demo`, no gate, no refusals. The Learning tab
+invites a reviewer to approve a category, so a judge could have done this to
+themselves mid-review. The bundled layer is now addressed *without* the taxonomy
+fingerprint: those records are shipped artifacts and a learned category has no
+business hiding them. `test_qa_fixes.py` asserts it.
+
 **2. The cache ignored the learned taxonomy.** Approving a category did not
 change the answer for a product already cached, so the documented learning loop
 ("re-submit and it now scores highly") failed for the exact product used to

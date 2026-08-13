@@ -162,6 +162,17 @@ def test_cache_follows_the_taxonomy() -> bool:
         cache.taxonomy_fingerprint = real
 
     ok &= check("approving a category changes the key", shifted != baseline)
+
+    # ...but not for the shipped records. The Learning tab invites a reviewer to
+    # approve a category, and that must not hide the 20 precomputed AI results
+    # and quietly degrade Hybrid to the deterministic engine.
+    cache.taxonomy_fingerprint = lambda: "abc12345"
+    try:
+        bundled_key = cache.key_for(payload, "demo", with_taxonomy=False)
+    finally:
+        cache.taxonomy_fingerprint = real
+    ok &= check("the bundled records stay addressable after an approval",
+                bundled_key == baseline)
     ok &= check("and reverting the taxonomy restores it",
                 cache.key_for(payload, "demo") == baseline)
     return ok

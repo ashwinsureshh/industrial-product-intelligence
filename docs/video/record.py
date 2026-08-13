@@ -317,7 +317,7 @@ def main() -> int:
         creep(page, '.col .card:has(h3:text-is("AI gate"))', seconds=1.6)
         beat(page, 11.0, "14.8 kN refused, 14000 rpm refused")
         drift(page, 105, 4.0)
-        hold_until(page, "1:02")
+        hold_until(page, "1:01")
 
         # 4 — a whole spreadsheet
         print("[4] catalog")
@@ -342,7 +342,7 @@ def main() -> int:
         page.wait_for_selector('.col .card:has(h3:text-is("Attributes"))', timeout=60000)
         beat(page, 2.0, "specs arrive from the PDF")
         creep(page, '.col .card:has(h3:text-is("Attributes"))', seconds=1.5)
-        hold_until(page, "1:19", "every value cites its page")
+        hold_until(page, "1:17", "every value cites its page")
 
         # 6 — brand + part number, and an honest refusal
         print("[6] discover")
@@ -357,14 +357,14 @@ def main() -> int:
               offset=-118, seconds=1.4)
         beat(page, 7.0, "fetched, then refused, and it says so")
         creep(page, '.col .card:has(h3:text-is("Commerce Readiness"))', seconds=1.4)
-        hold_until(page, "1:34", "and the record still scores 94")
+        hold_until(page, "1:36", "and the record still scores 94")
 
         # 7 — categories it has never seen
         print("[7] learning")
         beacon(page)
         to_top(page, 0.7)
         tap(page, '.main-nav .tab:text-is("Learning")')
-        hold_until(page, "1:42", "proposed, and queued for a human")
+        hold_until(page, "1:44", "proposed, and queued for a human")
 
         # 8 — a contradiction only cross-field checks can catch
         print("[8] validation")
@@ -377,30 +377,30 @@ def main() -> int:
         tap(page, 'button:has-text("Enrich Product")')
         page.wait_for_selector('.col .card:has(h3:text-is("Validation"))', timeout=60000)
         creep(page, '.col .card:has(h3:text-is("Validation"))', seconds=1.4)
-        hold_until(page, "1:55", "PVC at 180 C, stopped in plain English")
+        hold_until(page, "1:56", "PVC at 180 C, stopped in plain English")
 
         # 9 — five formats to five limits
         print("[9] content standard")
         beacon(page)
         creep(page, '.col .card:has(h3:text-is("Content Standard"))',
               block="start", offset=-118, seconds=1.5)
-        hold_until(page, "2:05", "the 40-character line names what it dropped")
+        hold_until(page, "2:06", "the 40-character line names what it dropped")
 
         # 10..13 — the frames the product cannot show
         print("[10] outputs")
         page.goto(frame("2_outputs"), wait_until="load", timeout=60000)
         beacon(page)
-        hold_until(page, "2:16", "252 columns, JSON-LD, audit-trail CSV")
+        hold_until(page, "2:17", "252 columns, JSON-LD, audit-trail CSV")
 
         print("[11] storage")
         page.goto(frame("3_storage"), wait_until="load", timeout=60000)
         beacon(page)
-        hold_until(page, "2:29", "no database, no key, nothing leaves")
+        hold_until(page, "2:30", "no database, no key, nothing leaves")
 
         print("[12] scale")
         page.goto(frame("4_scale"), wait_until="load", timeout=60000)
         beacon(page)
-        hold_until(page, "2:36", "287/s, under a penny, and the review queue")
+        hold_until(page, "2:37", "287/s, under a penny, and the review queue")
 
         print("[13] accuracy")
         page.goto(frame("5_accuracy"), wait_until="load", timeout=60000)

@@ -26,8 +26,8 @@ from pathlib import Path
 
 OUT = Path(__file__).parent / "footage"
 VOICE = "en-US-AndrewNeural"   # "warm, confident, authentic" — fits the pitch
-RATE = "+5%"                   # measured pace; the content is what sets the length
-GAP = 0.20        # breath between segments, seconds
+RATE = "+6%"                   # measured pace; the content is what sets the length
+GAP = 0.16        # breath between segments, seconds
 
 SEGMENTS: list[tuple[str, str]] = [
     ("architecture",
@@ -54,13 +54,13 @@ SEGMENTS: list[tuple[str, str]] = [
      "sorted. Eight ready to publish, one to check, one stopped."),
     ("document",
      "Only have the P.D.F.? Drop it in. No borders on that table, just columns held "
-     "apart by spaces, the layout that usually defeats this. Read straight off "
-     "the page."),
+     "apart by spaces, the layout that usually defeats this. Read straight off it."),
     ("discover",
-     "Brand and part number only? It goes to the manufacturer's site. And here "
-     "is the good bit. It found S.K.F.'s page, fetched it, then refused it, because "
-     "there was nothing readable on it. And it says so. The record still scores "
-     "ninety four, from the part number."),
+     "Brand and part number only? It goes to the manufacturer's own site. And here "
+     "is the good bit. It fetched S.K.F.'s page, found nothing usable, and refused "
+     "it, without guessing why. We checked with a real browser afterwards. The "
+     "address is wrong, not the page. It still scores ninety four, from the part "
+     "number."),
     ("learning",
      "And when something fits no category at all, it works one out and queues it "
      "for a human. It does not invent a shelf and start stacking things on it."),

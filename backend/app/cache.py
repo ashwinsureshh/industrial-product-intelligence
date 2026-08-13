@@ -43,7 +43,7 @@ def taxonomy_fingerprint() -> str:
     return hashlib.sha256("|".join(codes).encode("utf-8")).hexdigest()[:8]
 
 
-def key_for(payload: dict[str, Any], mode: str) -> str:
+def key_for(payload: dict[str, Any], mode: str, *, with_taxonomy: bool = True) -> str:
     """The content address for a result. Public so other read-only layers
     (e.g. the committed benchmark records) can be keyed identically.
 
@@ -54,7 +54,7 @@ def key_for(payload: dict[str, Any], mode: str) -> str:
     """
     blob = json.dumps(payload, sort_keys=True, default=str)
     fingerprint = f"{mode}|{MODEL if mode == 'live' else 'deterministic'}|{blob}"
-    learned = taxonomy_fingerprint()
+    learned = taxonomy_fingerprint() if with_taxonomy else ""
     if learned:
         fingerprint = f"{fingerprint}|taxonomy:{learned}"
     return hashlib.sha256(fingerprint.encode("utf-8")).hexdigest()[:32]
@@ -78,8 +78,13 @@ def get(payload: dict[str, Any], mode: str) -> dict[str, Any] | None:
     if not CACHE_ENABLED:
         return None
 
-    key = _key(payload, mode)
+    # The bundled layer is addressed *without* the taxonomy fingerprint. Those
+    # twenty records are shipped artifacts, and approving a learned category —
+    # which the Learning tab invites a reviewer to do — would otherwise shift
+    # every key and silently hide them, degrading Hybrid to the deterministic
+    # engine for the rest of that visit. Observed on the live instance.
     for directory, bundled in ((CACHE_DIR, False), (PRECOMPUTED_DIR, True)):
+        key = _key(payload, mode, with_taxonomy=not bundled)
         path = directory / f"{key}.json"
         if not path.exists():
             continue
