@@ -520,8 +520,19 @@ para(tf, "The customer's rules are data, not code", size=10.5, bold=True,
 para(tf, "Taxonomy, UOM table, list of values, export schema and source policy are "
          "JSON. Their spreadsheets land as a data drop, not a rewrite.",
      size=9, color=MUTED, space_after=0, line=1.2)
+# Stated on the slide, not just in the notes: "no database" reads as an omission
+# unless it is named as a position. Unilog already owns the catalogue, so a
+# second product store would compete with it rather than serve it.
+b, tf = txbox(s, X0, y + 1.10, W, 0.20)
+para(tf, "No product database by design — their PIM stays the system of record. "
+         "The engine takes a row and returns an enriched row.",
+     size=8.5, color=MUTED, space_after=0, first=True)
+
 note(s, "One pipeline, swappable providers, and every customer-specific rule held "
-        "as data so onboarding a new schema is a file, not a sprint.")
+        "as data so onboarding a new schema is a file, not a sprint. On storage: "
+        "results are content-addressed and reproduce exactly, so nothing needs to be "
+        "kept to be trusted. A production deployment adds a datastore for the review "
+        "queue and audit history, not for the products themselves.")
 
 
 # --- 10. TECHNOLOGIES --------------------------------------------------------
