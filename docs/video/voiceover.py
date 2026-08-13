@@ -26,61 +26,63 @@ from pathlib import Path
 
 OUT = Path(__file__).parent / "footage"
 VOICE = "en-US-AndrewNeural"   # "warm, confident, authentic" — fits the pitch
-RATE = "-4%"                   # a touch under default; this is dense material
-GAP = 0.28        # breath between segments, seconds
+RATE = "-1%"                   # measured pace; the content is what sets the length
+GAP = 0.25        # breath between segments, seconds
 
 SEGMENTS: list[tuple[str, str]] = [
     ("architecture",
      "A distributor's catalogue arrives looking like this. A part number, a brand, "
-     "and a few words. Somebody then has to turn each one into a product page a "
-     "buyer can search and trust. Get it wrong and a plumber fits a valve that "
-     "fails. This system does that job automatically. Whatever comes in, a "
-     "spreadsheet row, a datasheet, or just a part number, goes through the same "
-     "ten steps."),
+     "and a few words. Someone has to turn each one into a product page a buyer can "
+     "search and trust. Get it wrong and a plumber fits a valve that fails. "
+     "Whatever comes in goes through the same ten steps."),
     ("bearing",
-     "Here it is on a real part. We give it three things. A part number, a brand, "
-     "a name. It recognises that part number as a standard bearing code, the way an "
-     "experienced parts person would, and fills in the dimensions it fixes. Every "
-     "value is colour coded by where it came from. Purple is a "
-     "published standard. Grey is a sensible guess we have not confirmed, and it "
-     "says so rather than pretending."),
+     "Using it is three steps. Pick how your data arrives, paste in whatever you "
+     "have, and press enrich. Here it gets a part number, a brand and a name. It "
+     "recognises the part number as a standard bearing code, the way a parts "
+     "specialist would, and fills in the dimensions it fixes. Values are colour "
+     "coded by source. Purple is a published standard. Grey is a guess we have not "
+     "confirmed, and it says so rather than pretending."),
     ("gate",
      "We do use A.I., but on a leash. Here it suggested a load rating of fourteen "
      "point eight, and a speed of fourteen thousand. The standard says fourteen, "
-     "and sixteen thousand, so both were refused, and the refusal is written down. "
-     "It may fill an empty box. It may never overrule a source. That one rule is "
-     "why the accuracy holds. Across a hundred and two test products, values backed "
-     "by evidence were right every time."),
+     "and sixteen thousand, so both were refused, in writing. It may fill an empty "
+     "box. It may never overrule a source. That one rule is why "
+     "the accuracy holds. Across a hundred and two test products, values backed by "
+     "evidence were right every time."),
+    ("tour",
+     "That was one product, typed in by hand. The same engine takes a whole "
+     "catalogue. Upload a spreadsheet and every row comes back sorted. Point it at a "
+     "datasheet and it reads the table off the page. Give it nothing but a brand and "
+     "a part number and it goes to the manufacturer's own site. It even works out "
+     "categories it has never seen, for a person to approve."),
     ("valve",
      "Some mistakes only appear when you compare fields. A plastic valve rated to "
      "a hundred and eighty degrees. Each number looks fine alone. Together they "
-     "describe a product that would melt. Sixteen checks catch it, and it is "
-     "stopped with a reason in plain English."),
+     "describe a product that would melt. Sixteen checks catch it, and stop it with "
+     "a reason in plain English."),
     ("content",
      "Shops need the same product written several ways. A till receipt line, a "
      "phone listing, a full page. This is the forty character version. It dropped "
      "whole facts to fit and listed which ones, because half a part number is "
-     "impossible to search for."),
+     "useless."),
     ("outputs",
      "What comes out is whatever the customer's system expects. Their own two "
      "hundred and fifty two column sheet, a format search engines understand, or a "
-     "spreadsheet where every value carries its source and how sure we are. A new "
-     "customer's format is a settings file, not a rewrite."),
+     "spreadsheet where every value carries its source and how sure we are."),
     ("storage",
-     "There is no database to run or back up. The rule book, categories, standards "
-     "and units, is plain text kept with the code, so changing a rule gets "
-     "reviewed. Nothing is sent anywhere else, and the public version holds no "
-     "A.I. key, so it cannot spend money."),
+     "There is no database. The rule book, categories, standards and units, is "
+     "plain text kept with the code. Nothing is sent anywhere else, "
+     "and the public version holds no A.I. key, so it cannot spend money."),
     ("scale",
-     "A person takes ten minutes a product. This handles two hundred and "
-     "eighty seven a second on one machine, for under a penny each. And it does not "
-     "hand you a pile of work. Every record comes out marked ready to publish, "
-     "needs review, or blocked, so a merchandiser only opens what needs a person."),
+     "A person takes ten minutes a product. This handles two hundred and eighty "
+     "seven a second, for under a penny each. And every record comes out marked "
+     "ready to publish, needs review, or blocked, so a person only opens what needs "
+     "a person."),
     ("close",
-     "Measured against the customer's own completed rows. Given the facts, fourteen "
+     "Against the customer's own completed rows. Given the facts, fourteen "
      "of fourteen fields exactly right. From a bare catalogue row, two of fourteen, "
-     "because the rest are not in that row. We publish both. Knowing what you "
-     "cannot answer is what makes a catalogue trustworthy."),
+     "because the rest are not in that row. We publish both, because knowing what "
+     "you cannot answer is what makes a catalogue trustworthy."),
 ]
 
 def _ffmpeg() -> str:

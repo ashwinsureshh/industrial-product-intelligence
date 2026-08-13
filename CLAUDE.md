@@ -1372,6 +1372,12 @@ when the next action is not a click (otherwise it flies to the bottom of the
 frame and straight back), and rest it on the control about to be used, because
 a pointer drifting onto an unrelated button reads as a click that never comes.
 
+**The cut is ten segments**, five of them explainer frames and five the live
+product, and it now includes a **usage walkthrough**: after the gate, segment 4
+tours Document, Catalog, Discover and Learning, because the frame-based
+restructure had left the film showing only the Single Product tab and a judge
+could not tell the other four existed.
+
 **Video running order** — the three things worth the 3 minutes:
 
 1. Hybrid engine on the sparse bearing. Point at the two refusals: the model

@@ -3,7 +3,7 @@
 **Deliverable:** short walkthrough, mandatory, link goes on deck slide 14.
 Built by five scripts in `docs/video/`: `frames.py` renders the explainer
 frames, `record.py` drives the live site and intercuts them, `voiceover.py`
-speaks the narration, `align.py` locks them together, `mux.py` assembles. Current cut: **180.0 s**.
+speaks the narration, `align.py` locks them together, `mux.py` assembles. Current cut: **2:59.1**.
 
 **What changed, and why:** the first version demonstrated behaviour for three
 minutes and never said what had been built, where the data was stored, or what
@@ -22,15 +22,16 @@ if anything gets cut, it is not the refusals.
 
 | # | Time | On screen | The point |
 |---|------|-----------|-----------|
-| 1 | 0:00 | **Frame:** six inputs → one `RawProduct` → ten stages → four outputs | What was built, in one picture, before any UI appears |
-| 2 | 0:19 | Live app: Sparse bearing → Enrich. **Pipeline Trace** card, then Attributes | The same claim, running: ten real stages with timings, then ISO 15 values badged *Standard* against grey unconfirmed defaults |
-| 3 | 0:44 | Switch to **Hybrid** → Enrich → the **AI gate** card | The thesis. 14.8 kN and 14000 rpm both refused against ISO 15, reasons printed |
-| 4 | 1:14 | Contradictory valve → the red **Validation** card | Cross-field rules catch what no single-field check can |
-| 5 | 1:28 | **Content Standard** card on the same record | Five formats to five character limits; the 40-char line drops whole facts and names them |
-| 6 | 1:43 | **Frame:** the 252-column delivery row, JSON-LD, and the audit-trail CSV | What actually comes out — real bytes from the live service |
-| 7 | 2:04 | **Frame:** where the data lives | No database; versioned JSON; a container that stores no key and cannot spend |
-| 8 | 2:27 | **Frame:** throughput and cost per SKU | 611 rows/s, 287 products/s, $0.0084 batched against a $5.83 manual baseline |
-| 9 | 2:42 | **Frame:** 14/14 and 2/14 | Closes on the least flattering number in the project, deliberately |
+| 1 | 0:00.0 | **Frame:** six inputs → one record → ten checks → outputs | What this is, before any UI appears |
+| 2 | 0:19.4 | Live app: pick a case, press **Enrich**, read the record | **How you use it** — three steps, then provenance colour-coding |
+| 3 | 0:42.8 | Switch to **Hybrid** → the **AI gate** card | The thesis: 14.8 kN and 14000 rpm both refused against ISO 15 |
+| 4 | 1:07.8 | **Document → Catalog → Discover → Learning** | **The other four ways in**: a datasheet, a spreadsheet, brand + part number, and categories it learns |
+| 5 | 1:29.8 | Contradictory valve → the red **Validation** card | Cross-field checks catch what no single field can |
+| 6 | 1:44.8 | **Content Standard** card | Five formats to five limits; the 40-char line names what it dropped |
+| 7 | 1:59.9 | **Frame:** delivery row, JSON-LD, audit-trail CSV | What actually comes out — real bytes from the live service |
+| 8 | 2:11.9 | **Frame:** where the data lives | No database; versioned rules; a container that cannot spend |
+| 9 | 2:25.9 | **Frame:** throughput, cost, and the review queue | 287/s, under a penny each, and publish / review / blocked |
+| 10 | 2:40.9 | **Frame:** 14/14 and 2/14 | Closes on the least flattering number, deliberately |
 
 ---
 
@@ -39,21 +40,24 @@ if anything gets cut, it is not the refusals.
 Not estimates, and not calculated either. `voiceover.py` speaks each segment and
 measures it; `record.py` flashes a hidden marker at every segment start;
 `align.py` reads those markers out of the finished file and lays each line on
-the timestamp the player will actually use. Verified at ±0.12 s on all nine.
+the timestamp the player will actually use.
 
 | # | Segment | Starts | Runs |
 |---|---------|--------|------|
-| 1 | architecture | 0:00.0 | 24.6 s |
-| 2 | bearing | 0:26.3 | 24.6 s |
-| 3 | gate | 0:48.8 | 27.6 s |
-| 4 | valve | 1:17.2 | 15.2 s |
-| 5 | content | 1:32.8 | 15.7 s |
-| 6 | outputs | 1:48.8 | 16.9 s |
-| 7 | storage | 2:05.8 | 17.0 s |
-| 8 | scale | 2:22.8 | 18.1 s |
-| 9 | close | 2:40.8 | 17.9 s |
+| 1 | architecture | 0:00.0 | 17.2 s |
+| 2 | bearing | 0:19.4 | 25.7 s |
+| 3 | gate | 0:42.8 | 25.3 s |
+| 4 | tour | 1:07.8 | 21.7 s |
+| 5 | valve | 1:29.8 | 14.5 s |
+| 6 | content | 1:44.8 | 14.1 s |
+| 7 | outputs | 1:59.9 | 12.7 s |
+| 8 | storage | 2:11.9 | 13.2 s |
+| 9 | scale | 2:25.9 | 14.6 s |
+| 10 | close | 2:40.9 | 17.2 s |
 
-**Narration 179.8 s, picture 179.7 s.**
+**Narration 178.6 s, picture 179.1 s.** `record.py` warns when a segment's
+action outruns its line — the tour and the gate both did on the first take, and
+their dwells were cut until they fitted.
 
 ## Assembling it
 
