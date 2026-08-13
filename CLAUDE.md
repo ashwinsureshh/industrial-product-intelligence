@@ -1138,7 +1138,7 @@ rather than fifteen slides of retyping.
 | --- | --- |
 | `build_deck.py` | Fills the organizers' template. Run from `docs/deck/` |
 | `template.pptx` | Their untouched original |
-| `shots.py` | Playwright against the **deployed** site; writes `shots/` |
+| `shots.py` | Playwright against the **deployed** site; writes `shots/` **and crops to `shots/crop/`**, which slide 12 reads |
 | `preview.py` | Renders one slide to PNG by re-laying its geometry in HTML. Takes the **1-based slide number**, so `preview.py 8` is `S[7]` |
 | `fitcheck.py` | Overflow, margin, overlap and chip-wrap checks |
 | `expected_vs_ours.json` | Written by `run_expected_vs_ours.py`; slide 8 reads it |
@@ -1507,7 +1507,11 @@ Findings that will shape it:
   artefact before "fixing" the artefact.
 - **Deck screenshots contain no navigation.** `docs/deck/shots.py` clips each
   capture to its card's bounding box, so a change to the tab bar does not
-  require re-taking them. Check before re-running.
+  require re-taking them. Check before re-running. Two traps it has now paid
+  for: a clip must lie **inside the viewport**, so a card below the fold has to
+  be scrolled to first (the Content Standard card failed outright); and the
+  2.7:1 crop into `shots/crop/` used to be a manual step, which meant a rebuild
+  silently reused the old pictures. Both are in the script.
 - **Changing `build_corpus()` silently invalidates every committed record.**
   The cache key covers the product payload, so any edit to corpus generation
   makes all 102 keys miss and `run_hybrid.py` aborts. That abort is correct

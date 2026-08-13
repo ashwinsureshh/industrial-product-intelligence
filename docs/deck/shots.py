@@ -28,7 +28,16 @@ def engine(page, name):
 
 
 def shoot(page, path, selectors, pad=14):
-    """Screenshot the bounding box of several cards together."""
+    """Screenshot the bounding box of several cards together.
+
+    A clip must lie inside the viewport, so the first card is scrolled into
+    view before the boxes are measured — cards further down the result column
+    are otherwise outside the captured image and the call fails.
+    """
+    page.eval_on_selector(selectors[0], "e => e.scrollIntoView({block:'start'})")
+    page.wait_for_timeout(500)
+    page.evaluate("window.scrollBy(0, -110)")   # clear the sticky header
+    page.wait_for_timeout(400)
     boxes = []
     for sel in selectors:
         el = page.query_selector(sel)
@@ -84,18 +93,17 @@ with sync_playwright() as p:
     engine(page, "Demo")
 
     # ---------------------------------------------------------------- shot 3
-    # Discovery: the source ledger, refusals first.
-    print("3. discovery source ledger")
-    tab(page, "Discover")
-    page.wait_for_timeout(500)
-    # SKF rather than Frigidaire: the page is refused as unusable *and* the
-    # record below still scores, because ISO 15 decodes the part number. That
-    # pairing -- a refusal next to a defensible record -- is the honest story.
-    page.click('.sample:has-text("SKF")')
-    page.wait_for_selector('.col .card:has(h3:text-is("Sources"))', timeout=60000)
+    # The content standard: five formats to five character limits, and the
+    # dropped-token disclosure. Invisible in the product until 12 Aug, so it had
+    # no picture anywhere; discovery's negative result already owns slide 13.
+    print("3. content standard")
+    engine(page, "Demo")
+    page.click('.sample:has-text("Contradictory valve")')
+    page.wait_for_timeout(400)
+    page.click('button:has-text("Enrich Product")')
+    page.wait_for_selector('.col .card:has(h3:text-is("Content Standard"))', timeout=60000)
     page.wait_for_timeout(1500)
-    shoot(page, OUT / "3_discovery.png",
-          [card_with(page, "Sources"), card_with(page, "Commerce Readiness")])
+    shoot(page, OUT / "3_content.png", [card_with(page, "Content Standard")])
 
     # ---------------------------------------------------------------- shot 4
     # Catalog: a batch scored and triaged, which is the scale story.

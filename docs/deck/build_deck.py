@@ -319,10 +319,11 @@ para(tf, "It is the only enrichment engine we know of that reports what it "
 card(s, X0 + 4.68, 2.10, 4.42, 1.42)
 b, tf = txbox(s, X0 + 4.88, 2.26, 4.05, 1.1)
 para(tf, "Proven, not asserted", size=11, bold=True, color=NAVY, space_after=5, first=True)
-para(tf, "A live ablation measured the AI making accuracy worse. Bounding it to "
-         "gap-filling beat both the raw model and the deterministic engine — the "
-         "guardrail is the result, not the marketing.",
-     size=9.5, color=MUTED, space_after=0, line=1.22)
+para(tf, "A live ablation measured the AI making accuracy worse; bounding it to "
+         "gap-filling beat both the raw model and the engine alone. An independent "
+         "A–Z pass then found five defects — all fixed, each with a regression, "
+         "every benchmark figure unchanged.",
+     size=9.5, color=MUTED, space_after=0, line=1.18)
 
 b, tf = txbox(s, X0, 3.72, W, 0.3)
 para(tf, "Measured against Unilog's own labelled delivery rows", size=10.5,
@@ -344,9 +345,9 @@ s = S[5]
 heading(s)
 feats = [
     ("Provenance on every value", "Six ranked classes from supplied to defaulted, with evidence text and a source URL."),
-    ("16 cross-field rules", "A PVC valve rated to 200 °C, a bore wider than its outer diameter — caught."),
+    ("Cross-field validation", "16 rules, plus a part number's own standard challenging a supplied value it contradicts."),
     ("Bounded AI gate", "The model may fill a gap or displace a default. It may never overrule evidence."),
-    ("Unilog compliance layer", "Approved UOM, exact-64th fractions, list-of-values refusals, character limits."),
+    ("Unilog compliance layer", "Approved UOM, exact-64th fractions, list-of-values refusals, character limits — on screen."),
     ("Auto-taxonomy learning", "Clusters unclassified rows and proposes a schema; a human approves it."),
     ("Manufacturer-only sourcing", "Marketplaces, retailers and distributors refused — each with a stated reason."),
 ]
@@ -613,10 +614,10 @@ shots = [
      "Readiness on three axes, category with its reasoning, provenance per value"),
     ("shots/crop/2_gate.png", "The AI gate refusing",
      "Two proposals refused against ISO 15; one unbacked default replaced"),
-    ("shots/crop/3_discovery.png", "Discovery source ledger",
-     "Manufacturer page fetched, then refused as unusable — and the record says so"),
+    ("shots/crop/3_content.png", "The customer's content standard",
+     "Five formats to five limits; the 40-character line names the facts it dropped"),
     ("shots/crop/4_catalog.png", "Catalog at volume",
-     "10 products in 757 ms — 7 publishable, 1 review, 2 blocked"),
+     "10 products in under a second — 7 publishable, 1 review, 2 blocked"),
 ]
 cw = (W - 0.28) / 2
 ih = cw / 2.70
@@ -679,7 +680,7 @@ links = [
     ("Working prototype", "https://industrial-product-intelligence.onrender.com",
      "Live, monitored, no API key needed — every tab is explorable at zero cost."),
     ("GitHub repository", "https://github.com/ashwinsureshh/industrial-product-intelligence",
-     "Public. 8 test suites, 298 checks, all free to run. Benchmarks reproduce from a clean clone."),
+     "Public. 9 test suites, 337 assertions, all free to run. Benchmarks reproduce from a clean clone."),
     ("Demo video (3 min)", "[ paste link before submitting ]",
      "Walkthrough of enrichment, the AI gate refusing two values, and the delivery export."),
 ]
