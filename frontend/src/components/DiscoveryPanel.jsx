@@ -20,7 +20,7 @@ export default function DiscoveryInput({ onDiscover, loading, sources }) {
   const examples = [
     { brand: 'FRIGIDAIRE', mpn: 'PDSH4816AF', note: 'the row from their own delivery format' },
     { brand: 'Milwaukee', mpn: '49-94-0107', note: 'publishes schema.org product markup' },
-    { brand: 'SKF', mpn: '6205-2RS', note: 'renders client-side — the known wall' },
+    { brand: 'SKF', mpn: '6205-2RS', note: 'the page is not there — a wrong address' },
     { brand: 'Wumpus', mpn: 'X-1', note: 'not an approved manufacturer' },
   ]
 

@@ -89,8 +89,8 @@ SEGMENTS: list[tuple[str, str]] = [
      "two. We publish both, because knowing what you cannot answer is what makes "
      "a catalogue worth trusting."),
     ("thanks",
-     "The prototype is live at that link, no login or key needed, and the code is "
-     "public, so every number you have seen can be checked. Thanks for watching."),
+     "The prototype is live at that link, no login needed, and the code is public, "
+     "so every number you have seen can be checked. Thanks for watching."),
 ]
 
 def _ffmpeg() -> str:
