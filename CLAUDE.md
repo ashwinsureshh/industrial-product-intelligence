@@ -1293,6 +1293,23 @@ python run_benchmark.py --live --budget 5
   35. `e549771` **Accuracy tab removed** (§7.7) — the endpoint, the CLI and the
       both-states tests stay; deck slide 8 is now the only place a judge sees
       those numbers
+  36. `43cbda2` slide 8 carries its own condition; `build_deck.py` copies the
+      deliverable up so a rebuild cannot ship the previous deck
+  37. `3d399af` team details filled in (§11)
+  38. `10437ae` **QA pass fixes** (§7.8) — a standard may contradict a supplier,
+      the cache follows the taxonomy, the marketplace rule holds on both paths
+  39. `9b76738` **compliance layer and export profiles surfaced in the UI**
+  40. `ef70ffe` space-aligned datasheets read on their own gutters
+  41. `fcfdd6a`, `9e8dc5b` **the re-test** (§7.8.1) — a false alarm on a clean
+      record, marketplaces at other TLDs, right-aligned columns, the unit join
+  42. `2fd5584` **taxonomy learning re-measured at volume** (§7.4) — 38 of 83,
+      and same-named proposals disambiguated
+  43. `89ab030`…`896de88` **the demo video** — script, recorder, neural
+      narration, beacon alignment, explainer frames, sign-off
+  44. `a9a53d9` deck brought current: QA evidence, the standards check, fresh
+      screenshots, `shots.py` now crops as well as captures
+  45. `484d342`, `ad0c97e` **headless rendering measured** (§7.5.1) — still 0/4,
+      and the two defects that measurement exposed
 - `main` and `origin/main` are level; the working tree is clean.
 - Public as of 11 Aug (submission requires it). No LICENSE yet — see below.
 - No LICENSE yet, deliberately: organizers may have IP terms. Check before adding.
@@ -1316,23 +1333,32 @@ python run_benchmark.py --live --budget 5
 
 ## 11. Immediate next steps
 
-**Engineering is done and deployed. What remains is submission admin and two
-things only the user can supply.** Deadline Sun 23 Aug 2026, 10:31 IST.
+**Engineering, deck and video are done and pushed. One thing remains, and only
+the user can do it: upload the video and put its link on slide 14.** Deadline
+Sun 23 Aug 2026, 10:31 IST.
 
 | # | Item | State |
 | --- | --- | --- |
 | 1 | ~~Team details, deck slide 2~~ | **Done 12 Aug.** Team Codes; leader **Ankur Goswami**; Ashwin S, Argho Kumar Halder, SV Chiranjeevi. Values live in `TEAM_NAME` / `TEAM_LEADER` / `TEAM_MEMBERS` at the top of slide 2's block in `build_deck.py`. Emails are on the portal roster and deliberately off the slide |
 | 2 | **Demo video link, deck slide 14** | **Blocked on the user.** Slide has a marked placeholder |
-| 3 | **Demo video, 3 minutes** | **Script and silent footage done** — `docs/video/`. Needs your voiceover and an upload |
+| 3 | ~~Demo video, 3 minutes~~ | **Done 13 Aug.** `docs/video/footage/demo_walkthrough.mp4` — 2:59.8, narrated, synced, fourteen segments. Rebuild with `frames.py → record.py → voiceover.py → align.py → mux.py`. **Only the upload is outstanding** |
 | 4 | **Rotate the API key** | It passed through a conversation transcript. Delete `backend/.env` when local live testing is finished |
 | 5 | ~~Decide the Accuracy tab question~~ | **Done 12 Aug — removed.** §7.7 |
 | 6 | Leave UptimeRobot running | A sleeping free instance returns **404**, so a reviewer's first click looks like a dead link |
 
-Done since this list was last written: repo public (`0a85c93`), deck built and
-screenshotted from the deployed app (`ba45bea`, `27f2129`, `9319d57`),
-`Project_Understanding.pdf` brought current.
+Done since this list was last written: an outside QA pass and its five fixes
+(§7.8), the re-test that found four more (§7.8.1), taxonomy learning re-measured
+at volume (§7.4), headless rendering built and measured (§7.5.1), the finished
+demo video, and the deck brought current with all of it.
 
 ### Demo video — `docs/video/`
+
+**Five scripts, run in order:** `assets.py` (the datasheet the film uploads),
+`frames.py` (five explainer frames + the sign-off), `record.py` (drives the live
+site, intercuts the frames, flashes a hidden marker per segment), `voiceover.py`
+(edge-tts narration, measured), `align.py` (reads the markers back and lays each
+line on the shot it describes), `mux.py` (H.264/AAC, loudness-normalised).
+Current cut: **2:59.8, fourteen segments.**
 
 `script.md` is the shooting script: 436 words of narration (2:55 at 150 wpm)
 against a hard 3:00, an eight-segment shot list with every click path verified
