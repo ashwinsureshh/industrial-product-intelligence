@@ -103,8 +103,29 @@ def main() -> int:
         print(f"     beacons at: {[round(f, 2) for f in found]}")
         return 1
 
-    with wave.open(str(clips[-1]), "rb") as last:
-        tail = last.getnframes() / last.getframerate()
+    # A beacon says when the *picture* changed. If the previous line is still
+    # being spoken then, the two talk over each other — which is what "it jumps
+    # straight to the AI" sounded like at 0:38. The picture is allowed to move
+    # early; the voice is not allowed to collide.
+    lengths = []
+    for clip in clips:
+        with wave.open(str(clip), "rb") as handle:
+            lengths.append(handle.getnframes() / handle.getframerate())
+
+    placed: list[float] = []
+    shifted: list[str] = []
+    for index, (start, length) in enumerate(zip(found, lengths)):
+        earliest = 0.0 if not placed else placed[-1] + lengths[index - 1] + 0.12
+        if start < earliest - 0.01:
+            shifted.append(f"{clips[index].stem.split('_', 2)[2]} "
+                           f"+{earliest - start:.2f}s")
+        placed.append(max(start, earliest))
+    if shifted:
+        print(f"  nudged to avoid overlap: {', '.join(shifted)}")
+        print("  (a segment's picture is shorter than its line — lengthen its hold)")
+    found = placed
+
+    tail = lengths[-1]
     total = found[-1] + tail + 1.0
 
     print("  segment  narration starts at (player time)")

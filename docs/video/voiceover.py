@@ -26,41 +26,41 @@ from pathlib import Path
 
 OUT = Path(__file__).parent / "footage"
 VOICE = "en-US-AndrewNeural"   # "warm, confident, authentic" — fits the pitch
-RATE = "+2%"                   # measured pace; the content is what sets the length
-GAP = 0.22        # breath between segments, seconds
+RATE = "+5%"                   # measured pace; the content is what sets the length
+GAP = 0.20        # breath between segments, seconds
 
 SEGMENTS: list[tuple[str, str]] = [
     ("architecture",
      "Here is the problem. A distributor gets a part number, a brand, and if they "
      "are lucky, four words. Someone has to turn that into a page a buyer can "
-     "trust. Get it wrong, and a plumber fits a valve that melts. However the data "
-     "arrives, it goes through the same ten steps."),
+     "trust. Get it wrong, and a plumber fits a valve that melts. However it "
+     "arrives, it takes the same ten steps."),
     ("bearing",
      "Using it is three steps. Pick how your data comes in, paste what you have, "
-     "press enrich. A part number, a brand, a name. Watch what comes back. It read "
+     "press enrich. A part number, a brand, a name. Watch. It read "
      "that part number as a standard bearing code, the way a parts specialist "
      "would, and filled in the dimensions it fixes. And the colours matter. Purple "
-     "means a published standard says so. Grey means we are guessing, and we would "
-     "rather tell you."),
+     "means a published standard says so. Grey means we are guessing, and we say "
+     "so rather than quietly pretending."),
     ("gate",
-     "We do use A.I., but on a short leash. It suggested a load rating of fourteen "
-     "point eight, and a speed of fourteen thousand. The standard says fourteen, "
-     "and sixteen thousand. Both refused, in writing. It can fill an empty box. It "
-     "does not get to argue with a published standard. That is why the accuracy "
-     "holds up. Across a hundred and two test products, values backed by evidence "
-     "were right every time."),
+     "We do use A.I., but on a short leash. It suggested a load rating of "
+     "fourteen point eight, and a speed of fourteen thousand. The standard says "
+     "fourteen, and sixteen thousand. Both refused, in writing. It can fill an "
+     "empty box. It does not get to argue with a published standard. That is why "
+     "the accuracy holds. Across a hundred and two test products, evidence-backed "
+     "values were right every single time."),
     ("catalog",
      "Now a whole spreadsheet. Ten in, and they come back "
      "sorted. Eight ready to publish, one to check, one stopped."),
     ("document",
      "Only have the P.D.F.? Drop it in. No borders on that table, just columns held "
      "apart by spaces, the layout that usually defeats this. It read it straight "
-     "off the page, and every value remembers which page."),
+     "off the page."),
     ("discover",
-     "Brand and part number only? It goes to the manufacturer's own site. And here "
+     "Brand and part number only? It goes to the manufacturer's site. And here "
      "is the good bit. It found S.K.F.'s page, fetched it, then refused it, because "
      "there was nothing readable on it. And it says so. The record still scores "
-     "ninety four, from the part number alone."),
+     "ninety four, from the part number."),
     ("learning",
      "And when something fits no category at all, it works one out and queues it "
      "for a human. It does not invent a shelf and start stacking things on it."),
@@ -69,25 +69,28 @@ SEGMENTS: list[tuple[str, str]] = [
      "hundred and eighty degrees. Each number is fine on its own. Together, that is "
      "not a valve, it is a candle. Sixteen checks catch it."),
     ("content",
-     "Shops need the same product written several ways. This is the forty character "
+     "Shops need the same product written several ways. Here is the forty character "
      "one. It dropped whole facts to fit and told you which, because half a part "
      "number is no use to anybody."),
     ("outputs",
      "Out the other end, whatever the customer's system expects. Their own two "
-     "hundred and fifty two column sheet, a format search engines read, or a "
-     "spreadsheet where every value carries its source."),
+     "hundred and fifty two column sheet, a format search engines read, or a sheet "
+     "where every value carries its source."),
     ("storage",
      "There is no database. The rule book, categories, standards, units, is plain "
-     "text sitting next to the code. Nothing is sent anywhere else, and the public "
-     "version holds no A.I. key, so it cannot spend your money."),
+     "text next to the code. Nothing is sent anywhere else, and the public version "
+     "holds no A.I. key, so it cannot spend money."),
     ("scale",
      "A person takes ten minutes a product. This does two hundred and eighty "
      "seven a second, for less than a penny each."),
     ("close",
      "Last thing, and it is the honest one. Against the customer's own finished "
-     "rows, given the facts, fourteen out of fourteen exactly right. From a bare "
-     "catalogue row, two. We publish both, because knowing what you cannot answer "
-     "is what makes a catalogue worth trusting."),
+     "rows, given the facts, fourteen out of fourteen. From a bare catalogue row, "
+     "two. We publish both, because knowing what you cannot answer is what makes a "
+     "catalogue worth trusting."),
+    ("thanks",
+     "The prototype is live at that link, no login, no key needed, and the code is "
+     "public, so every number you have seen can be checked. Thanks for watching."),
 ]
 
 def _ffmpeg() -> str:

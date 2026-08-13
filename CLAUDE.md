@@ -1379,6 +1379,18 @@ it said "it goes to the manufacturer's own site" over a screen showing a
 segment, one marker** — a mismatch now cannot survive a rebuild, because
 `align.py` pins each line to the shot it describes.
 
+**A line may never start while the previous one is still speaking.** `align.py`
+places each clip at its marker, and markers say when the *picture* changed — so
+if a segment's shot is shorter than its narration, two voices overlap. At 0:38
+the bearing line was still running 2.3 s into the gate, which sounded like the
+film jumping straight to the AI. The placement now takes
+`max(marker, previous line's end)` and prints every clip it had to nudge, which
+also surfaces exactly which shots are too tight.
+
+It ends on a **sign-off frame** — thank you, the live link, the public
+repository — because a demo that stops mid-sentence on a statistic reads as
+unfinished.
+
 Two details that came out of that audit and are worth keeping:
 
 - **The Document segment uploads a real PDF on camera** (`assets.py` builds it).

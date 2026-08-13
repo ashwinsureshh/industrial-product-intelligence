@@ -285,7 +285,10 @@ def main() -> int:
         page.goto(frame("1_architecture"), wait_until="load", timeout=60000)
         _T0[0] = time.time()
         beacon(page)
-        hold_until(page, "0:16", "inputs, one record, ten checks, outputs")
+        # Hands over early on purpose: loading the app takes ~2.4 s, during
+        # which this frame is still what the viewer sees, so the next segment's
+        # marker lands on its planned mark instead of two seconds late.
+        hold_until(page, "0:12", "inputs, one record, ten checks, outputs")
 
         # 2 — how you use it
         print("[2] how you use it")
@@ -302,7 +305,7 @@ def main() -> int:
               block="start", offset=-118, seconds=1.5)
         beat(page, 4.0, "ten steps, with timings")
         creep(page, '.col .card:has(h3:text-is("Attributes"))', seconds=1.5)
-        hold_until(page, "0:39", "the colours: Standard vs Default")
+        hold_until(page, "0:38", "the colours: Standard vs Default")
 
         # 3 — the gate. The thesis.
         print("[3] the AI gate")
@@ -314,7 +317,7 @@ def main() -> int:
         creep(page, '.col .card:has(h3:text-is("AI gate"))', seconds=1.6)
         beat(page, 11.0, "14.8 kN refused, 14000 rpm refused")
         drift(page, 105, 4.0)
-        hold_until(page, "1:03")
+        hold_until(page, "1:02")
 
         # 4 — a whole spreadsheet
         print("[4] catalog")
@@ -325,7 +328,7 @@ def main() -> int:
         beat(page, 0.6)
         tap(page, 'button:has-text("Run 10-product demo catalog")')
         page.wait_for_selector('.col table', timeout=60000)
-        hold_until(page, "1:10", "publish / review / blocked")
+        hold_until(page, "1:08", "publish / review / blocked")
 
         # 5 — a real datasheet, uploaded on camera. Saying "it reads the table
         #     off the page" over an empty drop zone is the sort of small gap
@@ -339,7 +342,7 @@ def main() -> int:
         page.wait_for_selector('.col .card:has(h3:text-is("Attributes"))', timeout=60000)
         beat(page, 2.0, "specs arrive from the PDF")
         creep(page, '.col .card:has(h3:text-is("Attributes"))', seconds=1.5)
-        hold_until(page, "1:23", "every value cites its page")
+        hold_until(page, "1:19", "every value cites its page")
 
         # 6 — brand + part number, and an honest refusal
         print("[6] discover")
@@ -354,14 +357,14 @@ def main() -> int:
               offset=-118, seconds=1.4)
         beat(page, 7.0, "fetched, then refused, and it says so")
         creep(page, '.col .card:has(h3:text-is("Commerce Readiness"))', seconds=1.4)
-        hold_until(page, "1:40", "and the record still scores 94")
+        hold_until(page, "1:34", "and the record still scores 94")
 
         # 7 — categories it has never seen
         print("[7] learning")
         beacon(page)
         to_top(page, 0.7)
         tap(page, '.main-nav .tab:text-is("Learning")')
-        hold_until(page, "1:48", "proposed, and queued for a human")
+        hold_until(page, "1:42", "proposed, and queued for a human")
 
         # 8 — a contradiction only cross-field checks can catch
         print("[8] validation")
@@ -374,35 +377,40 @@ def main() -> int:
         tap(page, 'button:has-text("Enrich Product")')
         page.wait_for_selector('.col .card:has(h3:text-is("Validation"))', timeout=60000)
         creep(page, '.col .card:has(h3:text-is("Validation"))', seconds=1.4)
-        hold_until(page, "2:01", "PVC at 180 C, stopped in plain English")
+        hold_until(page, "1:55", "PVC at 180 C, stopped in plain English")
 
         # 9 — five formats to five limits
         print("[9] content standard")
         beacon(page)
         creep(page, '.col .card:has(h3:text-is("Content Standard"))',
               block="start", offset=-118, seconds=1.5)
-        hold_until(page, "2:12", "the 40-character line names what it dropped")
+        hold_until(page, "2:05", "the 40-character line names what it dropped")
 
         # 10..13 — the frames the product cannot show
         print("[10] outputs")
         page.goto(frame("2_outputs"), wait_until="load", timeout=60000)
         beacon(page)
-        hold_until(page, "2:23", "252 columns, JSON-LD, audit-trail CSV")
+        hold_until(page, "2:16", "252 columns, JSON-LD, audit-trail CSV")
 
         print("[11] storage")
         page.goto(frame("3_storage"), wait_until="load", timeout=60000)
         beacon(page)
-        hold_until(page, "2:37", "no database, no key, nothing leaves")
+        hold_until(page, "2:29", "no database, no key, nothing leaves")
 
         print("[12] scale")
         page.goto(frame("4_scale"), wait_until="load", timeout=60000)
         beacon(page)
-        hold_until(page, "2:44", "287/s, under a penny, and the review queue")
+        hold_until(page, "2:36", "287/s, under a penny, and the review queue")
 
         print("[13] accuracy")
         page.goto(frame("5_accuracy"), wait_until="load", timeout=60000)
         beacon(page)
-        hold_until(page, "3:00", "14/14 and 2/14, both")
+        hold_until(page, "2:51", "14/14 and 2/14, both")
+
+        print("[14] thank you")
+        page.goto(frame("6_close"), wait_until="load", timeout=60000)
+        beacon(page)
+        hold_until(page, "3:00", "the link, the repo, and a sign-off")
 
         lead_in = _T0[0] - recording_started
         span = time.time() - _T0[0]

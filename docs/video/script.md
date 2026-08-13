@@ -4,7 +4,7 @@
 Built by six scripts in `docs/video/`: `frames.py` renders the explainer
 frames, `record.py` drives the live site and intercuts them, `voiceover.py`
 speaks the narration, `align.py` locks them together, `assets.py` builds the datasheet it uploads,
-`mux.py` assembles. Current cut: **2:59.8**.
+`mux.py` assembles. Current cut: **2:59.8**, ending on a sign-off frame with the live link and the repository.
 
 **What changed, and why:** the first version demonstrated behaviour for three
 minutes and never said what had been built, where the data was stored, or what
@@ -49,21 +49,26 @@ cannot survive a rebuild.
 
 | # | Segment | Starts | Runs |
 |---|---------|--------|------|
-| 1 | architecture | 0:00.0 | 16.2 s |
-| 2 | bearing | 0:18.4 | 22.7 s |
-| 3 | gate | 0:38.8 | 24.1 s |
-| 4 | catalog | 1:02.8 | 6.9 s |
-| 5 | document | 1:09.8 | 12.8 s |
-| 6 | discover | 1:22.8 | 16.3 s |
-| 7 | learning | 1:39.8 | 8.2 s |
-| 8 | valve | 1:47.8 | 12.8 s |
-| 9 | content | 2:00.8 | 10.2 s |
-| 10 | outputs | 2:11.9 | 11.1 s |
-| 11 | storage | 2:22.9 | 13.5 s |
-| 12 | scale | 2:36.9 | 6.8 s |
-| 13 | close | 2:43.9 | 15.8 s |
+| 1 | architecture | 0:00.0 | 15.2 s |
+| 2 | bearing | 0:15.3 | 22.9 s |
+| 3 | gate | 0:38.3 | 23.4 s |
+| 4 | catalog | 1:01.8 | 6.7 s |
+| 5 | document | 1:08.6 | 10.1 s |
+| 6 | discover | 1:18.8 | 15.2 s |
+| 7 | learning | 1:34.2 | 7.9 s |
+| 8 | valve | 1:42.2 | 12.5 s |
+| 9 | content | 1:54.8 | 9.9 s |
+| 10 | outputs | 2:04.9 | 10.8 s |
+| 11 | storage | 2:15.8 | 12.9 s |
+| 12 | scale | 2:28.8 | 6.6 s |
+| 13 | close | 2:35.8 | 14.6 s |
+| 14 | thanks | 2:50.8 | 8.5 s |
 
-**Narration 180.0 s, picture 179.8 s.**
+**Narration 179.7 s, picture 179.8 s.** `align.py` enforces one more rule than
+it used to: a line may never begin while the previous one is still speaking.
+The picture is allowed to move early — a beat of silence on a new screen reads
+fine — but two voices at once does not, and that is what "it jumps straight to
+the AI" was at 0:38.
 
 ## Assembling it
 

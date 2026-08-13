@@ -233,6 +233,34 @@ published, because only one of them is flattering.</p>
 </div>""")
 
 
+def closing() -> None:
+    write("6_close", """
+<div style="text-align:center">
+  <h1 style="font-size:38px;margin-bottom:14px">Thank you</h1>
+  <p class="sub" style="font-size:17px;margin-bottom:30px">
+    Product Intelligence for Industrial Commerce &middot; Team Codes</p>
+</div>
+<div class="row" style="justify-content:center">
+  <div class="card" style="width:430px;text-align:center">
+    <div class="k">Try the prototype</div>
+    <div style="font-size:15px;color:var(--blue);word-break:break-all">
+      industrial-product-intelligence.onrender.com</div>
+    <div class="lab" style="margin-top:7px">Live, no login, no API key needed</div>
+  </div>
+  <div class="card" style="width:430px;text-align:center">
+    <div class="k">Source and evidence</div>
+    <div style="font-size:15px;color:var(--blue);word-break:break-all">
+      github.com/ashwinsureshh/industrial-product-intelligence</div>
+    <div class="lab" style="margin-top:7px">Public &middot; every figure here is reproducible</div>
+  </div>
+</div>
+<div class="row" style="justify-content:center;margin-top:18px">
+  <div style="font-size:13.5px;color:var(--muted);text-align:center;max-width:760px">
+    Nine test suites, a 102-case benchmark and the customer's own labelled rows
+    all run from the repository with one command each.</div>
+</div>""")
+
+
 def main() -> int:
     print("fetching a real export from the deployed service…")
     record = urllib.request.urlopen(urllib.request.Request(
@@ -267,6 +295,7 @@ def main() -> int:
     storage()
     scale()
     accuracy()
+    closing()
     print(f"  (delivery row read live: {columns} columns, "
           f"{len([v for v in row if v.strip()])} populated)")
     return 0
