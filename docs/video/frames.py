@@ -259,7 +259,7 @@ def closing() -> None:
 </div>
 <div class="row" style="justify-content:center;margin-top:18px">
   <div style="font-size:13.5px;color:var(--muted);text-align:center;max-width:760px">
-    Nine test suites, a 102-case benchmark and the customer's own labelled rows
+    Ten test suites, a 102-case benchmark and the customer's own labelled rows
     all run from the repository with one command each.</div>
 </div>""")
 

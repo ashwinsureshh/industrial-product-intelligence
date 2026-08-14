@@ -219,8 +219,10 @@ auto-deploys on push to `main`, built from the root `Dockerfile`.
 | 9 | Discovery (§7.5) | **Done, $0** — sourcing policy enforced; fetch blocked by client-side rendering |
 | 10 | Pre-deck audit (§7.6) | **Done** — four defects found and fixed |
 
-**Everything above is complete, committed, pushed and deployed.** Eight test
-suites pass (298 checks), the benchmark reproduces, and the live site is
+**Everything above is complete, committed, pushed and deployed.** Ten test
+suites pass — nine in `backend/`, plus `frontend/test_session.mjs` — and the
+count is what the video's sign-off frame quotes, so changing one means changing
+the other. The benchmark reproduces, and the live site is
 verified on desktop and phone at 1900 / 1440 / 1300 / 1000 / 901 / 900 / 375 /
 320 px.
 
