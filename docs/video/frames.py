@@ -131,8 +131,8 @@ data, not code — a new customer format is a JSON profile, not a release.</p>
 def storage() -> None:
     write("3_storage", """
 <h1>Where the data lives</h1>
-<p class="sub">No database to run or back up, and nothing about a product is
-sent anywhere else.</p>
+<p class="sub">No product database by design &mdash; their PIM stays the system
+of record. The engine takes a row and returns an enriched row.</p>
 <div class="row">
   <div class="card" style="flex:1">
     <div class="k">Versioned in the repository</div>
@@ -152,6 +152,9 @@ sent anywhere else.</p>
       <li>learned categories and their pending proposals</li>
       <li>20 pre-computed AI results, so a reviewer with no key sees real model output</li>
     </ul>
+    <div class="lab" style="margin-top:8px">Results are content-addressed, so the
+    same input reproduces exactly and nothing has to be kept to be trusted. A
+    free-tier container does not hold these across a restart.</div>
     <div class="k" style="margin-top:15px">Deployment</div>
     <ul>
       <li>one container on Render, public link, monitored every 5 minutes</li>

@@ -76,10 +76,15 @@ SEGMENTS: list[tuple[str, str]] = [
      "Out the other end, whatever the customer's system expects. Their own two "
      "hundred and fifty two column sheet, a format search engines read, or a sheet "
      "where every value carries its source."),
+    # "There is no database" invites the obvious objection. The answer is that the
+    # customer already has one, so say that instead. The old line also claimed
+    # "nothing is sent anywhere else", which is untrue on the live path — the
+    # product goes to the model — and the frame carries the rule-book detail this
+    # drops. 34 words against a 12.86s shot; the budget is 35.
     ("storage",
-     "There is no database. The rule book, categories, standards, units, is plain "
-     "text next to the code. Nothing is sent anywhere else, and the public version "
-     "holds no A.I. key, so it cannot spend money."),
+     "There is no product database: the customer already has one, and theirs stays "
+     "the system of record. This takes a row and hands back an enriched row. The "
+     "public copy holds no A.I. key."),
     ("scale",
      "A person takes ten minutes a product. This does two hundred and eighty "
      "seven a second, for less than a penny each."),
