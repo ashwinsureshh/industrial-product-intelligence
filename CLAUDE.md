@@ -281,7 +281,10 @@ second launch.
 - The live API key lives in **`backend/.env`** (gitignored, verified).
   `backend/.env.example` is **tracked** — never put a real key there.
   The user once pasted a key into `.env.example`; it was moved and scrubbed
-  before any commit, and `git log --all -p | grep sk-ant-api03` returns nothing.
+  before any commit. **That grep now returns two hits and both are harmless** —
+  the fake `sk-ant-api03-CANARY` literal in `frontend/test_session.mjs`, which
+  exists to prove the key is never persisted, and this sentence. No real key has
+  ever been committed; check the *shape* of a match before assuming a leak.
 - `PI_ALLOW_SERVER_KEY` defaults to `0`, so a visitor supplying no key can
   **never** spend the server's key. This is verified behaviour, not a claim.
 - Outstanding user actions (non-blocking): rotate the API key (it passed

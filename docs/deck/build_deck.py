@@ -696,7 +696,7 @@ links = [
     ("Working prototype", "https://industrial-product-intelligence.onrender.com",
      "Live, monitored, no API key needed — every tab is explorable at zero cost."),
     ("GitHub repository", "https://github.com/ashwinsureshh/industrial-product-intelligence",
-     "Public. 9 test suites, 337 assertions, all free to run. Benchmarks reproduce from a clean clone."),
+     "Public. 10 test suites, all free to run. Benchmarks reproduce from a clean clone."),
     ("Demo video (3 min)", "[ paste link before submitting ]",
      "Walkthrough of enrichment, the AI gate refusing two values, and the delivery export."),
 ]
