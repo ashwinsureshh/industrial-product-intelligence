@@ -697,7 +697,7 @@ links = [
      "Live, monitored, no API key needed — every tab is explorable at zero cost."),
     ("GitHub repository", "https://github.com/ashwinsureshh/industrial-product-intelligence",
      "Public. 10 test suites, all free to run. Benchmarks reproduce from a clean clone."),
-    ("Demo video (3 min)", "[ paste link before submitting ]",
+    ("Demo video (3 min)", "https://youtu.be/AUagw9KwWfE",
      "Walkthrough of enrichment, the AI gate refusing two values, and the delivery export."),
 ]
 y = 1.55
@@ -713,7 +713,9 @@ b, tf = txbox(s, X0, 5.02, W, 0.3)
 para(tf, "Reproduce the headline: cd backend && python run_benchmark.py    "
          "(102 cases, no API key, $0)",
      size=9, color=MUTED, space_after=0, first=True, italic=True)
-note(s, "PASTE the demo video link before submitting, and confirm the repo is public.")
+note(s, "All three links are live. The video is Unlisted, which is deliberate: Private "
+        "would be unviewable to a judge, and asynchronous judging means nobody would "
+        "write to ask why.")
 
 prs.save("UniHack_Prototype_Submission.pptx")
 print("saved UniHack_Prototype_Submission.pptx")
