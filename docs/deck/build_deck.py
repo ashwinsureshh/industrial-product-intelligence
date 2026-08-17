@@ -728,3 +728,33 @@ from pathlib import Path as _Path
 _deliverable = _Path(__file__).resolve().parent.parent / "UniHack_Prototype_Submission.pptx"
 _shutil.copyfile("UniHack_Prototype_Submission.pptx", _deliverable)
 print(f"copied to {_deliverable}")
+
+
+# The portal accepts a PDF, up to 5 MB, not a .pptx — so the PDF is the actual
+# deliverable and converting it by hand is the same trap the copy above exists
+# to close: a rebuild would silently leave yesterday's PDF in place. PowerPoint's
+# own export is used because it is the only renderer here with real fidelity;
+# there is no LibreOffice in this environment.
+def _export_pdf(pptx: _Path) -> None:
+    import subprocess
+
+    pdf = pptx.with_suffix(".pdf")
+    script = (
+        "$ErrorActionPreference='Stop';"
+        "$app=New-Object -ComObject PowerPoint.Application;"
+        f"try{{$p=$app.Presentations.Open('{pptx}',$true,$false,$false);"
+        f"$p.SaveAs('{pdf}',32);$p.Close()}}finally{{$app.Quit()}}"
+    )
+    try:
+        subprocess.run(["powershell", "-NoProfile", "-NonInteractive", "-Command", script],
+                       check=True, capture_output=True, timeout=300)
+    except Exception as exc:  # noqa: BLE001 - a missing PowerPoint is not a build failure
+        print(f"  PDF not written ({type(exc).__name__}). Export it by hand before submitting.")
+        return
+
+    mb = pdf.stat().st_size / 1048576
+    room = "within" if mb <= 5 else "OVER"
+    print(f"exported {pdf.name} — {mb:.2f} MB, {room} the portal's 5 MB limit")
+
+
+_export_pdf(_deliverable)
