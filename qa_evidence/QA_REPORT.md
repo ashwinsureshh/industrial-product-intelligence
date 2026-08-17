@@ -1,9 +1,9 @@
 # Industrial Product Intelligence — A–Z QA pass
 
-> **Status: every defect below (D1–D5) was fixed the same day.** See CLAUDE.md
-> §7.8 for what changed and why, and `backend/test_qa_fixes.py` for the
-> regressions that hold them fixed. Every benchmark figure re-measured unchanged
-> afterwards. The report below is preserved as written, before the fixes.
+> **Status: every defect below (D1–D5) was fixed the same day.** See
+> `backend/test_qa_fixes.py` for the regressions that hold them fixed. Every
+> benchmark figure was re-measured unchanged afterwards. The report below is
+> preserved as written, before the fixes.
 
 Target: https://industrial-product-intelligence.onrender.com
 Date: 12 Aug 2026. Method: live HTTP API + Chrome (Playwright) against the deployed

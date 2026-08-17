@@ -49,3 +49,7 @@ docs/video/footage/
 
 # PowerPoint lock files, present while the deck is open in the app.
 ~$*
+
+# Working context for the AI assistant. Internal notes: spend, deliberations,
+# and the running log of mistakes. Useful locally, not a submission artifact.
+CLAUDE.md

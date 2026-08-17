@@ -1,3 +1,0 @@
-Pre-computed live-mode results are committed here so a reviewer without an API
-key can select "Live AI" and see genuine model output. Populated by a one-time
-script; see CLAUDE.md.
